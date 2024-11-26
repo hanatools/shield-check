@@ -31,3 +31,9 @@ flask db init
 flask db migrate -m "Initial database."
 flask db upgrade
 ```
+
+### Format code
+```angular2html
+pip install black
+black .
+```
