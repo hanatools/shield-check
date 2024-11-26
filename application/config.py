@@ -11,3 +11,7 @@ class Config:
         os.path.dirname(basedir), "shield_check_db.sqlite"
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # Dafault user
+    DEFAULT_USER_EMAIL = os.getenv('DEFAULT_USER_EMAIL', 'mr.william.technician1988@gmail.com')
+    DEFAULT_USERNAME = os.getenv('DEFAULT_USERNAME', 'admin')
+    DEFAULT_USER_PASSWORD = os.getenv('DEFAULT_USER_PASSWORD', '123456')

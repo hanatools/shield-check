@@ -17,7 +17,6 @@ pip install cffi==1.15.1
 #### run app
 ```agsl
 python app.py
-=> 
 ```
 
 ### Database
@@ -30,6 +29,7 @@ set FLASK_APP=app.py
 flask db init
 flask db migrate -m "Initial database."
 flask db upgrade
+python create_default_user.py
 ```
 
 ### Format code
