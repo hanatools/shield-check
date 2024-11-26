@@ -1,0 +1,60 @@
+# Project exclude paths
+/target/
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### IntelliJ IDEA ###
+.idea/modules.xml
+.idea/jarRepositories.xml
+.idea/compiler.xml
+.idea/libraries/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
+venv
+.idea
+hrm_database.db
+face-recognition/static/images
+face-recognition/static/temp
+face-recognition/static/face_encodings
+hs_err_pid2918.log
+flaskhrm/venv/
+hrm_app/hrm_app
+hrm_app/hrm_app/
+hrm_app/ui/__pycache__/
+~$*
+app_venv
+migrations
+shield_check_db.sqlite
+__pycache__
