@@ -73,7 +73,7 @@
       <div class="dropdown">
         <a href="#" class="dropdown-toggle" style="display: flex; align-items: center; gap: 10px;">
           <img src="{{ url_for('static', filename='images/user.png') }}" alt="User" style="width: 30px; height: 30px; border-radius: 50%;"> <!-- User Avatar -->
-          <span>John Doe</span>
+          <span>{{ current_user.username if current_user.username else "Guest" }}</span>
         </a>
         <div class="dropdown-menu">
           <a href="#" class="d-flex align-items-center gap-2">
