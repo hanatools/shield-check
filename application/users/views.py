@@ -49,7 +49,7 @@ def login():
                     login_user(user)
                     next_page = request.args.get("next")
                     if not next_page or not next_page.startswith("/"):
-                        next_page = url_for("core.index")
+                        next_page = url_for("core.daskboard")
                     return redirect(next_page)
                 except Exception as e:
                     error = "An unexpected error occurred. Please try again later."
@@ -70,6 +70,18 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for("core.index"))
+
+
+@users.route("/profile")
+@login_required
+def profile():
+    return redirect(url_for("users.account"))
+
+
+@users.route("/change_password")
+@login_required
+def change_password():
+    return redirect(url_for("users.change_password"))
 
 
 @users.route("/account", methods=["GET", "POST"])

@@ -8,9 +8,11 @@ from application.models import User
 
 
 class LoginForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired(), Length(min=3, max=25)])
-    password = PasswordField('Password', validators=[DataRequired()])
-    submit = SubmitField('Login')
+    username = StringField(
+        "Username", validators=[DataRequired(), Length(min=3, max=25)]
+    )
+    password = PasswordField("Password", validators=[DataRequired()])
+    submit = SubmitField("Login")
 
 
 class RegistrationForm(FlaskForm):

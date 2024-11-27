@@ -34,10 +34,12 @@ def create_app():
     login_manager.init_app(app)
 
     from application.models import User, BlogPost
+
     with app.app_context():
         db.create_all()
 
     return app
+
 
 ###########################
 #### BLUEPRINT CONFIGS #######

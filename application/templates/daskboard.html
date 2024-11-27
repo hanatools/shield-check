@@ -1,0 +1,49 @@
+{% extends "member_base.html" %}
+
+{% block stylecss %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/custom/dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="content">
+    <div class="form-section">
+        <h4>Thông Tin Cá Nhân</h4>
+        <!-- Form content -->
+        <form>
+            <div class="mb-3">
+                <label for="fullname" class="form-label">Họ và tên</label>
+                <input type="text" class="form-control" id="fullname" placeholder="Nhập họ và tên">
+            </div>
+            <div class="mb-3">
+                <label for="cccd" class="form-label">Số CCCD</label>
+                <input type="text" class="form-control" id="cccd" placeholder="Nhập số CCCD">
+            </div>
+            <div class="mb-3">
+                <label for="unit" class="form-label">Đơn vị</label>
+                <input type="text" class="form-control" id="unit" placeholder="Nhập đơn vị">
+            </div>
+            <div class="mb-3">
+                <label for="manager" class="form-label">Quản lý</label>
+                <input type="text" class="form-control" id="manager" placeholder="Nhập quản lý">
+            </div>
+            <div class="mb-3">
+                <label for="registerTime" class="form-label">Thời gian Đăng ký</label>
+                <input type="datetime-local" class="form-control" id="registerTime">
+            </div>
+            <div class="mb-3">
+                <label for="reason" class="form-label">Lý do ra ngoài</label>
+                <textarea class="form-control" id="reason" rows="3" placeholder="Nhập lý do ra ngoài"></textarea>
+            </div>
+            <div class="mb-3 text-end">
+                <button type="submit" class="btn btn-primary ">Gửi Thông Tin</button>
+            </div>
+
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block stylejs %}
+<script src="{{ url_for('static', filename='js/custom/dashboard.js') }}"></script>
+{% endblock %}

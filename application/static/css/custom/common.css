@@ -1,0 +1,189 @@
+body {
+    font-family: 'Roboto', Arial, sans-serif;
+    background-color: #f4f5f7;
+    margin: 0;
+    padding: 0;
+}
+/* Sidebar Styling */
+.sidebar {
+    height: 100vh;
+    background-color: #14532d; /* Dark green for sidebar background */
+    color: white;
+    position: fixed;
+    width: 250px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-top: 20px;
+}
+.sidebar-header {
+    text-align: center;
+    padding: 20px;
+    border-bottom: 1px solid #166534;
+}
+.sidebar-header img {
+    width: 70px;
+}
+.sidebar a {
+    color: white; /* White text for buttons */
+    text-decoration: none;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+    border-radius: 5px; /* Rounded corners */
+    margin: 5px 10px;
+    transition: all 0.3s ease;
+}
+.sidebar a:hover {
+    background-color: #22c55e; /* Bright green on hover */
+    color: white;
+}
+.sidebar .active {
+    background-color: #16a34a; /* Medium green for active buttons */
+    color: white;
+    font-weight: bold;
+}
+.submenu {
+    background-color: #166534; /* Slightly lighter green for submenu */
+    padding-left: 20px;
+    border-radius: 5px;
+    margin-top: 5px;
+    display: none;
+}
+.submenu a {
+    font-size: 14px;
+    color: #d1f7c4; /* Submenu links in light green */
+    margin: 5px 10px;
+    padding: 10px;
+    border-radius: 5px; /* Rounded corners */
+    display: block;
+    transition: all 0.3s ease;
+}
+.submenu a:hover {
+    background-color: #22c55e; /* Bright green on hover */
+    color: white;
+}
+.logout {
+    margin: 20px 10px;
+    color: #dc2626; /* Red for logout */
+    text-align: center;
+    background-color: transparent;
+    border: 1px solid #dc2626;
+    border-radius: 5px;
+    padding: 10px;
+    transition: all 0.3s ease;
+}
+.logout:hover {
+    background-color: #dc2626;
+    color: white;
+}
+
+/* Header Styling */
+.header {
+    background: linear-gradient(to right, #16a34a, #14532d); /* Green gradient */
+    color: white;
+    position: fixed;
+    top: 0;
+    left: 250px;
+    height: 40px;
+    width: calc(100% - 250px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+.header h1 {
+    font-size: 24px;
+    margin: 0;
+    font-weight: bold;
+}
+
+/* User Menu Styling */
+.user-menu {
+    position: relative;
+}
+.user-menu a {
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: bold;
+}
+.user-menu .dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: white;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    z-index: 1001;
+    padding: 10px 0;
+}
+.user-menu .dropdown:hover .dropdown-menu {
+    display: block;
+}
+.dropdown-menu a {
+    color: #495057;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    font-size: 14px;
+}
+.dropdown-menu a:hover {
+    background-color: #f1f5f9;
+}
+.dropdown-menu a.text-danger:hover {
+    background-color: #ffe5e5;
+}
+
+/* Avatar Styling */
+.user-menu img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Footer Styling */
+.footer {
+    background: linear-gradient(to right, #14532d, #16a34a);
+    color: white;
+    position: fixed;
+    bottom: 0;
+    left: 250px;
+    height: 30px;
+    width: calc(100% - 250px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 14px;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Content Area */
+.content {
+    margin-left: 250px;
+    padding: 90px 20px 70px; /* Account for header and footer */
+}
+.form-section {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+.form-section:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+.form-section h4 {
+    margin-bottom: 20px;
+    font-weight: bold;
+    color: #495057;
+}

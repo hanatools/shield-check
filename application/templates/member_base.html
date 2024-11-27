@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/library/bootstrap.min.css') }}">
+<!--    <link rel="stylesheet" href="{{ url_for('static', filename='css/library/bootstrap-icons.css') }}">-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom/common.css') }}">
+
+    <meta charset="utf-8">
+
+    <meta charset="utf-8">
+    {% block title %}
+    <title>Dashboard - HRM Application</title>
+    {% endblock %}
+    {% block stylecss %}
+
+    {% endblock %}
+  </head>
+  <body>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div>
+      <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="HRM Logo">
+        <h5>HRM Application</h5>
+      </div>
+      <a href="#" class="main-button active">
+        <span class="icon">&#127968;</span> <!-- Home Icon -->
+        <span class="text">Trang Chủ</span>
+      </a>
+
+
+      <!-- Main Button with Submenu -->
+      <a href="#" class="main-button " data-toggle="submenu" data-target="#infoSubmenu">
+        <span class="icon">&#128196;</span> <!-- File Icon -->
+        <span class="text">Nhập thông tin</span>
+      </a>
+      <div class="submenu" id="infoSubmenu">
+        <a href="#">Nhập theo cá nhân</a>
+        <a href="#">Nhập theo lô</a>
+      </div>
+
+      <a href="#" class="main-button" data-toggle="submenu" data-target="#registerSubmenu">
+        <span class="icon">&#128101;</span> <!-- User Icon -->
+        <span class="text">Đăng ký ra vào</span>
+      </a>
+      <div class="submenu" id="registerSubmenu">
+        <a href="#">Người thân</a>
+        <a href="#">Quân Nhân</a>
+      </div>
+
+      <a href="#" class="main-button" data-toggle="submenu" data-target="#mgrInfoSubmenu">
+        <span class="icon">&#9881;</span> <!-- User Icon -->
+        <span class="text">Quản lý thông tin</span>
+      </a>
+      <div class="submenu" id="mgrInfoSubmenu">
+        <a href="#">Thông tin Quân Nhân</a>
+        <a href="#">Báo cáo</a>
+      </div>
+
+    </div>
+    <button class="logout">Logout</button>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <h1></h1>
+    <div class="user-menu">
+      <div class="dropdown">
+        <a href="#" class="dropdown-toggle" style="display: flex; align-items: center; gap: 10px;">
+          <img src="{{ url_for('static', filename='images/user.png') }}" alt="User" style="width: 30px; height: 30px; border-radius: 50%;"> <!-- User Avatar -->
+          <span>John Doe</span>
+        </a>
+        <div class="dropdown-menu">
+          <a href="#" class="d-flex align-items-center gap-2">
+            <i class="bi bi-person"></i> <!-- Profile Icon -->
+            <span>Profile</span>
+          </a>
+          <a href="#" class="d-flex align-items-center gap-2">
+            <i class="bi bi-gear"></i> <!-- Settings Icon -->
+            <span>Settings</span>
+          </a>
+          <a href="#" class="d-flex align-items-center gap-2 text-danger">
+            <i class="bi bi-box-arrow-right"></i> <!-- Logout Icon -->
+            <span>Logout</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content -->
+
+
+  {% block content %}
+
+  {% endblock %}
+
+  <!-- Footer -->
+  <div class="footer">
+    &copy; 2024 HRM Application. All rights reserved.
+  </div>
+
+
+
+  <script src="{{ url_for('static', filename='js/library/jquery-3.2.1.slim.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/library/popper.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/library/bootstrap.min.js') }}"></script>
+
+  <script src="{{ url_for('static', filename='js/custom/common.js') }}"></script>
+
+  {% block stylejs %}
+
+  {% endblock %}
+
+
+  </body>
+</html>
