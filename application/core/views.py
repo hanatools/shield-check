@@ -1,6 +1,6 @@
 from flask import render_template, request, Blueprint
 from application.models import BlogPost
-
+from flask_login import login_required
 core = Blueprint("core", __name__)
 
 
@@ -18,6 +18,7 @@ def index():
 
 
 @core.route("/daskboard")
+@login_required
 def daskboard():
     # page = request.args.get("page", 1, type=int)
     return render_template("daskboard.html")

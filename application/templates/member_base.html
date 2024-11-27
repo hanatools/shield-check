@@ -61,7 +61,9 @@
       </div>
 
     </div>
-    <button class="logout">Logout</button>
+
+
+    <button class="logout" onclick="window.location.href='{{ url_for('users.logout') }}'">Logout</button>
   </div>
 
   <!-- Header -->
@@ -82,7 +84,7 @@
             <i class="bi bi-gear"></i> <!-- Settings Icon -->
             <span>Settings</span>
           </a>
-          <a href="#" class="d-flex align-items-center gap-2 text-danger">
+          <a href="#" class="d-flex align-items-center gap-2 text-danger" onclick="window.location.href='{{ url_for('users.logout') }}'" >
             <i class="bi bi-box-arrow-right"></i> <!-- Logout Icon -->
             <span>Logout</span>
           </a>

@@ -61,7 +61,9 @@ def login():
                 for field, errors in form.errors.items()
             ]
             error = " ".join(error_messages)
-
+    if form.username.data is None:
+        form.username.data = ""
+    form.password.data = ""
     # Render the login template with error message
     return render_template("login.html", form=form, error=error)
 
@@ -69,7 +71,7 @@ def login():
 @users.route("/logout")
 def logout():
     logout_user()
-    return redirect(url_for("core.index"))
+    return redirect(url_for("users.login"))
 
 
 @users.route("/profile")
