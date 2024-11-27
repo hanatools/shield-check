@@ -1,4 +1,4 @@
-from flask import render_template, url_for, flash, redirect, request, Blueprint
+from flask import render_template, url_for, flash, redirect, request, Blueprint, jsonify
 from flask_login import login_user, current_user, logout_user, login_required
 from application import db
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -30,33 +30,40 @@ def register():
 
 @users.route("/login", methods=["GET", "POST"])
 def login():
-
     form = LoginForm()
-    if form.validate_on_submit():
-        # Grab the user from our User Models table
-        user = User.query.filter_by(email=form.email.data).first()
+    error = None  # Default error message
 
-        # Check that the user was supplied and the password is right
-        # The verify_password method comes from the User object
-        # https://stackoverflow.com/questions/2209755/python-operation-vs-is-not
+    if request.method == "POST":
+        if form.validate_on_submit():
+            # Fetch user from the database using the username
+            user = User.query.filter_by(username=form.username.data).first()
 
-        if user.check_password(form.password.data) and user is not None:
-            # Log in the user
+            # Handle user existence and password validation
+            if not user:
+                error = "User does not exist."
+            elif not user.check_password(form.password.data):
+                error = "Incorrect password."
+            else:
+                # Log in the user
+                try:
+                    login_user(user)
+                    next_page = request.args.get("next")
+                    if not next_page or not next_page.startswith("/"):
+                        next_page = url_for("core.index")
+                    return redirect(next_page)
+                except Exception as e:
+                    error = "An unexpected error occurred. Please try again later."
 
-            login_user(user)
-            flash("Logged in successfully.")
+        # If form validation fails
+        elif form.errors:
+            error_messages = [
+                f"Error in {getattr(form, field).label.text}: {', '.join(errors)}"
+                for field, errors in form.errors.items()
+            ]
+            error = " ".join(error_messages)
 
-            # If a user was trying to visit a page that requires a login
-            # flask saves that URL as 'next'.
-            next = request.args.get("next")
-
-            # So let's now check if that next exists, otherwise we'll go to
-            # the welcome page.
-            if next == None or not next[0] == "/":
-                next = url_for("core.index")
-
-            return redirect(next)
-    return render_template("login.html", form=form)
+    # Render the login template with error message
+    return render_template("login.html", form=form, error=error)
 
 
 @users.route("/logout")
