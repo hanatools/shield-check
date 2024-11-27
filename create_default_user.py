@@ -11,7 +11,7 @@ with app.app_context():
         default_user = User(
             email=app.config['DEFAULT_USER_EMAIL'],
             username=app.config['DEFAULT_USERNAME'],
-            password=generate_password_hash(app.config['DEFAULT_USER_PASSWORD'])
+            password=app.config['DEFAULT_USER_PASSWORD']
         )
         # Add the user to the session and commit
         db.session.add(default_user)
