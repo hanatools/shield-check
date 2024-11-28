@@ -1,7 +1,7 @@
 {% extends "member_base.html" %}
 
 {% block stylecss %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/custom/input_personal.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/custom/batch_input.css') }}">
 {% endblock %}
 
 {% block title %}
@@ -10,11 +10,28 @@
 
 {% block content %}
 <div class="content">
+    <!-- Button Group -->
+    <div class="button-group">
+        <button class="btn btn-inactive" onclick="window.location.href='{{ url_for('core.input_personal') }}'">
+            Nhập thông tin cá nhân
+        </button>
+        <button class="btn btn-active">
+            Nhập thông tin theo lô
+        </button>
+    </div>
 
+    <!-- Card Section -->
+    <div class="card">
+        <div class="placeholder-box">
+            Hãy chọn file Excel để tải lên
+            <button class="template-btn ">Tải mẫu</button>
+        </div>
+        <button class="upload-btn">Truyền file excel</button>
+    </div>
 </div>
 {% endblock %}
 
 
 {% block stylejs %}
-<script src="{{ url_for('static', filename='js/custom/input_personal.js') }}"></script>
+<script src="{{ url_for('static', filename='js/custom/batch_input.js') }}"></script>
 {% endblock %}
