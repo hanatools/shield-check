@@ -1,9 +1,9 @@
 /* Content Styling */
 .content {
     padding: 20px;
-    background-color: #f8f9fa; /* Light gray background */
-    min-height: calc(100vh - 70px); /* Account for the header height */
-    margin-top: 70px; /* Prevent overlap with header */
+    background-color: #f8f9fa;
+    min-height: calc(100vh - 70px); /* Account for header height */
+    margin-top: 70px; /* Prevent overlap with the header */
 }
 
 /* Report Section */
@@ -13,6 +13,7 @@
     justify-content: space-between;
     align-items: flex-start;
     gap: 20px;
+    flex-wrap: wrap; /* Allows wrapping on smaller screens */
 }
 
 /* Report Title */
@@ -20,7 +21,7 @@
     font-size: 22px;
     font-weight: bold;
     text-transform: uppercase;
-    color: #1e3a8a; /* Dark navy */
+    color: #1e3a8a;
     text-align: center;
     margin-bottom: 20px;
     background: white;
@@ -37,7 +38,7 @@
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     padding: 20px;
-    overflow-x: auto; /* Horizontal scroll for smaller screens */
+    width: 100%;
 }
 
 .table-container table {
@@ -49,12 +50,12 @@
 .table-container td {
     padding: 10px;
     text-align: left;
-    border: 1px solid #e5e7eb; /* Light gray border */
+    border: 1px solid #e5e7eb;
     font-size: 14px;
 }
 
 .table-container th {
-    background-color: #2563eb; /* Blue headers */
+    background-color: #2563eb;
     color: white;
     text-transform: uppercase;
     font-weight: bold;
@@ -67,12 +68,13 @@
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     padding: 20px;
+    max-width: 300px; /* Prevent the filter box from being too wide */
 }
 
 .filter-box h4 {
     font-size: 18px;
     font-weight: bold;
-    color: #374151; /* Neutral gray */
+    color: #374151;
     margin-bottom: 20px;
     text-align: center;
 }
@@ -92,7 +94,7 @@
 }
 
 .filter-box button {
-    background-color: #2563eb; /* Blue button */
+    background-color: #2563eb;
     color: white;
     border: none;
     border-radius: 5px;
@@ -104,5 +106,25 @@
 }
 
 .filter-box button:hover {
-    background-color: #1d4ed8; /* Darker blue */
+    background-color: #1d4ed8;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+    .report-section {
+        flex-direction: column; /* Stack content vertically */
+    }
+
+    .filter-box {
+        max-width: 100%; /* Allow filter box to stretch on smaller screens */
+    }
+
+    .table-container {
+        padding: 10px;
+    }
+
+    .table-container table th,
+    .table-container table td {
+        font-size: 12px; /* Reduce font size for smaller screens */
+    }
 }
