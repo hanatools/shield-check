@@ -7,6 +7,7 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    overflow: hidden; /* Prevent content overflow */
 }
 
 /* Button Group */
@@ -54,6 +55,7 @@
     text-align: center;
     width: 100%;
     max-width: 600px;
+    overflow: hidden; /* Prevent overflow */
 }
 
 .card h4 {
@@ -63,26 +65,53 @@
     margin-bottom: 20px;
 }
 
+/* QR Placeholder */
 .qr-placeholder {
-    background-color: #e5e7eb; /* Light gray placeholder background */
+    position: relative;
+    width: 100%; /* Make it responsive */
+    max-width: 600px; /* Constrain maximum size */
+    height: 0;
+    padding-bottom: 75%; /* Maintain 4:3 aspect ratio */
+    border: 2px solid #22c55e;
     border-radius: 10px;
-    width: 100%;
-    height: 300px; /* Fixed height */
+    overflow: hidden;
     margin-bottom: 20px;
+    background-color: #e5e7eb; /* Light gray placeholder background */
 }
 
+.qr-placeholder video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Capture Button */
 .btn-capture {
-    background-color: #374151; /* Dark gray button */
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #2563eb;
     color: white;
     border: none;
     border-radius: 5px;
-    padding: 10px 20px;
     font-size: 16px;
     cursor: pointer;
     transition: all 0.3s ease;
 }
-
 .btn-capture:hover {
-    background-color: #111827; /* Darker gray on hover */
-    color: white;
+    background-color: #1d4ed8;
+}
+
+/* QR Result */
+.qr-result {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9fafb;
+    width: 100%;
+    max-width: 600px;
+    word-wrap: break-word; /* Ensure long text wraps */
 }

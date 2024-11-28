@@ -19,13 +19,16 @@
     <!-- Card Section -->
     <div class="card">
         <h4>Hãy quét mã QR trên thẻ CCCD</h4>
-        <div class="qr-placeholder"></div>
-        <button class="btn btn-capture">Chụp ảnh</button>
+        <div class="qr-placeholder">
+            <video id="camera-stream" autoplay></video>
+        </div>
+        <div class="qr-result" id="qr-result" style="display: none;"></div>
     </div>
 </div>
 {% endblock %}
 
 
 {% block stylejs %}
+<script src="https://cdn.jsdelivr.net/npm/@zxing/library@latest/umd/index.min.js"></script>
 <script src="{{ url_for('static', filename='js/custom/input_personal.js') }}"></script>
 {% endblock %}
