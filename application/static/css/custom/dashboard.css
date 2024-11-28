@@ -1,57 +1,79 @@
+
 .content {
-    padding: 20px;
-    background-color: #f4f5f7; /* Light gray background for contrast */
-    min-height: 100vh; /* Ensure full-page height */
     display: flex;
-    justify-content: center;
-    align-items: center;
+    justify-content: center; /* Horizontally center */
+    align-items: center; /* Vertically center */
+    min-height: 100vh; /* Full-page height */
+    padding: 20px;
+    background-color: #f8f9fa; /* Light gray background */
 }
 
 .form-section {
     background: white;
     padding: 30px;
     border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
     width: 100%;
-    max-width: 600px; /* Restrict form width */
+    max-width: 700px; /* Wider form */
+    font-family: 'Roboto', Arial, sans-serif;
 }
 
 .form-section h4 {
-    margin-bottom: 20px;
+    font-size: 22px;
     font-weight: bold;
-    color: #333; /* Darker text for the header */
-    font-size: 24px; /* Larger heading size */
-    text-transform: uppercase; /* Stylish uppercase */
+    text-transform: uppercase;
+    color: #1e3a8a; /* Dark navy for the title */
+    margin-bottom: 20px;
+    border-bottom: 2px solid #d1d5db; /* Subtle border */
+    padding-bottom: 10px;
+    text-align: center;
 }
 
 .form-label {
-    font-weight: bold; /* Bold labels for clarity */
-    color: #495057; /* Subtle gray text color */
+    font-weight: bold;
+    color: #374151; /* Neutral gray */
 }
 
 .form-control {
-    border-radius: 5px; /* Rounded corners */
-    border: 1px solid #ced4da; /* Subtle border */
-    transition: all 0.3s ease; /* Smooth transition for focus */
+    border-radius: 5px;
+    border: 1px solid #ced4da;
+    transition: all 0.3s ease-in-out;
 }
 
 .form-control:focus {
-    border-color: #2563eb; /* Bright blue border on focus */
-    box-shadow: 0 0 5px rgba(37, 99, 235, 0.5); /* Subtle glow effect */
+    border-color: #1e40af; /* Blue border on focus */
+    box-shadow: 0 0 5px rgba(30, 64, 175, 0.5);
 }
 
 .btn-primary {
-    background: #2563eb; /* Bright blue button */
+    background-color: #10b981; /* Green button */
     border: none;
-    border-radius: 5px; /* Rounded corners */
+    border-radius: 5px;
     padding: 10px 20px;
     font-size: 16px;
     font-weight: bold;
+    text-transform: uppercase;
+    width: 100%;
     transition: all 0.3s ease;
-    width: 100%; /* Full-width button for a modern look */
 }
 
 .btn-primary:hover {
-    background: #1e40af; /* Darker blue on hover */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Slight shadow on hover */
+    background-color: #059669; /* Darker green on hover */
+}
+
+.help-text {
+    font-size: 14px;
+    color: #6b7280; /* Light gray */
+    text-align: center;
+    margin-top: 10px;
+}
+
+.help-text a {
+    color: #10b981;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.help-text a:hover {
+    text-decoration: underline;
 }
