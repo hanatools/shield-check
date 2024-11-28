@@ -1,7 +1,7 @@
 {% extends "member_base.html" %}
 
 {% block stylecss %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/custom/input_personal.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/custom/soldier_info.css') }}">
 {% endblock %}
 
 {% block title %}
@@ -10,11 +10,70 @@
 
 {% block content %}
 <div class="content">
+    <!-- Search Box -->
+    <div class="search-box">
+        <input type="text" placeholder="Nhập số CCCD để tìm kiếm .....">
+        <button type="button">Tìm kiếm</button>
+    </div>
 
+    <!-- Table Section -->
+    <div class="table-container">
+        <table>
+            <thead>
+            <tr>
+                <th>STT</th>
+                <th>Họ và tên</th>
+                <th>Số CCCD</th>
+                <th>Cấp quản lý</th>
+                <th>Đơn vị</th>
+                <th>Hình ảnh</th>
+                <th>Chỉnh sửa</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>1</td>
+                <td>Nguyễn Văn A</td>
+                <td>123455679</td>
+                <td>Nguyễn Văn E</td>
+                <td>Đơn vị số 1</td>
+                <td><a href="#">Bấm vào đây</a></td>
+                <td><a href="#">Chỉnh sửa</a></td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>Trần Văn B</td>
+                <td>326598741</td>
+                <td>Nguyễn Văn E</td>
+                <td>Đơn vị số 1</td>
+                <td><a href="#">Bấm vào đây</a></td>
+                <td><a href="#">Chỉnh sửa</a></td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>Lê Văn C</td>
+                <td>258951753</td>
+                <td>Nguyễn Văn E</td>
+                <td>Đơn vị số 1</td>
+                <td><a href="#">Bấm vào đây</a></td>
+                <td><a href="#">Chỉnh sửa</a></td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>Trần Văn D</td>
+                <td>126543782</td>
+                <td>Nguyễn Văn E</td>
+                <td>Đơn vị số 1</td>
+                <td><a href="#">Bấm vào đây</a></td>
+                <td><a href="#">Chỉnh sửa</a></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}
 
 
 {% block stylejs %}
-<script src="{{ url_for('static', filename='js/custom/input_personal.js') }}"></script>
+<script src="{{ url_for('static', filename='js/custom/soldier_info.js') }}"></script>
 {% endblock %}
