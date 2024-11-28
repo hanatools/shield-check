@@ -22,11 +22,11 @@
   <!-- Sidebar -->
   <div class="sidebar">
     <div>
-      <div class="sidebar-header">
+      <div class="sidebar-header" onclick="window.location.href='{{ url_for('core.daskboard') }}'" >
         <img src="{{ url_for('static', filename='images/logo.png') }}" alt="HRM Logo">
         <h5>HRM Application</h5>
       </div>
-      <a href="#" class="main-button active">
+      <a href="{{ url_for('core.daskboard') }}" data-target="#daskboard" id="index" class="main-button">
         <span class="icon">&#127968;</span> <!-- Home Icon -->
         <span class="text">Trang Chủ</span>
       </a>
@@ -34,12 +34,12 @@
 
       <!-- Main Button with Submenu -->
       <a href="#" class="main-button " data-toggle="submenu" data-target="#infoSubmenu">
-        <span class="icon">&#128196;</span> <!-- File Icon -->
+        <span class="icon">&#128196;</span>
         <span class="text">Nhập thông tin</span>
       </a>
       <div class="submenu" id="infoSubmenu">
-        <a href="#">Nhập theo cá nhân</a>
-        <a href="#">Nhập theo lô</a>
+        <a href="{{ url_for('core.input_personal') }}"  id="input_personal">Nhập theo cá nhân</a>
+        <a href="{{ url_for('core.batch_input') }}" id="batch_input">Nhập theo lô</a>
       </div>
 
       <a href="#" class="main-button" data-toggle="submenu" data-target="#registerSubmenu">
@@ -47,8 +47,9 @@
         <span class="text">Đăng ký ra vào</span>
       </a>
       <div class="submenu" id="registerSubmenu">
-        <a href="#">Người thân</a>
-        <a href="#">Quân Nhân</a>
+        <a href="{{ url_for('core.register_relative') }}" id="register_relative">Người thân</a>
+        <a href="{{ url_for('core.register_soldier') }}" id="register_soldier">Quân Nhân</a>
+
       </div>
 
       <a href="#" class="main-button" data-toggle="submenu" data-target="#mgrInfoSubmenu">
@@ -56,8 +57,9 @@
         <span class="text">Quản lý thông tin</span>
       </a>
       <div class="submenu" id="mgrInfoSubmenu">
-        <a href="#">Thông tin Quân Nhân</a>
-        <a href="#">Báo cáo</a>
+        <a href="{{ url_for('core.soldier_info') }}" id="soldier_info">Thông tin Quân Nhân</a>
+        <a href="{{ url_for('core.reports') }}" id="reports">Báo cáo</a>
+
       </div>
 
     </div>

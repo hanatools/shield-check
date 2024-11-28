@@ -1,10 +1,12 @@
 from flask import render_template, request, Blueprint
 from application.models import BlogPost
 from flask_login import login_required, current_user
+
 core = Blueprint("core", __name__)
 
 
 @core.route("/")
+@login_required
 def index():
     """
     This is the home page view. Notice how it uses pagination to show a limited
@@ -20,8 +22,43 @@ def index():
 @core.route("/daskboard")
 @login_required
 def daskboard():
-    # page = request.args.get("page", 1, type=int)
     return render_template("daskboard.html", username=current_user.username)
+
+
+@core.route("/input_personal")
+# @login_required
+def input_personal():
+    return render_template("input_personal.html", username=current_user.username)
+
+
+@core.route("/batch_input")
+# @login_required
+def batch_input():
+    return render_template("batch_input.html", username=current_user.username)
+
+
+@core.route("/register_relative")
+# @login_required
+def register_relative():
+    return render_template("register_relative.html", username=current_user.username)
+
+
+@core.route("/register_soldier")
+# @login_required
+def register_soldier():
+    return render_template("register_soldier.html", username=current_user.username)
+
+
+@core.route("/soldier_info")
+# @login_required
+def soldier_info():
+    return render_template("soldier_info.html", username=current_user.username)
+
+
+@core.route("/reports")
+# @login_required
+def reports():
+    return render_template("reports.html", username=current_user.username)
 
 
 @core.route("/info")
