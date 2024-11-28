@@ -1,7 +1,7 @@
 {% extends "member_base.html" %}
 
 {% block stylecss %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/custom/input_personal.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/custom/register_soldier.css') }}">
 {% endblock %}
 
 {% block title %}
@@ -10,11 +10,39 @@
 
 {% block content %}
 <div class="content">
-
+    <div class="form-section">
+        <h4>Nhập thông tin quân nhân</h4>
+        <hr>
+        <form>
+            <div class="mb-3">
+                <label for="fullname" class="form-label">Họ và tên:</label>
+                <input type="text" class="form-control" id="fullname" placeholder="Nhập họ và tên">
+            </div>
+            <div class="mb-3">
+                <label for="cccd" class="form-label">Số CCCD:</label>
+                <input type="text" class="form-control" id="cccd" placeholder="Nhập số CCCD">
+            </div>
+            <div class="mb-3">
+                <label for="rank" class="form-label">Cấp quản lý:</label>
+                <input type="text" class="form-control" id="rank" placeholder="Nhập cấp quản lý">
+            </div>
+            <div class="mb-3">
+                <label for="unit" class="form-label">Đơn vị:</label>
+                <input type="text" class="form-control" id="unit" placeholder="Nhập đơn vị">
+            </div>
+            <div class="mb-3">
+                <label for="fileScan" class="form-label">File scan:</label>
+                <input type="file" class="form-control" id="fileScan">
+            </div>
+            <div class="mb-3 text-center">
+                <button type="submit" class="btn btn-primary">Tiếp theo</button>
+            </div>
+        </form>
+    </div>
 </div>
 {% endblock %}
 
 
 {% block stylejs %}
-<script src="{{ url_for('static', filename='js/custom/input_personal.js') }}"></script>
+<script src="{{ url_for('static', filename='js/custom/register_soldier.js') }}"></script>
 {% endblock %}
