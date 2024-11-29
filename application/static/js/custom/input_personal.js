@@ -222,6 +222,10 @@ let capturedImages = {
     front: null,
 };
 
+let currentPhotoKey = "front";
+let captureOrder = ["left", "right", "front"];
+let currentPhotoIndex = 0;
+
 function initializeFaceCamera() {
     const faceCamera = document.getElementById("face-camera");
 
@@ -245,9 +249,9 @@ function stopFaceCamera() {
 
 function capturePhoto() {
     const faceCamera = document.getElementById("face-camera");
-    const activePhotoKey = Object.keys(capturedImages).find((key) => !capturedImages[key]);
+    const photoKey = captureOrder[currentPhotoIndex];
 
-    if (!activePhotoKey) {
+    if (!photoKey) {
         console.error("All photos already captured.");
         return;
     }
@@ -255,15 +259,26 @@ function capturePhoto() {
     const offscreenCanvas = document.createElement("canvas");
     const ctx = offscreenCanvas.getContext("2d");
 
-    offscreenCanvas.width = faceCamera.videoWidth;
-    offscreenCanvas.height = faceCamera.videoHeight;
+    offscreenCanvas.width = 200; // Restrict width to match placeholder
+    offscreenCanvas.height = 200; // Restrict height to match placeholder
 
-    ctx.drawImage(faceCamera, 0, 0, offscreenCanvas.width, offscreenCanvas.height);
+    // Scale down the video frame to fit within the canvas
+    ctx.drawImage(
+        faceCamera,
+        0,
+        0,
+        faceCamera.videoWidth,
+        faceCamera.videoHeight,
+        0,
+        0,
+        offscreenCanvas.width,
+        offscreenCanvas.height
+    );
     const capturedImage = offscreenCanvas.toDataURL("image/png");
 
     if (capturedImage && capturedImage.startsWith("data:image/png")) {
-        capturedImages[activePhotoKey] = capturedImage;
-        updatePhotoPlaceholder(activePhotoKey, capturedImage);
+        updatePhotoPlaceholder(photoKey, capturedImage);
+        currentPhotoIndex++;
         checkAllPhotosCaptured();
     } else {
         console.error("Failed to capture the photo.");
@@ -274,15 +289,24 @@ function updatePhotoPlaceholder(photoKey, imageSrc) {
     const previewElement = document.getElementById(`${photoKey}-photo-preview`);
     const placeholderElement = document.getElementById(`${photoKey}-photo`);
 
-    previewElement.src = imageSrc;
-    previewElement.style.display = "block";
-    placeholderElement.classList.add("taken");
+    if (previewElement) {
+        previewElement.src = imageSrc;
+        previewElement.style.display = "block";
+    } else {
+        console.error(`Preview element for ${photoKey} not found.`);
+    }
+
+    if (placeholderElement) {
+        placeholderElement.classList.add("taken");
+    } else {
+        console.error(`Placeholder element for ${photoKey} not found.`);
+    }
 }
 
 function checkAllPhotosCaptured() {
     const nextButton = document.getElementById("next-to-step-4");
 
-    if (Object.values(capturedImages).every((img) => img !== null)) {
+    if (currentPhotoIndex >= captureOrder.length) {
         nextButton.disabled = false; // Enable the Next button
     } else {
         nextButton.disabled = true; // Disable if not all photos are taken
@@ -290,14 +314,20 @@ function checkAllPhotosCaptured() {
 }
 
 function retakePhoto(photoKey) {
-    capturedImages[photoKey] = null;
+    const index = captureOrder.indexOf(photoKey);
+    if (index !== -1) currentPhotoIndex = index;
 
     const previewElement = document.getElementById(`${photoKey}-photo-preview`);
     const placeholderElement = document.getElementById(`${photoKey}-photo`);
 
-    previewElement.src = "";
-    previewElement.style.display = "none";
-    placeholderElement.classList.remove("taken");
+    if (previewElement) {
+        previewElement.src = "";
+        previewElement.style.display = "none";
+    }
+
+    if (placeholderElement) {
+        placeholderElement.classList.remove("taken");
+    }
 
     const nextButton = document.getElementById("next-to-step-4");
     nextButton.disabled = true; // Disable Next button until all images are recaptured
@@ -306,9 +336,9 @@ function retakePhoto(photoKey) {
 
 
 // Initialize
-document.addEventListener("DOMContentLoaded", () => {
-    initializeFaceCamera();
-});
+// document.addEventListener("DOMContentLoaded", () => {
+//     initializeFaceCamera();
+// });
 
 function moveToStep3() {
     const step2 = document.getElementById("step-2");

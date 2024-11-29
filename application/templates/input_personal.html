@@ -51,6 +51,7 @@
                             id="full-name"
                             class="form-control"
                             placeholder="Nhập họ và tên"
+                            value="Nguyễn Văn A"
                     />
                     <span id="full-name-error" class="error-message"></span>
                 </div>
@@ -61,6 +62,7 @@
                             id="unit-name"
                             class="form-control"
                             placeholder="Nhập tên đơn vị"
+                            value="Đơn vị 1"
                     />
                     <span id="unit-name-error" class="error-message"></span>
                 </div>
@@ -71,6 +73,7 @@
                             id="management-level"
                             class="form-control"
                             placeholder="Cấp quản lý"
+                            value="Cấp 1"
                     />
                     <span id="management-level-error" class="error-message"></span>
                 </div>
@@ -115,15 +118,21 @@
                 </div>
                 <div class="side-photos">
                     <div class="side-photo">
-                        <div id="left-photo" class="photo-placeholder"></div>
+                        <div id="left-photo" class="photo-placeholder">
+                            <img id="left-photo-preview" class="photo-preview" style="display: none;" />
+                        </div>
                         <label for="left-photo">Bên trái</label>
                     </div>
                     <div class="side-photo">
-                        <div id="right-photo" class="photo-placeholder"></div>
+                        <div id="right-photo" class="photo-placeholder">
+                            <img id="right-photo-preview" class="photo-preview" style="display: none;" />
+                        </div>
                         <label for="right-photo">Bên phải</label>
                     </div>
                     <div class="side-photo">
-                        <div id="front-photo" class="photo-placeholder"></div>
+                        <div id="front-photo" class="photo-placeholder">
+                            <img id="front-photo-preview" class="photo-preview" style="display: none;" />
+                        </div>
                         <label for="front-photo">Đối diện</label>
                     </div>
                 </div>

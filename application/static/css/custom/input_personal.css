@@ -316,18 +316,40 @@
     text-align: center;
 }
 
-#step-3-form .photo-placeholder {
-    background-color: #e5e7eb; /* Light gray placeholder */
-    width: 100px;
-    height: 100px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    margin: 0 auto;
-}
+/*#step-3-form .photo-placeholder {*/
+/*    background-color: #e5e7eb; !* Light gray placeholder *!*/
+/*    width: 100px;*/
+/*    height: 100px;*/
+/*    border: 1px solid #ccc;*/
+/*    border-radius: 5px;*/
+/*    margin: 0 auto;*/
+/*    cursor: pointer;*/
+/*    background-size: cover;*/
+/*    background-position: center;*/
+/*}*/
 
 #step-3-form .side-photo label {
     margin-top: 5px;
     display: block;
     font-size: 14px;
     font-weight: bold;
+}
+
+#step-3-form .photo-placeholder {
+    width: 100px;
+    height: 100px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background-color: #e5e7eb;
+}
+
+#step-3-form .photo-preview {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: cover;
 }
