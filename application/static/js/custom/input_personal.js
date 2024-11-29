@@ -90,12 +90,18 @@ function showResult(extractedValue, videoElement, imageElement) {
         console.error("Video feed is not available or has been stopped.");
     }
 
-    // Stop camera stream
+    // Stop camera stream and QR code reader
     const stream = videoElement.srcObject;
     if (stream) {
         const tracks = stream.getTracks();
         tracks.forEach((track) => track.stop());
         videoElement.srcObject = null;
+    }
+
+    // Reset the codeReader to stop listening for QR codes
+    if (codeReader) {
+        codeReader.reset();
+        codeReader = null; // Completely remove the instance
     }
 }
 
