@@ -115,3 +115,126 @@
     max-width: 600px;
     word-wrap: break-word; /* Ensure long text wraps */
 }
+
+.step {
+    max-width: 600px;
+    display: none;
+    width: 100%;
+    transition: transform 0.5s ease, opacity 0.5s ease;
+    opacity: 0;
+}
+
+/* Active step */
+.step.active {
+    display: block;
+    transform: translateX(0);
+    opacity: 1;
+}
+
+/* Transition effect for sliding */
+.step.slide-out-left {
+    transform: translateX(-100%);
+    opacity: 0;
+}
+
+.step.slide-in-right {
+    transform: translateX(100%);
+    opacity: 0;
+}
+
+.management-level-error {
+    color: red;
+    font-size: 12px;
+    text-align: left;
+}
+
+#personal-info-form label {
+    text-align: left;
+}
+
+/* Personal Info Form Styling */
+#personal-info-form {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff; /* White background */
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+}
+
+/* Form Title */
+#personal-info-form h4 {
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    color: #1e3a8a; /* Dark navy for title */
+    margin-bottom: 20px;
+}
+
+/* Form Group */
+#personal-info-form .form-group {
+    margin-bottom: 15px;
+    text-align: left; /* Align text to the left */
+}
+
+/* Labels */
+#personal-info-form label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    display: block; /* Block-level to ensure alignment */
+}
+
+/* Inputs */
+#personal-info-form input {
+    width: 100%; /* Full width within the form */
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box; /* Include padding and border in the width */
+    font-size: 14px;
+}
+
+/* Error Messages */
+#personal-info-form .error-message {
+    color: red;
+    font-size: 12px;
+    margin-top: -5px; /* Adjust space between input and error */
+    margin-bottom: 10px; /* Space before the next field */
+    display: block; /* Ensure error is on its own line */
+}
+
+/* Button Group */
+#personal-info-form .button-group {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+/* Buttons */
+#personal-info-form .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#personal-info-form .btn-primary {
+    background-color: #2563eb; /* Blue button */
+    color: white;
+}
+#personal-info-form .btn-primary:hover {
+    background-color: #1d4ed8;
+}
+
+#personal-info-form .btn-secondary {
+    background-color: #6b7280; /* Gray button */
+    color: white;
+}
+#personal-info-form .btn-secondary:hover {
+    background-color: #4b5563;
+}

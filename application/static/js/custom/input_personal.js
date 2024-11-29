@@ -102,8 +102,123 @@ function showResult(extractedValue, videoElement, imageElement) {
     if (codeReader) {
         codeReader.reset();
         codeReader = null; // Completely remove the instance
+        moveToStep2(extractedValue, videoElement, imageElement)
     }
 }
+
+// Move to Step 2
+// Move to Step 2 with animation
+function moveToStep2(cardNumber, videoElement, imageElement) {
+    const step1 = document.getElementById("step-1");
+    const step2 = document.getElementById("step-2");
+
+    // Populate the card number in Step 2
+    document.getElementById("identity-card-number").value = cardNumber;
+
+    // Add slide-out animation to Step 1 and slide-in animation to Step 2
+    step1.classList.add("slide-out-left");
+    setTimeout(() => {
+        step1.classList.remove("active", "slide-out-left");
+        step2.classList.add("slide-in-right", "active");
+        setTimeout(() => {
+            step2.classList.remove("slide-in-right");
+        }, 500); // Match the transition duration in CSS
+    }, 500);
+
+    // Freeze the last video frame
+    const offscreenCanvas = document.createElement("canvas");
+    const ctx = offscreenCanvas.getContext("2d");
+    offscreenCanvas.width = videoElement.videoWidth;
+    offscreenCanvas.height = videoElement.videoHeight;
+
+    if (videoElement.videoWidth > 0 && videoElement.videoHeight > 0) {
+        ctx.drawImage(videoElement, 0, 0, offscreenCanvas.width, offscreenCanvas.height);
+        const capturedImage = offscreenCanvas.toDataURL("image/png");
+        if (capturedImage && capturedImage.startsWith("data:image/png")) {
+            imageElement.src = capturedImage;
+            imageElement.style.display = "block";
+            videoElement.style.display = "none";
+        }
+    }
+
+    // Stop the video stream
+    const stream = videoElement.srcObject;
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        videoElement.srcObject = null;
+    }
+}
+
+// Move back to Step 1 with animation
+function moveToStep1() {
+    const step1 = document.getElementById("step-1");
+    const step2 = document.getElementById("step-2");
+
+    // Add slide-out animation to Step 2 and slide-in animation to Step 1
+    step2.classList.add("slide-out-left");
+    setTimeout(() => {
+        step2.classList.remove("active", "slide-out-left");
+        step1.classList.add("slide-in-right", "active");
+        setTimeout(() => {
+            step1.classList.remove("slide-in-right");
+        }, 500); // Match the transition duration in CSS
+    }, 500);
+
+    initializeCamera();
+}
+
+
+// Validate Step 2 Form
+function validateForm() {
+    let isValid = true;
+
+    const fullNameInput = document.getElementById("full-name");
+    const unitNameInput = document.getElementById("unit-name");
+    const managementLevelInput = document.getElementById("management-level");
+
+    const fullNameError = document.getElementById("full-name-error");
+    const unitNameError = document.getElementById("unit-name-error");
+    const managementLevelError = document.getElementById("management-level-error");
+
+    // Clear all previous error messages
+    fullNameError.textContent = "";
+    unitNameError.textContent = "";
+    managementLevelError.textContent = "";
+
+    // Validate full name
+    if (!fullNameInput.value.trim()) {
+        fullNameError.textContent = "Họ và tên không được để trống.";
+        isValid = false;
+    }
+
+    // Validate unit name
+    if (!unitNameInput.value.trim()) {
+        unitNameError.textContent = "Tên đơn vị không được để trống.";
+        isValid = false;
+    }
+
+    // Validate management level
+    if (!managementLevelInput.value.trim()) {
+        managementLevelError.textContent = "Cấp quản lý không được để trống.";
+        isValid = false;
+    }
+
+    // Enable or disable the submit button based on validation
+    document.getElementById("submit-step-2").disabled = !isValid;
+}
+
+// Attach validation logic to input fields
+document
+    .getElementById("personal-info-form")
+    .addEventListener("input", validateForm);
+
+// Event Listeners
+document.getElementById("reset-button").addEventListener("click", initializeCamera);
+document.getElementById("back-to-step-1").addEventListener("click", moveToStep1);
+document.getElementById("personal-info-form").addEventListener("input", validateForm);
+
+// Initialize camera on page load
+document.addEventListener("DOMContentLoaded", initializeCamera);
 
 // Reset camera for rescan
 document.getElementById("reset-button").addEventListener("click", () => {

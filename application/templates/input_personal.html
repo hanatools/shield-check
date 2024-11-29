@@ -15,19 +15,86 @@
         <button class="btn btn-active">Nhập thông tin cá nhân</button>
         <button class="btn btn-inactive">Nhập thông tin theo lô</button>
     </div>
-
-    <!-- Card Section -->
-    <div class="card">
-        <h4>Hãy quét mã QR trên thẻ CCCD</h4>
-        <div class="qr-placeholder">
-            <video id="camera-stream" autoplay></video>
-            <img id="captured-image" style="display: none;" alt="Captured QR Frame">
-        </div>
-        <div id="qr-result-container" style="display: none;">
-            <p id="qr-result"></p>
-            <button class="btn btn-capture" id="reset-button">Reset</button>
+    <!-- Step 1: QR Code Scanning -->
+    <div id="step-1" class="step active">
+        <!-- Card Section -->
+        <div class="card">
+            <h4>Hãy quét mã QR trên thẻ CCCD</h4>
+            <div class="qr-placeholder">
+                <video id="camera-stream" autoplay></video>
+                <img id="captured-image" style="display: none;" alt="Captured QR Frame">
+            </div>
+            <div id="qr-result-container" style="display: none;">
+                <p id="qr-result"></p>
+                <button class="btn btn-capture" id="reset-button">Reset</button>
+            </div>
         </div>
     </div>
+
+    <div id="step-2" class="step">
+        <div class="card">
+        <h4>Nhập thông tin cá nhân</h4>
+        <form id="personal-info-form" class="container-fluid">
+            <div class="form-group">
+                <label for="identity-card-number" >Số CCCD </label>
+                <input
+                        type="text"
+                        id="identity-card-number"
+                        class="form-control"
+                        readonly
+                />
+            </div>
+            <div class="form-group">
+                <label for="full-name">Nhập họ và tên <span class="text-danger">(*)</span></label>
+                <input
+                        type="text"
+                        id="full-name"
+                        class="form-control"
+                        placeholder="Nhập họ và tên"
+                />
+                <span id="full-name-error" class="error-message"></span>
+            </div>
+            <div class="form-group">
+                <label for="unit-name">Nhập tên đơn vị <span class="text-danger">(*)</span></label>
+                <input
+                        type="text"
+                        id="unit-name"
+                        class="form-control"
+                        placeholder="Nhập tên đơn vị"
+                />
+                <span id="unit-name-error" class="error-message"></span>
+            </div>
+            <div class="form-group">
+                <label for="management-level">Cấp quản lý <span class="text-danger">(*)</span></label>
+                <input
+                        type="text"
+                        id="management-level"
+                        class="form-control"
+                        placeholder="Cấp quản lý"
+                />
+                <span id="management-level-error" class="error-message"></span>
+            </div>
+            <div class="button-group">
+                <button
+                        type="button"
+                        id="back-to-step-1"
+                        class="btn btn-secondary"
+                >
+                    Quay lại
+                </button>
+                <button
+                        type="button"
+                        id="submit-step-2"
+                        class="btn btn-primary"
+                        disabled
+                >
+                    Tiếp theo
+                </button>
+            </div>
+        </form>
+    </div>
+    </div>
+
 </div>
 {% endblock %}
 
