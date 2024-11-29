@@ -333,12 +333,38 @@ function retakePhoto(photoKey) {
     nextButton.disabled = true; // Disable Next button until all images are recaptured
 }
 
+function resetAllCapturedPhotos() {
+    // Clear all captured images
+    capturedImages = {
+        left: null,
+        right: null,
+        front: null,
+    };
+    currentPhotoIndex = 0;
 
+    // Reset placeholders and preview elements
+    ["left", "right", "front"].forEach((photoKey) => {
+        const previewElement = document.getElementById(`${photoKey}-photo-preview`);
+        const placeholderElement = document.getElementById(`${photoKey}-photo`);
 
-// Initialize
-// document.addEventListener("DOMContentLoaded", () => {
-//     initializeFaceCamera();
-// });
+        if (previewElement) {
+            previewElement.src = "";
+            previewElement.style.display = "none"; // Hide the preview image
+        }
+
+        if (placeholderElement) {
+            placeholderElement.classList.remove("taken"); // Remove the "taken" style
+        }
+    });
+
+    // Disable the "Next" button until all images are recaptured
+    const nextButton = document.getElementById("next-to-step-4");
+    if (nextButton) {
+        nextButton.disabled = true;
+    }
+
+    console.log("All captured photos have been reset.");
+}
 
 function moveToStep3() {
     const step2 = document.getElementById("step-2");
@@ -374,8 +400,6 @@ function moveBackStep2() {
 }
 
 
-document.getElementById("next-to-step-3").addEventListener("click", moveToStep3);
-// document.getElementById("back-to-step-2").addEventListener("click", moveBackStep2);
 
 $(document).ready(function() {
     initializeCamera();
@@ -396,5 +420,10 @@ $(document).ready(function() {
     document.getElementById("reset-button").addEventListener("click", () => {
         initializeCamera();
     });
+
+    // Add event listener for the Reset button
+    document.getElementById("reset-capture-photo").addEventListener("click", resetAllCapturedPhotos);
+    document.getElementById("next-to-step-3").addEventListener("click", moveToStep3);
+
 
 });

@@ -353,3 +353,19 @@
     max-height: 100%;
     object-fit: cover;
 }
+
+#reset-capture-photo {
+    background-color: #ffc107; /* Warning color */
+    color: #000; /* Black text */
+    border: none;
+    border-radius: 5px;
+    padding: 5px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#reset-capture-photo:hover {
+    background-color: #e0a800; /* Darker warning color on hover */
+    color: white;
+}
