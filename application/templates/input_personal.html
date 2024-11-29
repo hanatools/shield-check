@@ -138,6 +138,62 @@
 
     </div>
 
+    <div id="step-4" class="step">
+        <form id="step-4-form">
+            <h4>Kết quả</h4>
+
+            <!-- User Information -->
+            <div class="input-group">
+                <label for="full-name-confirm">Họ và tên:</label>
+                <input type="text" id="full-name-confirm" disabled />
+            </div>
+            <div class="input-group">
+                <label for="identity-card-confirm">Số CCCD:</label>
+                <input type="text" id="identity-card-confirm" disabled />
+            </div>
+            <div class="input-group">
+                <label for="management-level-confirm">Cấp quản lý:</label>
+                <input type="text" id="management-level-confirm" disabled />
+            </div>
+            <div class="input-group">
+                <label for="unit-name-confirm">Đơn vị:</label>
+                <input type="text" id="unit-name-confirm" disabled />
+            </div>
+
+            <!-- Photo Confirmation -->
+            <div class="side-photos">
+                <div class="side-photo">
+                    <div id="left-photo-preview-confirm" class="photo-placeholder-confirm">
+                        <img src="" alt="Bên trái" />
+                    </div>
+                    <label>Bên trái</label>
+                </div>
+                <div class="side-photo">
+                    <div id="right-photo-preview-confirm" class="photo-placeholder-confirm">
+                        <img src="" alt="Bên phải" />
+                    </div>
+                    <label>Bên phải</label>
+                </div>
+                <div class="side-photo">
+                    <div id="front-photo-preview-confirm" class="photo-placeholder-confirm">
+                        <img src="" alt="Đối diện" />
+                    </div>
+                    <label>Đối diện</label>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="form-group d-flex justify-content-center pt-4">
+                <button type="button" class="btn btn-secondary btn-sm mx-2" id="back-to-step-3"><i class="bi bi-arrow-left"></i></button>
+                <button type="button" class="btn btn-primary btn-sm mx-2" id="finish-form" ><i class="bi bi-arrow-right"></i></button>
+            </div>
+
+
+        </form>
+    </div>
+
+
+
 </div>
 {% endblock %}
 

@@ -249,7 +249,7 @@ function stopFaceCamera() {
 
 function capturePhoto() {
     const faceCamera = document.getElementById("face-camera");
-    const photoKey = captureOrder[currentPhotoIndex];
+    const photoKey = captureOrder[currentPhotoIndex]; // Use the current photo index to determine which photo to capture
 
     if (!photoKey) {
         console.error("All photos already captured.");
@@ -259,10 +259,10 @@ function capturePhoto() {
     const offscreenCanvas = document.createElement("canvas");
     const ctx = offscreenCanvas.getContext("2d");
 
-    offscreenCanvas.width = 200; // Restrict width to match placeholder
-    offscreenCanvas.height = 200; // Restrict height to match placeholder
+    offscreenCanvas.width = 200; // Match placeholder dimensions
+    offscreenCanvas.height = 200;
 
-    // Scale down the video frame to fit within the canvas
+    // Scale down the video feed to fit the canvas size
     ctx.drawImage(
         faceCamera,
         0,
@@ -274,12 +274,19 @@ function capturePhoto() {
         offscreenCanvas.width,
         offscreenCanvas.height
     );
+
     const capturedImage = offscreenCanvas.toDataURL("image/png");
 
     if (capturedImage && capturedImage.startsWith("data:image/png")) {
+        // Update the captured images object
+        capturedImages[photoKey] = capturedImage;
+
+        // Update the corresponding placeholder
         updatePhotoPlaceholder(photoKey, capturedImage);
+
+        // Move to the next photo key
         currentPhotoIndex++;
-        checkAllPhotosCaptured();
+        checkAllPhotosCaptured(); // Enable "Next" button if all images are captured
     } else {
         console.error("Failed to capture the photo.");
     }
@@ -289,17 +296,18 @@ function updatePhotoPlaceholder(photoKey, imageSrc) {
     const previewElement = document.getElementById(`${photoKey}-photo-preview`);
     const placeholderElement = document.getElementById(`${photoKey}-photo`);
 
-    if (previewElement) {
+    if (previewElement && placeholderElement) {
+        // Update Step 3 placeholder
         previewElement.src = imageSrc;
         previewElement.style.display = "block";
-    } else {
-        console.error(`Preview element for ${photoKey} not found.`);
-    }
-
-    if (placeholderElement) {
         placeholderElement.classList.add("taken");
-    } else {
-        console.error(`Placeholder element for ${photoKey} not found.`);
+
+        // Update Step 4 confirmation placeholders
+        const confirmationPreview = document.getElementById(`${photoKey}-photo-preview-confirm`);
+        if (confirmationPreview) {
+            confirmationPreview.src = imageSrc;
+            confirmationPreview.style.display = "block";
+        }
     }
 }
 
@@ -399,6 +407,87 @@ function moveBackStep2() {
     }, 300); // Match the CSS transition duration
 }
 
+function moveBackStep3() {
+    const step3 = document.getElementById("step-3");
+    const step4 = document.getElementById("step-4");
+
+    // Navigate back to Step 3
+    step4.classList.remove("active");
+    step4.classList.add("hidden");
+
+    setTimeout(() => {
+        step4.style.display = "none";
+        step3.style.display = "block";
+        step3.classList.remove("hidden");
+        step3.classList.add("active");
+        initializeFaceCamera(); // Reinitialize camera for retaking photos
+    }, 300); // Match the CSS transition duration
+}
+
+
+function moveToStep4() {
+    const step3 = document.getElementById("step-3");
+    const step4 = document.getElementById("step-4");
+    // Stop the camera from Step 3
+    stopFaceCamera();
+    // Populate Step 4 form
+    document.getElementById("full-name-confirm").value = document.getElementById("full-name").value;
+    document.getElementById("identity-card-confirm").value = document.getElementById("identity-card-number").value;
+    document.getElementById("management-level-confirm").value = document.getElementById("management-level").value;
+    document.getElementById("unit-name-confirm").value = document.getElementById("unit-name").value;
+
+    // Populate images
+    for (const [key, imageSrc] of Object.entries(capturedImages)) {
+        const imgElement = document.querySelector(`#${key}-photo-preview-confirm img`);
+        if (imgElement && imageSrc) {
+            imgElement.src = imageSrc;
+        }
+    }
+
+    // Switch steps
+    step3.classList.remove("active");
+    step3.classList.add("hidden");
+
+    setTimeout(() => {
+        step3.style.display = "none";
+        step4.style.display = "block";
+        step4.classList.remove("hidden");
+        step4.classList.add("active");
+    }, 300);
+}
+
+// Finalize the form and send data to the server
+document.getElementById("finish-form").addEventListener("click", () => {
+    const userInfo = {
+        fullName: document.getElementById("full-name-confirm").value,
+        identityCard: document.getElementById("identity-card-confirm").value,
+        managementLevel: document.getElementById("management-level-confirm").value,
+        unitName: document.getElementById("unit-name-confirm").value,
+        photos: capturedImages, // Include images
+    };
+
+    console.log("Submitting user data:", userInfo);
+
+    // Make a POST request to the server
+    fetch("/submit-data", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userInfo),
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            console.log("Server response:", data);
+            alert("Form submitted successfully!");
+        })
+        .catch((error) => {
+            console.error("Error submitting form:", error);
+            alert("Failed to submit the form.");
+        });
+});
+
+
 
 
 $(document).ready(function() {
@@ -426,4 +515,9 @@ $(document).ready(function() {
     document.getElementById("next-to-step-3").addEventListener("click", moveToStep3);
 
 
+// Event listeners for navigation
+    document.getElementById("next-to-step-4").addEventListener("click", moveToStep4);
+    document.getElementById("back-to-step-3").addEventListener("click", moveBackStep3);
+
 });
+

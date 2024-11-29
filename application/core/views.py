@@ -198,3 +198,11 @@ def decode_qr_code():
     # Extract data from the first QR code found
     qr_data = qr_codes[0].data.decode("utf-8")
     return jsonify({"success": True, "data": qr_data})
+
+@core.route("/submit-data", methods=["POST"])
+def submit_data():
+    data = request.json
+    # Process the data (e.g., save to database or log)
+    print("Received Data:", data)
+
+    return jsonify({"message": "Data received successfully!"}), 200
