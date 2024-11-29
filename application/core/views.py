@@ -9,6 +9,7 @@ core = Blueprint("core", __name__)
 qr_data_store = threading.Lock()
 qr_data = {}
 
+
 @core.route("/")
 @login_required
 def index():
@@ -74,12 +75,11 @@ def info():
     return render_template("info.html")
 
 
-
 def get_user_id():
     """
     Safely get the user ID for storing data, or use "anonymous" for unauthenticated users.
     """
-    if hasattr(current_user, 'is_authenticated') and current_user.is_authenticated:
+    if hasattr(current_user, "is_authenticated") and current_user.is_authenticated:
         return current_user.id
     return "anonymous"
 
@@ -107,7 +107,9 @@ def generate_frames():
             # Draw bounding box
             points = qr_code.polygon
             if len(points) > 4:
-                points = cv2.convexHull(np.array([point for point in points], dtype=np.float32))
+                points = cv2.convexHull(
+                    np.array([point for point in points], dtype=np.float32)
+                )
 
             if points:
                 for i in range(len(points)):
@@ -117,8 +119,15 @@ def generate_frames():
 
             # Display the valid QR code data on the frame
             rect = qr_code.rect
-            cv2.putText(frame, valid_data or "Invalid QR Code", (rect.left, rect.top - 10),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+            cv2.putText(
+                frame,
+                valid_data or "Invalid QR Code",
+                (rect.left, rect.top - 10),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.5,
+                (255, 0, 0),
+                2,
+            )
 
         # Encode the frame to send it to the browser
         _, buffer = cv2.imencode(".jpg", frame)
@@ -126,6 +135,7 @@ def generate_frames():
         yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + frame + b"\r\n")
 
     cap.release()
+
 
 @core.route("/get_qr_data", methods=["GET"])
 def get_qr_data():
@@ -143,7 +153,7 @@ def extract_identity_card_data(qr_code_data):
     Validate and parse identity card data from the QR code.
     Format: 015098011100|171913387|Name|DOB|Gender|Address|IssueDate
     """
-    parts = qr_code_data.split('|')
+    parts = qr_code_data.split("|")
     print("qr_code_data: ", qr_code_data)
     if len(parts) < 1:
         return None
@@ -156,24 +166,27 @@ def extract_identity_card_data(qr_code_data):
         return first_string  # Return the valid part
     return None
 
+
 @core.route("/video_feed")
 def video_feed():
     return Response(
         generate_frames(), mimetype="multipart/x-mixed-replace; boundary=frame"
     )
 
+
 from flask import request, jsonify
 import cv2
 import numpy as np
 from pyzbar.pyzbar import decode
 
+
 @core.route("/decode_qr_code", methods=["POST"])
 def decode_qr_code():
-    if 'image' not in request.files:
+    if "image" not in request.files:
         return jsonify({"success": False, "message": "No image provided"})
 
     # Read the image from the request
-    file = request.files['image']
+    file = request.files["image"]
     np_img = np.frombuffer(file.read(), np.uint8)
     img = cv2.imdecode(np_img, cv2.IMREAD_COLOR)
 
@@ -183,5 +196,5 @@ def decode_qr_code():
         return jsonify({"success": False, "message": "No QR Code detected"})
 
     # Extract data from the first QR code found
-    qr_data = qr_codes[0].data.decode('utf-8')
+    qr_data = qr_codes[0].data.decode("utf-8")
     return jsonify({"success": True, "data": qr_data})
