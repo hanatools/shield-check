@@ -238,3 +238,134 @@
 #personal-info-form .btn-secondary:hover {
     background-color: #4b5563;
 }
+
+/* Scoped CSS for Step 3 using #step-3-form */
+#step-3-form {
+    text-align: center;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+#step-3-form h4 {
+    font-size: 20px;
+    font-weight: bold;
+    color: #1e3a8a; /* Dark navy */
+    margin-bottom: 20px;
+}
+
+/* Camera Section */
+#step-3-form .main-camera {
+    margin-bottom: 20px;
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    height: 0;
+    padding-bottom: 75%; /* Maintain aspect ratio */
+    border: 2px solid #d1d5db; /* Light border */
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: #e5e7eb;
+}
+
+#step-3-form .main-camera video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+#step-3-form .capture-button {
+    margin-top: 10px;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+#step-3-form .capture-button:hover {
+    background-color: #1d4ed8;
+}
+
+/* Side Photos Section */
+#step-3-form .side-photos {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+#step-3-form .side-photo {
+    text-align: center;
+}
+
+#step-3-form .photo-placeholder {
+    width: 100px;
+    height: 100px;
+    background-color: #e5e7eb;
+    border: 2px solid #d1d5db;
+    border-radius: 5px;
+    position: relative;
+    cursor: pointer;
+    margin-bottom: 5px;
+}
+
+#step-3-form .photo-placeholder:hover {
+    border-color: #2563eb;
+}
+
+#step-3-form .photo-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none; /* Hidden until an image is added */
+}
+
+#step-3-form .photo-placeholder.taken {
+    border-color: #10b981; /* Green border for captured photos */
+}
+
+/* Button Group */
+#step-3-form .button-group {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+#step-3-form .btn {
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#step-3-form .btn-secondary {
+    background-color: #6b7280; /* Gray */
+    color: white;
+}
+
+#step-3-form .btn-secondary:hover {
+    background-color: #4b5563;
+}
+
+#step-3-form .btn-primary {
+    background-color: #2563eb; /* Blue */
+    color: white;
+}
+
+#step-3-form .btn-primary:hover {
+    background-color: #1d4ed8;
+}
+
+#step-3-form .btn-primary:disabled {
+    background-color: #9ca3af; /* Gray */
+    cursor: not-allowed;
+}

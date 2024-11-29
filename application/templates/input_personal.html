@@ -84,7 +84,7 @@
                 </button>
                 <button
                         type="button"
-                        id="submit-step-2"
+                        id="next-to-step-3"
                         class="btn btn-primary"
                         disabled
                 >
@@ -93,6 +93,42 @@
             </div>
         </form>
     </div>
+    </div>
+
+    <div id="step-3" class="step">
+        <form id="step-3-form">
+            <h4>Chụp ảnh gương mặt</h4>
+            <div class="photo-section">
+                <div class="main-camera">
+                    <video id="face-camera" autoplay></video>
+                    <button type="button" class="btn btn-primary capture-button" id="capture-photo">Chụp ảnh</button>
+                </div>
+                <div class="side-photos">
+                    <div class="side-photo">
+                        <div id="left-photo" class="photo-placeholder" onclick="retakePhoto('left')">
+                            <img id="left-photo-preview" class="photo-preview" alt="Bên trái" />
+                        </div>
+                        <label for="left-photo">Bên trái</label>
+                    </div>
+                    <div class="side-photo">
+                        <div id="right-photo" class="photo-placeholder" onclick="retakePhoto('right')">
+                            <img id="right-photo-preview" class="photo-preview" alt="Bên phải" />
+                        </div>
+                        <label for="right-photo">Bên phải</label>
+                    </div>
+                    <div class="side-photo">
+                        <div id="front-photo" class="photo-placeholder" onclick="retakePhoto('front')">
+                            <img id="front-photo-preview" class="photo-preview" alt="Đối diện" />
+                        </div>
+                        <label for="front-photo">Đối diện</label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group button-group">
+                <button type="button" class="btn btn-secondary" id="back-to-step-2">Quay lại</button>
+                <button type="button" class="btn btn-primary" id="next-to-step-4" disabled>Tiếp theo</button>
+            </div>
+        </form>
     </div>
 
 </div>

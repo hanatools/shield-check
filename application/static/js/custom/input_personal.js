@@ -204,7 +204,7 @@ function validateForm() {
     }
 
     // Enable or disable the submit button based on validation
-    document.getElementById("submit-step-2").disabled = !isValid;
+    document.getElementById("next-to-step-3").disabled = !isValid;
 }
 
 // Attach validation logic to input fields
@@ -229,3 +229,144 @@ document.getElementById("reset-button").addEventListener("click", () => {
 document.addEventListener("DOMContentLoaded", () => {
     initializeCamera();
 });
+
+// step 3
+let faceCameraStream = null;
+let capturedImages = {
+    left: null,
+    right: null,
+    front: null,
+};
+
+function initializeFaceCamera() {
+    const faceCamera = document.getElementById("face-camera");
+
+    navigator.mediaDevices
+        .getUserMedia({ video: true })
+        .then((stream) => {
+            faceCameraStream = stream;
+            faceCamera.srcObject = stream;
+        })
+        .catch((err) => {
+            console.error("Error accessing face camera:", err.message);
+        });
+}
+
+function stopFaceCamera() {
+    if (faceCameraStream) {
+        faceCameraStream.getTracks().forEach((track) => track.stop());
+        faceCameraStream = null;
+    }
+}
+
+function capturePhoto() {
+    const faceCamera = document.getElementById("face-camera");
+    const activePhotoKey = Object.keys(capturedImages).find((key) => !capturedImages[key]);
+
+    if (!activePhotoKey) {
+        console.error("All photos already captured.");
+        return;
+    }
+
+    const offscreenCanvas = document.createElement("canvas");
+    const ctx = offscreenCanvas.getContext("2d");
+
+    offscreenCanvas.width = faceCamera.videoWidth;
+    offscreenCanvas.height = faceCamera.videoHeight;
+
+    ctx.drawImage(faceCamera, 0, 0, offscreenCanvas.width, offscreenCanvas.height);
+    const capturedImage = offscreenCanvas.toDataURL("image/png");
+
+    if (capturedImage && capturedImage.startsWith("data:image/png")) {
+        capturedImages[activePhotoKey] = capturedImage;
+        updatePhotoPlaceholder(activePhotoKey, capturedImage);
+        checkAllPhotosCaptured();
+    } else {
+        console.error("Failed to capture the photo.");
+    }
+}
+
+function updatePhotoPlaceholder(photoKey, imageSrc) {
+    const previewElement = document.getElementById(`${photoKey}-photo-preview`);
+    const placeholderElement = document.getElementById(`${photoKey}-photo`);
+
+    previewElement.src = imageSrc;
+    previewElement.style.display = "block";
+    placeholderElement.classList.add("taken");
+}
+
+function checkAllPhotosCaptured() {
+    const nextButton = document.getElementById("next-to-step-4");
+
+    if (Object.values(capturedImages).every((img) => img !== null)) {
+        nextButton.disabled = false; // Enable the Next button
+    } else {
+        nextButton.disabled = true; // Disable if not all photos are taken
+    }
+}
+
+function retakePhoto(photoKey) {
+    capturedImages[photoKey] = null;
+
+    const previewElement = document.getElementById(`${photoKey}-photo-preview`);
+    const placeholderElement = document.getElementById(`${photoKey}-photo`);
+
+    previewElement.src = "";
+    previewElement.style.display = "none";
+    placeholderElement.classList.remove("taken");
+
+    const nextButton = document.getElementById("next-to-step-4");
+    nextButton.disabled = true; // Disable Next button until all images are recaptured
+}
+
+// Event Listeners
+document.getElementById("capture-photo").addEventListener("click", capturePhoto);
+document.getElementById("back-to-step-2").addEventListener("click", () => {
+    stopFaceCamera();
+    moveToStep2();
+});
+document.getElementById("next-to-step-4").addEventListener("click", () => {
+    console.log("Move to Step 4 with images:", capturedImages);
+});
+
+// Initialize
+document.addEventListener("DOMContentLoaded", () => {
+    initializeFaceCamera();
+});
+
+function moveToStep3() {
+    const step2 = document.getElementById("step-2");
+    const step3 = document.getElementById("step-3");
+
+    step2.classList.remove("active");
+    step2.classList.add("hidden");
+
+    setTimeout(() => {
+        step2.style.display = "none";
+        step3.style.display = "block";
+        step3.classList.remove("hidden");
+        step3.classList.add("active");
+        initializeFaceCamera(); // Open the face camera
+    }, 300); // Match the CSS transition duration
+}
+
+function moveBackStep2() {
+    const step2 = document.getElementById("step-2");
+    const step3 = document.getElementById("step-3");
+
+    stopFaceCamera(); // Close the face camera
+
+    step3.classList.remove("active");
+    step3.classList.add("hidden");
+
+    setTimeout(() => {
+        step3.style.display = "none";
+        step2.style.display = "block";
+        step2.classList.remove("hidden");
+        step2.classList.add("active");
+    }, 300); // Match the CSS transition duration
+}
+
+
+document.getElementById("next-to-step-3").addEventListener("click", moveToStep3);
+document.getElementById("back-to-step-2").addEventListener("click", moveBackStep2);
