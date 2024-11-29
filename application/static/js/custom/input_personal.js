@@ -256,13 +256,37 @@ function capturePhoto() {
         return;
     }
 
+    const maxDimension = 720; // Max dimension for resizing
+    const videoWidth = faceCamera.videoWidth;
+    const videoHeight = faceCamera.videoHeight;
+
+    // Validate the video feed dimensions
+    if (videoWidth === 0 || videoHeight === 0) {
+        console.error("Video feed dimensions are invalid.");
+        return;
+    }
+
+    // Maintain aspect ratio while resizing
+    let canvasWidth, canvasHeight;
+
+    if (videoWidth > videoHeight) {
+        // Landscape orientation
+        canvasWidth = maxDimension;
+        canvasHeight = (videoHeight / videoWidth) * maxDimension;
+    } else {
+        // Portrait orientation
+        canvasHeight = maxDimension;
+        canvasWidth = (videoWidth / videoHeight) * maxDimension;
+    }
+
     const offscreenCanvas = document.createElement("canvas");
     const ctx = offscreenCanvas.getContext("2d");
 
-    offscreenCanvas.width = 200; // Match placeholder dimensions
-    offscreenCanvas.height = 200;
+    // Set canvas dimensions
+    offscreenCanvas.width = canvasWidth;
+    offscreenCanvas.height = canvasHeight;
 
-    // Scale down the video feed to fit the canvas size
+    // Scale down the video feed to fit the resized canvas
     ctx.drawImage(
         faceCamera,
         0,
@@ -271,22 +295,19 @@ function capturePhoto() {
         faceCamera.videoHeight,
         0,
         0,
-        offscreenCanvas.width,
-        offscreenCanvas.height
+        canvasWidth,
+        canvasHeight
     );
 
+    // Convert the canvas to a data URL
     const capturedImage = offscreenCanvas.toDataURL("image/png");
 
+    // Check if the image was successfully captured
     if (capturedImage && capturedImage.startsWith("data:image/png")) {
-        // Update the captured images object
-        capturedImages[photoKey] = capturedImage;
-
-        // Update the corresponding placeholder
-        updatePhotoPlaceholder(photoKey, capturedImage);
-
-        // Move to the next photo key
+        updatePhotoPlaceholder(photoKey, capturedImage); // Update the placeholder with the captured image
+        capturedImages[photoKey] = capturedImage; // Store the captured image in the `capturedImages` object for Step 4
         currentPhotoIndex++;
-        checkAllPhotosCaptured(); // Enable "Next" button if all images are captured
+        checkAllPhotosCaptured();
     } else {
         console.error("Failed to capture the photo.");
     }
