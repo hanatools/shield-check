@@ -212,23 +212,7 @@ document
     .getElementById("personal-info-form")
     .addEventListener("input", validateForm);
 
-// Event Listeners
-document.getElementById("reset-button").addEventListener("click", initializeCamera);
-document.getElementById("back-to-step-1").addEventListener("click", moveToStep1);
-document.getElementById("personal-info-form").addEventListener("input", validateForm);
 
-// Initialize camera on page load
-document.addEventListener("DOMContentLoaded", initializeCamera);
-
-// Reset camera for rescan
-document.getElementById("reset-button").addEventListener("click", () => {
-    initializeCamera();
-});
-
-// Initialize the camera when the page loads
-document.addEventListener("DOMContentLoaded", () => {
-    initializeCamera();
-});
 
 // step 3
 let faceCameraStream = null;
@@ -319,15 +303,7 @@ function retakePhoto(photoKey) {
     nextButton.disabled = true; // Disable Next button until all images are recaptured
 }
 
-// Event Listeners
-document.getElementById("capture-photo").addEventListener("click", capturePhoto);
-document.getElementById("back-to-step-2").addEventListener("click", () => {
-    stopFaceCamera();
-    moveToStep2();
-});
-document.getElementById("next-to-step-4").addEventListener("click", () => {
-    console.log("Move to Step 4 with images:", capturedImages);
-});
+
 
 // Initialize
 document.addEventListener("DOMContentLoaded", () => {
@@ -369,4 +345,26 @@ function moveBackStep2() {
 
 
 document.getElementById("next-to-step-3").addEventListener("click", moveToStep3);
-document.getElementById("back-to-step-2").addEventListener("click", moveBackStep2);
+// document.getElementById("back-to-step-2").addEventListener("click", moveBackStep2);
+
+$(document).ready(function() {
+    initializeCamera();
+
+    // Event Listeners
+    document.getElementById("capture-photo").addEventListener("click", capturePhoto);
+    document.getElementById("back-to-step-2").addEventListener("click", () => {
+        stopFaceCamera();
+        moveBackStep2();
+    });
+    document.getElementById("next-to-step-4").addEventListener("click", () => {
+        console.log("Move to Step 4 with images:", capturedImages);
+    });
+
+    // Event Listeners
+    document.getElementById("back-to-step-1").addEventListener("click", moveToStep1);
+    document.getElementById("personal-info-form").addEventListener("input", validateForm);
+    document.getElementById("reset-button").addEventListener("click", () => {
+        initializeCamera();
+    });
+
+});

@@ -240,53 +240,63 @@
 }
 
 /* Scoped CSS for Step 3 using #step-3-form */
+/* Step 3 Form Styling */
 #step-3-form {
-    text-align: center;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
     padding: 20px;
-    background-color: #f8f9fa;
+    background-color: #fff; /* White background */
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+    text-align: center;
 }
 
+/* Title */
 #step-3-form h4 {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: bold;
     color: #1e3a8a; /* Dark navy */
     margin-bottom: 20px;
 }
 
-/* Camera Section */
+/* Photo Section */
+#step-3-form .photo-section {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+/* Main Camera Section */
 #step-3-form .main-camera {
-    margin-bottom: 20px;
+    flex: 1 1 60%; /* Take 60% of available width */
     position: relative;
-    width: 100%;
-    max-width: 600px;
-    height: 0;
-    padding-bottom: 75%; /* Maintain aspect ratio */
-    border: 2px solid #d1d5db; /* Light border */
+    background-color: #e5e7eb; /* Light gray */
+    border: 2px solid #ccc;
     border-radius: 10px;
     overflow: hidden;
-    background-color: #e5e7eb;
+    text-align: center;
 }
 
 #step-3-form .main-camera video {
-    position: absolute;
-    top: 0;
-    left: 0;
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    height: auto;
 }
 
 #step-3-form .capture-button {
-    margin-top: 10px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
     background-color: #2563eb;
     color: white;
     border: none;
     border-radius: 5px;
     padding: 10px 20px;
-    font-size: 16px;
+    font-size: 14px;
     cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
 #step-3-form .capture-button:hover {
@@ -295,10 +305,11 @@
 
 /* Side Photos Section */
 #step-3-form .side-photos {
+    flex: 1 1 35%; /* Take 35% of available width */
     display: flex;
+    flex-direction: column;
     justify-content: space-between;
     gap: 10px;
-    margin-top: 20px;
 }
 
 #step-3-form .side-photo {
@@ -306,66 +317,17 @@
 }
 
 #step-3-form .photo-placeholder {
+    background-color: #e5e7eb; /* Light gray placeholder */
     width: 100px;
     height: 100px;
-    background-color: #e5e7eb;
-    border: 2px solid #d1d5db;
+    border: 1px solid #ccc;
     border-radius: 5px;
-    position: relative;
-    cursor: pointer;
-    margin-bottom: 5px;
+    margin: 0 auto;
 }
 
-#step-3-form .photo-placeholder:hover {
-    border-color: #2563eb;
-}
-
-#step-3-form .photo-preview {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: none; /* Hidden until an image is added */
-}
-
-#step-3-form .photo-placeholder.taken {
-    border-color: #10b981; /* Green border for captured photos */
-}
-
-/* Button Group */
-#step-3-form .button-group {
-    margin-top: 20px;
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-}
-
-#step-3-form .btn {
-    border: none;
-    padding: 10px 20px;
-    font-size: 16px;
+#step-3-form .side-photo label {
+    margin-top: 5px;
+    display: block;
+    font-size: 14px;
     font-weight: bold;
-    cursor: pointer;
-}
-
-#step-3-form .btn-secondary {
-    background-color: #6b7280; /* Gray */
-    color: white;
-}
-
-#step-3-form .btn-secondary:hover {
-    background-color: #4b5563;
-}
-
-#step-3-form .btn-primary {
-    background-color: #2563eb; /* Blue */
-    color: white;
-}
-
-#step-3-form .btn-primary:hover {
-    background-color: #1d4ed8;
-}
-
-#step-3-form .btn-primary:disabled {
-    background-color: #9ca3af; /* Gray */
-    cursor: not-allowed;
 }
