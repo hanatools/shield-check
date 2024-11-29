@@ -17,3 +17,6 @@ class Config:
     )
     DEFAULT_USERNAME = os.getenv("DEFAULT_USERNAME", "admin")
     DEFAULT_USER_PASSWORD = os.getenv("DEFAULT_USER_PASSWORD", "123456")
+    UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", "static/uploads")
+    FACE_DATA = os.getenv("FACE_DATA", "static/face_data")
+

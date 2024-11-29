@@ -12,6 +12,7 @@ with app.app_context():
             email=app.config["DEFAULT_USER_EMAIL"],
             username=app.config["DEFAULT_USERNAME"],
             password=app.config["DEFAULT_USER_PASSWORD"],
+            identity_card=f"000000000000",
         )
         # Add the user to the session and commit
         db.session.add(default_user)

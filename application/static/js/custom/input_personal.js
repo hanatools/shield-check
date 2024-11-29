@@ -484,7 +484,7 @@ document.getElementById("finish-form").addEventListener("click", () => {
         identityCard: document.getElementById("identity-card-confirm").value,
         managementLevel: document.getElementById("management-level-confirm").value,
         unitName: document.getElementById("unit-name-confirm").value,
-        photos: capturedImages, // Include images
+        images: capturedImages, // Include images
     };
 
     console.log("Submitting user data:", userInfo);
