@@ -1,19 +1,9 @@
+import uuid
+
 from application import db, login_manager
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
-
-# By inheriting the UserMixin we get access to a lot of built-in attributes
-# which we will be able to call in our views!
-# is_authenticated()
-# is_active()
-# is_anonymous()
-# get_id()
-
-
-# The user_loader decorator allows flask-login to load the current user
-# and grab their id.
-
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -77,3 +67,25 @@ class BlogPost(db.Model):
 
     def __repr__(self):
         return f"Post Id: {self.id} --- Date: {self.date} --- Title: {self.title}"
+
+class CheckIn(db.Model):
+    __tablename__ = "check_in"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # Link to the User table
+    acceptor_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    full_name = db.Column(db.String(255), nullable=False)
+    identity_card = db.Column(db.String(255), nullable=False)
+    management_level = db.Column(db.String(255), nullable=False)
+    unit_name = db.Column(db.String(255), nullable=False)
+    file_scan_path = db.Column(db.String(255), nullable=True)
+    left_image_path = db.Column(db.String(255), nullable=True)
+    right_image_path = db.Column(db.String(255), nullable=True)
+    front_image_path = db.Column(db.String(255), nullable=True)
+    created_time = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    status = db.Column(db.String(50), default="created", nullable=False)  # Status: created, accepted, etc.
+    token = db.Column(db.String(255), default=lambda: str(uuid.uuid4()), unique=True, nullable=False)
+    accepted_datetime = db.Column(db.DateTime, nullable=True)
+
+    def __repr__(self):
+        return f"<CheckIn {self.id} - {self.full_name}>"

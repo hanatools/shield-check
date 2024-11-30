@@ -1,5 +1,11 @@
+import base64
+import os
+import uuid
+
 from flask import render_template, request, Blueprint, Response, url_for
-from application.models import BlogPost, User
+
+from application import db
+from application.models import BlogPost, User, CheckIn
 from flask_login import login_required, current_user
 from pyzbar.pyzbar import decode
 import numpy as np
@@ -244,18 +250,79 @@ def register_soldier():
     return render_template("register_soldier.html", form=form, username=current_user.username)
 
 
-@core.route("/register_soldier_submit_data", methods=["POST"])
-def submit_data():
-    data = request.json
-    # Extract user details
-    full_name = data.get("full_name", "")
-    identity_card = data.get("identity_card", "")
-    management_level = data.get("management_level", "")
-    unit_name = data.get("unit_name", "")
-    file_scan = data.get("file_scan", "")
-    images = data.get("images", {})
-    print(f"Data: {data}")
+@core.route("/register_soldier_checkin_data", methods=["POST"])
+def register_soldier_checkin_data():
+    try:
+        # Extract user details from the request
+        data = request.json
+        full_name = data.get("full_name", "").strip()
+        identity_card = data.get("identity_card", "").strip()
+        management_level = data.get("management_level", "").strip()
+        unit_name = data.get("unit_name", "").strip()
+        file_scan = data.get("file_scan", "")
+        images = data.get("images", {})
 
+        # Validate required fields
+        if not all([full_name, identity_card, management_level, unit_name]):
+            return jsonify({"error": "All fields are required"}), 400
 
+        if not all(k in images for k in ['left', 'right', 'front']):
+            return jsonify({"error": "Missing one or more required images"}), 400
 
-    return jsonify({"message": "Data received successfully!"}), 200
+        # Check if the user exists by identity card
+        user = User.query.filter_by(identity_card=identity_card).first()
+        if not user:
+            return jsonify({"error": f"User with identity card {identity_card} does not exist"}), 404
+
+        # Save images to disk
+        check_in_folder = os.path.join("static", "check-in")
+        os.makedirs(check_in_folder, exist_ok=True)
+
+        image_paths = {}
+        for key, base64_image in images.items():
+            file_path = os.path.join(check_in_folder, f"check_in_{key}_{uuid.uuid4().hex}.png")
+            with open(file_path, "wb") as image_file:
+                image_file.write(base64.b64decode(base64_image.split(",")[1]))
+            image_paths[key] = file_path
+
+        # Save file scan if provided
+        file_scan_path = None
+        if file_scan:
+            file_scan_path = os.path.join(check_in_folder, f"check_in_file_scan_{uuid.uuid4().hex}.pdf")
+            with open(file_scan_path, "wb") as file:
+                file.write(base64.b64decode(file_scan.split(",")[1]))
+
+        # Create a new CheckIn record
+        check_in_record = CheckIn(
+            user_id=user.id,
+            full_name=full_name,
+            identity_card=identity_card,
+            management_level=management_level,
+            unit_name=unit_name,
+            file_scan_path=file_scan_path,
+            left_image_path=image_paths.get("left"),
+            right_image_path=image_paths.get("right"),
+            front_image_path=image_paths.get("front"),
+        )
+
+        # Save to the database
+        db.session.add(check_in_record)
+        db.session.commit()
+
+        # Return success response with details
+        return jsonify({
+            "message": "Check-in data saved successfully!",
+            "check_in": {
+                "id": check_in_record.id,
+                "full_name": check_in_record.full_name,
+                "identity_card": check_in_record.identity_card,
+                "management_level": check_in_record.management_level,
+                "unit_name": check_in_record.unit_name,
+                "status": check_in_record.status,
+                "token": check_in_record.token,
+                "created_time": check_in_record.created_time.isoformat(),
+            },
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500

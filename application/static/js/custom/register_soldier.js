@@ -184,29 +184,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    /** Handles form submission. */
-    // function handleFinish() {
-    //     const payload = { ...userData, images: capturedImages };
-    //     const csrfToken = document.querySelector("input[name='csrf_token']").value;
-    //     fetch("/register_soldier_submit_data", {
-    //         method: "POST",
-    //         headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken },
-    //         body: JSON.stringify(payload),
-    //     })
-    //         .then((response) => response.json())
-    //         .then((data) => {
-    //             if (data.error) {
-    //                 alert(`Error: ${data.error}`);
-    //             } else {
-    //                 alert("Soldier registered successfully!");
-    //             }
-    //         })
-    //         .catch((error) => {
-    //             console.error("Error submitting soldier data:", error);
-    //             alert("An error occurred. Please try again.");
-    //         });
-    // }
-
     function handleFinish() {
         const finishButton = document.getElementById("finish-step");
         const backButton = document.getElementById("back-to-step-2");
@@ -225,7 +202,7 @@ document.addEventListener("DOMContentLoaded", () => {
         backButton.disabled = true;
         finishButton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`; // Show spinner
         const csrfToken = document.querySelector("input[name='csrf_token']").value;
-        fetch("/register_soldier_submit_data", {
+        fetch("/register_soldier_checkin_data", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -238,7 +215,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (data.error) {
                     errorMessage.textContent = `Error: ${data.error}`; // Show error message
                 } else {
-                    alert("Soldier registered successfully!");
+                    alert("Soldier registered check in successfully!");
                     console.log(data);
                     // Optionally redirect to another page or reset form
                     // location.href = "/success"; // Redirect to success page
