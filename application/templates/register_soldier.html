@@ -90,32 +90,48 @@
             <div class="photo-section">
                 <div class="main-camera">
                     <video id="face-camera" autoplay></video>
-                    <button type="button" class="btn btn-info capture-button">
-                        <i class="bi bi-camera"></i>
-                    </button>
+                    <div class="form-group d-flex justify-content-center pt-4">
+                        <!-- Back Button -->
+                        <button type="button" class="btn btn-secondary btn-sm mx-2" id="back-step">
+                            <i class="bi bi-arrow-left"></i>
+                        </button>
+
+                        <!-- Capture Button -->
+                        <button type="button" class="btn btn-info btn-sm mx-2" id="capture-photo">
+                            <i class="bi bi-camera"></i>
+                        </button>
+
+                        <!-- Reset Button -->
+                        <button type="button" class="btn btn-warning btn-sm mx-2" id="reset-capture-photo">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </button>
+
+                        <!-- Next Button -->
+                        <button type="button" class="btn btn-primary btn-sm mx-2" id="next-step-3" disabled>
+                            <i class="bi bi-arrow-right"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="side-photos">
                     <div class="side-photo">
-                        <div id="left-photo" class="photo-placeholder"></div>
+                        <div id="left-photo" class="photo-placeholder">
+                            <img id="left-photo-preview" class="photo-preview" style="display: none;" />
+                        </div>
                         <label for="left-photo">Bên trái</label>
                     </div>
                     <div class="side-photo">
-                        <div id="right-photo" class="photo-placeholder"></div>
+                        <div id="right-photo" class="photo-placeholder">
+                            <img id="right-photo-preview" class="photo-preview" style="display: none;" />
+                        </div>
                         <label for="right-photo">Bên phải</label>
                     </div>
                     <div class="side-photo">
-                        <div id="front-photo" class="photo-placeholder"></div>
+                        <div id="front-photo" class="photo-placeholder">
+                            <img id="front-photo-preview" class="photo-preview" style="display: none;" />
+                        </div>
                         <label for="front-photo">Đối diện</label>
                     </div>
                 </div>
-            </div>
-            <div class="form-group d-flex justify-content-center pt-4">
-                <button type="button" class="btn btn-secondary" id="back-step">
-                    Quay lại
-                </button>
-                <button type="button" class="btn btn-primary" id="next-step-3" disabled>
-                    Tiếp theo
-                </button>
             </div>
         </div>
     </div>

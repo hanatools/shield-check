@@ -186,3 +186,69 @@
     font-size: 14px;
     margin-top: 5px;
 }
+
+/* Scoped Button Styles for Step 2 */
+#step-2 .main-camera .btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100px; /* Fixed width for uniformity */
+    height: 40px; /* Fixed height for uniformity */
+    padding: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 5px;
+    border: none;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    text-align: center;
+}
+
+/* Hover Effect for Scoped Buttons */
+#step-2 .main-camera .btn:hover {
+    transform: scale(1.05); /* Slight zoom on hover */
+    opacity: 0.9;
+}
+
+/* Specific Button Colors */
+#step-2 .main-camera .btn-secondary {
+    background-color: #6c757d; /* Gray button */
+    color: white;
+}
+
+#step-2 .main-camera .btn-secondary:hover {
+    background-color: #5a6268; /* Darker gray */
+}
+
+#step-2 .main-camera .btn-info {
+    background-color: #17a2b8; /* Blue button */
+    color: white;
+}
+
+#step-2 .main-camera .btn-info:hover {
+    background-color: #138496; /* Darker blue */
+}
+
+#step-2 .main-camera .btn-warning {
+    background-color: #ffc107; /* Yellow button */
+    color: black;
+}
+
+#step-2 .main-camera .btn-warning:hover {
+    background-color: #e0a800; /* Darker yellow */
+}
+
+#step-2 .main-camera .btn-primary {
+    background-color: #007bff; /* Primary blue */
+    color: white;
+}
+
+#step-2 .main-camera .btn-primary:hover {
+    background-color: #0056b3; /* Darker blue */
+}
+
+.photo-placeholder img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ensures the image fills the placeholder without distortion */
+    border-radius: 5px; /* Keeps the same rounded edges as placeholders */
+}
