@@ -5,7 +5,7 @@ import uuid
 from flask import render_template, request, Blueprint, Response, url_for
 
 from application import db
-from application.models import BlogPost, User, CheckIn
+from application.models import BlogPost, User, CheckIn, RelativeCheckIn
 from flask_login import login_required, current_user
 from pyzbar.pyzbar import decode
 import numpy as np
@@ -362,3 +362,48 @@ def register_soldier_checkin_data():
 
     except Exception as e:
         return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
+
+@core.route("/relative_reports", methods=["GET", "POST"])
+@login_required
+def relative_reports():
+    from_date = request.args.get("from_date")
+    to_date = request.args.get("to_date")
+
+    # Base query
+    query = RelativeCheckIn.query.filter(RelativeCheckIn.soldier_user_id.isnot(None))  # Ensure we fetch records linked to users
+
+    # Apply filters
+    if from_date:
+        query = query.filter(RelativeCheckIn.created_time >= from_date)
+    if to_date:
+        query = query.filter(RelativeCheckIn.created_time <= to_date)
+
+    # Order by created_time descending
+    check_ins = query.order_by(RelativeCheckIn.created_time.desc()).all()
+
+    # Prepare data for rendering
+    report_data = []
+    for record in check_ins:
+        # Fetch related user data
+        related_user = User.query.get(record.soldier_user_id)
+        if related_user:
+            # Calculate duration
+            if record.check_in_time and record.check_out_time:
+                duration = abs((record.check_out_time - record.check_in_time).total_seconds())
+                duration_str = f"{int(duration // 3600)}:{int((duration % 3600) // 60)}:{int(duration % 60)}"
+            else:
+                duration_str = "N/A"
+
+            report_data.append({
+                "full_name": related_user.full_name if related_user else "N/A",
+                "identity_card": record.identity_card,
+                "soldier_identity_card": related_user.identity_card if related_user else "N/A",
+                "soldier_name": related_user.full_name if related_user else "N/A",
+                "management_level": related_user.management_level if related_user else "N/A",
+                "unit_name": related_user.unit_name if related_user else "N/A",
+                "check_in_time": record.check_in_time.strftime("%H:%M:%S %d/%m/%Y") if record.check_in_time else "N/A",
+                "check_out_time": record.check_out_time.strftime("%H:%M:%S %d/%m/%Y") if record.check_out_time else "N/A",
+                "duration": duration_str,
+            })
+
+    return render_template("relative_reports.html", username=current_user.username, report_data=report_data)

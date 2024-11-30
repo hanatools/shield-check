@@ -91,3 +91,28 @@ class CheckIn(db.Model):
 
     def __repr__(self):
         return f"<CheckIn {self.id} - {self.full_name}>"
+
+
+class RelativeCheckIn(db.Model):
+    __tablename__ = "relative_check_in"
+
+    id = db.Column(db.Integer, primary_key=True)
+    soldier_user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # Link to the User table
+    acceptor_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    full_name = db.Column(db.String(255), nullable=False)
+    identity_card = db.Column(db.String(255), nullable=False)
+    management_level = db.Column(db.String(255), nullable=False)
+    unit_name = db.Column(db.String(255), nullable=False)
+    file_scan_path = db.Column(db.String(255), nullable=True)
+    left_image_path = db.Column(db.String(255), nullable=True)
+    right_image_path = db.Column(db.String(255), nullable=True)
+    front_image_path = db.Column(db.String(255), nullable=True)
+    created_time = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    status = db.Column(db.String(50), default="created", nullable=False)  # Status: created, accepted, etc.
+    token = db.Column(db.String(255), default=lambda: str(uuid.uuid4()), unique=True, nullable=False)
+    accepted_datetime = db.Column(db.DateTime, nullable=True)
+    check_in_time = db.Column(db.DateTime, nullable=True)
+    check_out_time = db.Column(db.DateTime, nullable=True)
+
+    def __repr__(self):
+        return f"<CheckIn {self.id} - {self.full_name}>"
