@@ -1,0 +1,92 @@
+{% extends "member_base.html" %}
+
+{% block stylecss %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/custom/member_list.css') }}">
+{% endblock %}
+
+{% block title %}
+<title>Danh sách thành viên</title>
+{% endblock %}
+
+{% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <h1 class="text-center my-4">Danh sách thành viên</h1>
+
+        <!-- Search Input -->
+        <div class="mb-3">
+            <input
+                    type="text"
+                    id="search"
+                    class="form-control"
+                    placeholder="Tìm kiếm theo tên, số CCCD..."
+                    oninput="handleSearch(this.value)"
+            />
+        </div>
+
+        <!-- Table -->
+        <table class="table table-striped table-bordered table-hover">
+            <thead class="table-dark">
+            <tr>
+                <th class="text-center">Hành Động</th>
+                <th>#</th>
+                <th>Họ và Tên</th>
+                <th>Số CCCD</th>
+                <th>Cấp Quản Lý</th>
+                <th>Đơn Vị</th>
+            </tr>
+            </thead>
+            <tbody id="member-table">
+            {% for user in users %}
+            <tr>
+                <td class="text-center">
+                    <button
+                            class="btn btn-info btn-sm"
+                            data-bs-toggle="tooltip"
+                            title="Xem"
+                            onclick="viewUser({{ user.id }})"
+                    >
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <button
+                            class="btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip"
+                            title="Sửa"
+                            onclick="editUser({{ user.id }})"
+                    >
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <form
+                            action="{{ url_for('users.delete', user_id=user.id) }}"
+                            method="POST"
+                            style="display: inline;"
+                            onsubmit="return confirm('Bạn có chắc muốn xóa?');"
+                    >
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                        <button
+                                class="btn btn-danger btn-sm"
+                                type="submit"
+                                data-bs-toggle="tooltip"
+                                title="Xóa"
+                        >
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
+                </td>
+                <td>{{ loop.index }}</td>
+                <td>{{ user.full_name }}</td>
+                <td>{{ user.identity_card }}</td>
+                <td>{{ user.management_level }}</td>
+                <td>{{ user.unit }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block stylejs %}
+<script src="{{ url_for('static', filename='js/custom/member_list.js') }}"></script>
+{% endblock %}
