@@ -58,3 +58,8 @@ class UpdateUserForm(FlaskForm):
 
 class DeleteUserForm(FlaskForm):
     csrf_token = HiddenField()
+
+class SoldierRegistrationForm(FlaskForm):
+    full_name = StringField("Họ và Tên", validators=[DataRequired()])
+    management_level = StringField("Cấp Quản Lý", validators=[DataRequired()])
+    submit = SubmitField("Tiếp Theo")

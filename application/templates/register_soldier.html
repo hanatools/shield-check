@@ -10,35 +10,102 @@
 
 {% block content %}
 <div class="content">
-    <div class="form-section">
-        <h4>Nhập thông tin quân nhân</h4>
-        <hr>
-        <form>
-            <div class="mb-3">
-                <label for="fullname" class="form-label">Họ và tên:</label>
-                <input type="text" class="form-control" id="fullname" placeholder="Nhập họ và tên">
-            </div>
-            <div class="mb-3">
-                <label for="cccd" class="form-label">Số CCCD:</label>
-                <input type="text" class="form-control" id="cccd" placeholder="Nhập số CCCD">
-            </div>
-            <div class="mb-3">
-                <label for="rank" class="form-label">Cấp quản lý:</label>
-                <input type="text" class="form-control" id="rank" placeholder="Nhập cấp quản lý">
-            </div>
-            <div class="mb-3">
-                <label for="unit" class="form-label">Đơn vị:</label>
-                <input type="text" class="form-control" id="unit" placeholder="Nhập đơn vị">
-            </div>
-            <div class="mb-3">
-                <label for="fileScan" class="form-label">File scan:</label>
-                <input type="file" class="form-control" id="fileScan">
-            </div>
-            <div class="mb-3 text-center">
-                <button type="submit" class="btn btn-primary">Tiếp theo</button>
-            </div>
-        </form>
+
+    <div id="step-1" class="step active">
+        <div class="form-section">
+            <h4>Nhập thông tin quân nhân</h4>
+            <hr>
+            <form method="POST" id="register-form">
+                {{ form.hidden_tag() }}
+                <div class="mb-3">
+                    <label for="fullname" class="form-label">Họ và tên:</label>
+                    <input
+                            type="text"
+                            class="form-control"
+                            id="fullname"
+                            name="fullname"
+                            placeholder="Nhập họ và tên"
+                    />
+                    <small id="fullname-error" class="text-danger"></small>
+                </div>
+                <div class="mb-3">
+                    <label for="management_level" class="form-label">Cấp quản lý:</label>
+                    <input
+                            type="text"
+                            class="form-control"
+                            id="management_level"
+                            name="management_level"
+                            placeholder="Nhập cấp quản lý"
+                    />
+                    <small id="management_level-error" class="text-danger"></small>
+                </div>
+                <div class="mb-3">
+                    <label for="identity_card" class="form-label">Số CCCD:</label>
+                    <input
+                            type="text"
+                            class="form-control"
+                            id="identity_card"
+                            name="identity_card"
+                            placeholder="Nhập số CCCD"
+                            readonly
+                    />
+                </div>
+                <div class="mb-3">
+                    <label for="fileScan" class="form-label">File scan:</label>
+                    <input type="file" class="form-control" id="fileScan" name="fileScan" />
+                </div>
+                <div class="mb-3 text-danger" id="error-message"></div>
+                <div class="mb-3 text-center">
+                    <button
+                            type="button"
+                            class="btn btn-primary"
+                            id="next-step"
+                            disabled
+                    >
+                        Tiếp theo
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
+
+    <div id="step-2" class="step hidden">
+        <div class="form-section">
+            <h4>Chụp ảnh Quân nhân</h4>
+            <hr>
+            <div class="photo-section">
+                <div class="main-camera">
+                    <video id="face-camera" autoplay></video>
+                    <button type="button" class="btn btn-info capture-button">
+                        <i class="bi bi-camera"></i>
+                    </button>
+                </div>
+                <div class="side-photos">
+                    <div class="side-photo">
+                        <div id="left-photo" class="photo-placeholder"></div>
+                        <label for="left-photo">Bên trái</label>
+                    </div>
+                    <div class="side-photo">
+                        <div id="right-photo" class="photo-placeholder"></div>
+                        <label for="right-photo">Bên phải</label>
+                    </div>
+                    <div class="side-photo">
+                        <div id="front-photo" class="photo-placeholder"></div>
+                        <label for="front-photo">Đối diện</label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group d-flex justify-content-center pt-4">
+                <button type="button" class="btn btn-secondary" id="back-step">
+                    Quay lại
+                </button>
+                <button type="button" class="btn btn-primary" id="next-step-3" disabled>
+                    Tiếp theo
+                </button>
+            </div>
+        </div>
+    </div>
+
 </div>
 {% endblock %}
 
