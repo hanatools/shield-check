@@ -2,8 +2,7 @@
 .content {
     padding: 20px;
     background-color: #f8f9fa;
-    min-height: calc(100vh - 70px); /* Account for header height */
-    margin-top: 70px; /* Prevent overlap with the header */
+    min-height: calc(100vh - 70px);
 }
 
 /* Report Section */

@@ -2,8 +2,7 @@
 .content {
     padding: 20px;
     background-color: #f8f9fa; /* Light gray background */
-    min-height: calc(100vh - 70px); /* Account for the header height (70px) */
-    margin-top: 70px; /* Ensure content starts below the header */
+    min-height: calc(100vh - 70px);
 }
 
 /* Search Box */
