@@ -5,7 +5,7 @@ from pyzbar.pyzbar import decode
 import numpy as np
 import threading
 
-from application.users.forms import SoldierRegistrationForm
+from application.users.forms import SoldierRegistrationForm, InputPersonalForm
 
 core = Blueprint("core", __name__)
 qr_data_store = threading.Lock()
@@ -33,9 +33,10 @@ def daskboard():
 
 
 @core.route("/input_personal")
-# @login_required
+@login_required
 def input_personal():
-    return render_template("input_personal.html", username=current_user.username)
+    form = InputPersonalForm()
+    return render_template("input_personal.html", username=current_user.username, form=form)
 
 
 @core.route("/batch_input")

@@ -82,6 +82,7 @@
 
 .step {
     display: none;
+    min-width: 800px;
 }
 
 .step.active {

@@ -64,3 +64,7 @@ class SoldierRegistrationForm(FlaskForm):
     management_level = StringField("Cấp Quản Lý", validators=[DataRequired()])
     unit_name = StringField("Đơn vị", validators=[DataRequired()])
     submit = SubmitField("Tiếp Theo")
+
+
+class InputPersonalForm(FlaskForm):
+    pass
