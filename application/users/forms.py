@@ -1,11 +1,10 @@
 # Form Based Imports
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
+from wtforms import StringField, PasswordField, SubmitField, HiddenField
 from wtforms.validators import DataRequired, Email, EqualTo, Length
 from wtforms import ValidationError
 from flask_wtf.file import FileField, FileAllowed
 from application.models import User
-
 
 class LoginForm(FlaskForm):
     username = StringField(
@@ -56,3 +55,6 @@ class UpdateUserForm(FlaskForm):
         # Check if not None for that username!
         if User.query.filter_by(username=field.data).first():
             raise ValidationError("Sorry, that username is taken!")
+
+class DeleteUserForm(FlaskForm):
+    csrf_token = HiddenField()
