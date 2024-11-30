@@ -241,3 +241,20 @@ def validate_identity_card():
 def register_soldier():
     form = SoldierRegistrationForm()
     return render_template("register_soldier.html", form=form, username=current_user.username)
+
+
+@core.route("/register_soldier_submit_data", methods=["POST"])
+def submit_data():
+    data = request.json
+    # Extract user details
+    full_name = data.get("full_name", "")
+    identity_card = data.get("identity_card", "")
+    management_level = data.get("management_level", "")
+    unit_name = data.get("unit_name", "")
+    file_scan = data.get("file_scan", "")
+    images = data.get("images", {})
+    print(f"Data: {data}")
+
+
+
+    return jsonify({"message": "Data received successfully!"}), 200

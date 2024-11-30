@@ -65,8 +65,16 @@
                     />
                 </div>
                 <div class="mb-3">
-                    <label for="fileScan" class="form-label">File scan:</label>
-                    <input type="file" class="form-control" id="fileScan" name="fileScan" />
+                    <label for="file-scan-step1" class="form-label">File scan:</label>
+                    <input
+                            type="file"
+                            id="file-scan-step1"
+                            class="form-control"
+                            accept=".pdf,.png,.jpg,.jpeg"
+                            data-max-size="10485760"
+                    />
+                    <small id="file-scan-error" class="text-danger"></small>
+
                 </div>
                 <div class="mb-3 text-danger" id="error-message"></div>
                 <div class="mb-3 text-center">
@@ -135,6 +143,109 @@
             </div>
         </div>
     </div>
+
+    <div id="step-3" class="step hidden">
+        <div class="form-section">
+            <h4>Chụp hình ảnh Quân nhân</h4>
+            <hr>
+            <div class="row">
+                <!-- Form Details -->
+                <div style="flex: 2">
+                    <div class="form-group">
+                        <label for="fullname-step3">Họ và tên:</label>
+                        <input type="text" class="form-control" id="fullname-step3" readonly />
+                    </div>
+                    <div class="form-group">
+                        <label for="identity-card-step3">Số CCCD:</label>
+                        <input type="text" class="form-control" id="identity-card-step3" readonly />
+                    </div>
+                    <div class="form-group">
+                        <label for="management-level-step3">Cấp quản lý:</label>
+                        <input type="text" class="form-control" id="management-level-step3" readonly />
+                    </div>
+                    <div class="form-group">
+                        <label for="unit-step3">Đơn vị:</label>
+                        <input type="text" class="form-control" id="unit-step3" readonly />
+                    </div>
+                    <div class="form-group">
+                        <label for="file-scan-step3">File scan:</label>
+                        <input type="text" class="form-control" id="file-scan-step3" readonly />
+                    </div>
+                </div>
+                <!-- Photo Placeholders -->
+                <div style="flex: 1" class="side-photos">
+                    <div class="side-photo">
+                        <div id="left-photo-step3" class="photo-placeholder">
+                            <img id="left-photo-preview-step3" class="photo-preview" />
+                        </div>
+                        <label for="left-photo-step3">Bên trái</label>
+                    </div>
+                    <div class="side-photo">
+                        <div id="right-photo-step3" class="photo-placeholder">
+                            <img id="right-photo-preview-step3" class="photo-preview" />
+                        </div>
+                        <label for="right-photo-step3">Bên phải</label>
+                    </div>
+                    <div class="side-photo">
+                        <div id="front-photo-step3" class="photo-placeholder">
+                            <img id="front-photo-preview-step3" class="photo-preview" />
+                        </div>
+                        <label for="front-photo-step3">Đối diện</label>
+                    </div>
+                </div>
+            </div>
+            <!-- Buttons -->
+<!--            <div class="form-group text-center">-->
+<!--                <button type="button" class="btn btn-secondary btn-sm mx-2" id="back-to-step-2">-->
+<!--                    <i class="bi bi-arrow-left"></i>-->
+<!--                </button>-->
+<!--                <button type="button" class="btn btn-primary btn-sm mx-2" id="finish-step" disabled>-->
+<!--                    <i class="bi bi-arrow-right"></i>-->
+<!--                </button>-->
+<!--            </div>-->
+<!--            <div class="form-group text-center">-->
+<!--                &lt;!&ndash; Back Button with Tooltip &ndash;&gt;-->
+<!--                <button-->
+<!--                        type="button"-->
+<!--                        class="btn btn-secondary btn-sm mx-2"-->
+<!--                        id="back-to-step-2"-->
+<!--                        data-bs-toggle="tooltip"-->
+<!--                        data-bs-placement="top"-->
+<!--                        title="Quay lại"-->
+<!--                >-->
+<!--                    <i class="bi bi-arrow-left"></i>-->
+<!--                </button>-->
+
+<!--                &lt;!&ndash; Finish Button with Tooltip &ndash;&gt;-->
+<!--                <button-->
+<!--                        type="button"-->
+<!--                        class="btn btn-primary btn-sm mx-2"-->
+<!--                        id="finish-step"-->
+<!--                        data-bs-toggle="tooltip"-->
+<!--                        data-bs-placement="top"-->
+<!--                        title="Hoàn thành"-->
+<!--                >-->
+<!--                    <i class="bi bi-arrow-right"></i>-->
+<!--                </button>-->
+<!--            </div>-->
+
+
+            <div class="form-group text-center">
+                <button type="button" class="btn btn-secondary btn-sm mx-2" id="back-to-step-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Quay lại">
+                    <i class="bi bi-arrow-left"></i>
+                </button>
+                <button type="button" class="btn btn-primary btn-sm mx-2" id="finish-step" data-bs-toggle="tooltip" data-bs-placement="top" title="Hoàn thành" >
+                    <i class="bi bi-arrow-right"></i>
+                </button>
+                <small id="result-error-message" class="text-danger mt-2"></small>
+            </div>
+
+
+        </div>
+    </div>
+
+
+
 
 </div>
 {% endblock %}
