@@ -12,61 +12,76 @@
 <div class="content">
     <!-- Search Box -->
     <div class="search-box">
-        <input type="text" placeholder="Nhập số CCCD để tìm kiếm .....">
-        <button type="button">Tìm kiếm</button>
+
+        <input
+                type="text"
+                id="search"
+                class="form-control"
+                placeholder="Tìm kiếm theo tên, số CCCD..."
+                oninput="handleSearch(this.value)"
+        />
+        <button type="button"  onclick="handleSearch(this.value)" >Tìm kiếm</button>
     </div>
 
     <!-- Table Section -->
     <div class="table-container">
-        <table>
+        <table >
             <thead>
-            <tr>
-                <th>STT</th>
-                <th>Họ và tên</th>
-                <th>Số CCCD</th>
-                <th>Cấp quản lý</th>
-                <th>Đơn vị</th>
-                <th>Hình ảnh</th>
-                <th>Chỉnh sửa</th>
+            <tr class="text-center">
+                <th class="text-center" >ID</th>
+                <th class="text-center"></th>
+                <th class="text-center" >Họ và Tên</th>
+                <th class="text-center" >Số CCCD</th>
+                <th class="text-center" >Cấp Quản Lý</th>
+                <th class="text-center" >Đơn Vị</th>
+                <th class="text-center">Email</th>
             </tr>
             </thead>
-            <tbody>
+            <tbody id="member-table" >
+            {% for user in users %}
             <tr>
-                <td>1</td>
-                <td>Nguyễn Văn A</td>
-                <td>123455679</td>
-                <td>Nguyễn Văn E</td>
-                <td>Đơn vị số 1</td>
-                <td><a href="#">Bấm vào đây</a></td>
-                <td><a href="#">Chỉnh sửa</a></td>
+                <td class="text-center">{{ user.id }}</td>
+                <td class="text-center">
+                    <button
+                            class="btn btn-info btn-sm"
+                            data-bs-toggle="tooltip"
+                            title="Xem"
+                            onclick="viewUser({{ user.id }})"
+                    >
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <button
+                            class="btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip"
+                            title="Sửa"
+                            onclick="editUser({{ user.id }})"
+                    >
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <!--                    <form-->
+                    <!--                            action="{{ url_for('users.delete', user_id=user.id) }}"-->
+                    <!--                            method="POST"-->
+                    <!--                            style="display: inline;"-->
+                    <!--                            onsubmit="return confirm('Bạn có chắc muốn xóa?');"-->
+                    <!--                    >-->
+                    <!--                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />-->
+                    <!--                        <button-->
+                    <!--                                class="btn btn-danger btn-sm"-->
+                    <!--                                type="submit"-->
+                    <!--                                data-bs-toggle="tooltip"-->
+                    <!--                                title="Xóa"-->
+                    <!--                        >-->
+                    <!--                            <i class="bi bi-trash"></i>-->
+                    <!--                        </button>-->
+                    </form>
+                </td>
+                <td>{{ user.full_name }}</td>
+                <td class="text-center" >{{ user.identity_card }}</td>
+                <td>{{ user.management_level }}</td>
+                <td>{{ user.unit_name }}</td>
+                <td>{{ user.email }}</td>
             </tr>
-            <tr>
-                <td>2</td>
-                <td>Trần Văn B</td>
-                <td>326598741</td>
-                <td>Nguyễn Văn E</td>
-                <td>Đơn vị số 1</td>
-                <td><a href="#">Bấm vào đây</a></td>
-                <td><a href="#">Chỉnh sửa</a></td>
-            </tr>
-            <tr>
-                <td>3</td>
-                <td>Lê Văn C</td>
-                <td>258951753</td>
-                <td>Nguyễn Văn E</td>
-                <td>Đơn vị số 1</td>
-                <td><a href="#">Bấm vào đây</a></td>
-                <td><a href="#">Chỉnh sửa</a></td>
-            </tr>
-            <tr>
-                <td>4</td>
-                <td>Trần Văn D</td>
-                <td>126543782</td>
-                <td>Nguyễn Văn E</td>
-                <td>Đơn vị số 1</td>
-                <td><a href="#">Bấm vào đây</a></td>
-                <td><a href="#">Chỉnh sửa</a></td>
-            </tr>
+            {% endfor %}
             </tbody>
         </table>
     </div>

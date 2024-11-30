@@ -505,7 +505,7 @@ document.getElementById("finish-form").addEventListener("click", () => {
 
                 if (data.user) {
                     alert(`Đăng ký người thân thành công:\nHọ tên: ${data.user.full_name}\nCCCD: ${data.user.identity_card}`);
-                    window.location.href = "/member_list"; // Redirect to member list
+                    window.location.href = "/soldier_info"; // Redirect to member list
                 } else {
                     throw new Error("User creation failed: No user returned in the response.");
                 }

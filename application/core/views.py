@@ -56,12 +56,6 @@ def batch_input():
 def register_relative():
     return render_template("register_relative.html", username=current_user.username)
 
-@core.route("/soldier_info")
-# @login_required
-def soldier_info():
-    return render_template("soldier_info.html", username=current_user.username)
-
-
 @core.route("/reports", methods=["GET", "POST"])
 @login_required
 def reports():

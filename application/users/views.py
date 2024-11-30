@@ -91,11 +91,6 @@ def change_password():
     return (redirect(url_for("users.change_password")))
 
 
-# @users.route("/member_list")
-# @login_required
-# def member_list():
-#     return render_template("member_list.html")
-
 @users.route("/member_list")
 @login_required
 def member_list():
@@ -120,6 +115,31 @@ def member_list():
     # return render_template("member_list.html", users=users_list, pagination=pagination)
     return render_template("member_list.html", users=users_list, pagination=pagination, form=form)
 
+@users.route("/soldier_info")
+@login_required
+def soldier_info():
+    search_query = request.args.get("search", "")
+    page = request.args.get("page", 1, type=int)
+    form = DeleteUserForm()
+
+    # Query users from database
+    query = User.query
+    if search_query:
+        query = query.filter(
+            db.or_(
+                User.full_name.ilike(f"%{search_query}%"),
+                User.identity_card.ilike(f"%{search_query}%"),
+                User.unit_name.ilike(f"%{search_query}%"),
+            )
+        )
+
+    pagination = query.paginate(page=page, per_page=10)
+    users_list = pagination.items
+
+    return render_template("soldier_info.html", users=users_list, pagination=pagination, form=form)
+
+
+
 @users.route("/search_members", methods=["GET"])
 @login_required
 def search_members():
@@ -137,7 +157,8 @@ def search_members():
             "id": user.id,
             "full_name": user.full_name,
             "identity_card": user.identity_card,
-            "management_level": user.management_level
+            "management_level": user.management_level,
+            "email": user.email
         }
         for user in users
     ]
