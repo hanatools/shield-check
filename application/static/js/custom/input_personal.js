@@ -498,15 +498,24 @@ document.getElementById("finish-form").addEventListener("click", () => {
         },
         body: JSON.stringify(userInfo),
     })
-        .then((response) => response.json())
-        .then((data) => {
-            console.log("Server response:", data);
-          alert("Đăng ký người thân thành công");
-            window.location.href = "/member_list";
+        .then((response) => response.json().then((data) => ({ status: response.status, data })))
+        .then(({ status, data }) => {
+            if (status === 200) {
+                console.log("Server response:", data);
+
+                if (data.user) {
+                    alert(`Đăng ký người thân thành công:\nHọ tên: ${data.user.full_name}\nCCCD: ${data.user.identity_card}`);
+                    window.location.href = "/member_list"; // Redirect to member list
+                } else {
+                    throw new Error("User creation failed: No user returned in the response.");
+                }
+            } else {
+                throw new Error(data.error || "Unexpected error occurred.");
+            }
         })
         .catch((error) => {
             console.error("Error submitting form:", error);
-            alert("Đăng ký người thân thất bại");
+            alert(`Đăng ký người thân thất bại:\n${error.message}`);
         });
 });
 

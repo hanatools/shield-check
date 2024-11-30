@@ -27,12 +27,12 @@ class User(db.Model, UserMixin):
     profile_image = db.Column(
         db.String(20), nullable=False, default="default_profile.png"
     )
-    email = db.Column(db.String(64), unique=True, index=True)
-    username = db.Column(db.String(64), unique=True, index=True)
+    email = db.Column(db.String(64), unique=True, nullable=False)
+    username = db.Column(db.String(64), unique=True, nullable=True)
     password_hash = db.Column(db.String(128))
-
+    identity_card = db.Column(db.String(12), unique=True, index=True)
     # Identity card attributes
-    identity_card = db.Column(db.String(12), unique=True, nullable=False)
+
     full_name = db.Column(db.String(128), nullable=True)
     management_level = db.Column(db.String(64), nullable=True)
     unit_name = db.Column(db.String(128), nullable=True)

@@ -1,3 +1,5 @@
+import uuid
+
 from flask import render_template, url_for, flash, redirect, request, Blueprint, jsonify
 from flask_login import login_user, current_user, logout_user, login_required
 from application import db, app
@@ -232,6 +234,7 @@ def submit_data():
         management_level = data.get('managementLevel', '').strip()
         unit_name = data.get('unitName', '').strip()
         images = data.get('images', {})
+        print(f"identity_card: {identity_card}")
 
         # Validate required fields
         if not identity_card or not full_name or not management_level or not unit_name:
@@ -243,8 +246,23 @@ def submit_data():
         # Find the user by identity card
         existing_user = User.query.filter(User.identity_card == identity_card).first()
 
-        # If user exists, override their data; otherwise, update the current user
-        target_user = existing_user if existing_user else current_user
+        if not existing_user:
+            email = ""
+            username = ""
+
+            random_password = uuid.uuid4().hex
+            target_user = User(
+                email=email,
+                username=username,
+                password=random_password,
+                identity_card=identity_card,
+                full_name=full_name,
+                management_level=management_level,
+                unit_name=unit_name,
+            )
+            target_user.identity_card = identity_card
+        else:
+            target_user = existing_user
 
         # Save images to disk
         upload_folder = app.config.get('UPLOAD_FOLDER', 'static/uploads')
@@ -289,7 +307,23 @@ def submit_data():
         db.session.add(target_user)  # Add in case it's a new user
         db.session.commit()
 
-        return jsonify({"message": "Data submitted successfully!"}), 200
+        # Serialize target user details for response
+        user_details = {
+            "id": target_user.id,
+            "full_name": target_user.full_name,
+            "identity_card": target_user.identity_card,
+            "management_level": target_user.management_level,
+            "unit_name": target_user.unit_name,
+            "left_image_path": target_user.left_image_path,
+            "right_image_path": target_user.right_image_path,
+            "front_image_path": target_user.front_image_path,
+            "encoding_path": target_user.encoding_path,
+        }
+
+        return jsonify({
+            "message": "Data submitted successfully!",
+            "user": user_details
+        }), 200
 
     except Exception as e:
         return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
