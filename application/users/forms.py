@@ -62,4 +62,5 @@ class DeleteUserForm(FlaskForm):
 class SoldierRegistrationForm(FlaskForm):
     full_name = StringField("Họ và Tên", validators=[DataRequired()])
     management_level = StringField("Cấp Quản Lý", validators=[DataRequired()])
+    unit_name = StringField("Đơn vị", validators=[DataRequired()])
     submit = SubmitField("Tiếp Theo")

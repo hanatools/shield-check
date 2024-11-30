@@ -18,13 +18,14 @@
             <form method="POST" id="register-form">
                 {{ form.hidden_tag() }}
                 <div class="mb-3">
-                    <label for="fullname" class="form-label">Họ và tên:</label>
+                    <label for="fullname" class="form-label">Họ và tên: <span class="text-danger">(*)</span> </label>
                     <input
                             type="text"
                             class="form-control"
                             id="fullname"
                             name="fullname"
                             placeholder="Nhập họ và tên"
+                            value="Nguyễn Văn A"
                     />
                     <small id="fullname-error" class="text-danger"></small>
                 </div>
@@ -36,11 +37,12 @@
                             id="management_level"
                             name="management_level"
                             placeholder="Nhập cấp quản lý"
+                            value="Cấp 1d"
                     />
                     <small id="management_level-error" class="text-danger"></small>
                 </div>
                 <div class="mb-3">
-                    <label for="identity_card" class="form-label">Số CCCD:</label>
+                    <label for="identity_card" class="form-label">Số CCCD: <span class="text-danger">(*)</span>  </label>
                     <input
                             type="text"
                             class="form-control"
@@ -48,6 +50,18 @@
                             name="identity_card"
                             placeholder="Nhập số CCCD"
                             readonly
+                    />
+                </div>
+
+                <div class="mb-3">
+                    <label for="unit_name" class="form-label">Đơn vị:<span class="text-danger">(*)</span>  </label>
+                    <input
+                            type="text"
+                            class="form-control"
+                            id="unit_name"
+                            name="unit_name"
+                            placeholder="Nhập Đơn vị"
+                            value="Đơn vị 1"
                     />
                 </div>
                 <div class="mb-3">

@@ -215,12 +215,13 @@ def validate_identity_card():
     data = request.json
     full_name = data.get("full_name", "").strip()
     management_level = data.get("management_level", "").strip()
+    unit_name = data.get("unit_name", "").strip()
 
-    if not full_name or not management_level:
-        return jsonify({"error": "Họ và tên và Cấp quản lý không được để trống."}), 400
+    if not full_name or not management_level or not unit_name:
+        return jsonify({"error": "Họ và tên, Cấp quản lý và Đơn vị không được để trống."}), 400
 
     # Check if the user exists
-    user = User.query.filter_by(full_name=full_name, management_level=management_level).first()
+    user = User.query.filter_by(full_name=full_name, management_level=management_level, unit_name=unit_name).first()
     if user:
         user_data = {
             "id": user.id,
