@@ -62,10 +62,46 @@ def soldier_info():
     return render_template("soldier_info.html", username=current_user.username)
 
 
-@core.route("/reports")
-# @login_required
+@core.route("/reports", methods=["GET", "POST"])
+@login_required
 def reports():
-    return render_template("reports.html", username=current_user.username)
+    from_date = request.args.get("from_date")
+    to_date = request.args.get("to_date")
+
+    # Base query
+    query = CheckIn.query
+
+    # Apply filters if present
+    if from_date:
+        query = query.filter(CheckIn.created_time >= from_date)
+    if to_date:
+        query = query.filter(CheckIn.created_time <= to_date)
+
+    # Order by created_time descending
+    check_ins = query.order_by(CheckIn.created_time.desc()).all()
+
+    # Prepare data for rendering
+    report_data = []
+    for record in check_ins:
+        # Calculate duration
+        if record.check_in_time and record.check_out_time:
+            duration = abs((record.check_out_time - record.check_in_time).total_seconds())
+            duration_str = f"{int(duration // 3600)}:{int((duration % 3600) // 60)}:{int(duration % 60)}"
+        else:
+            duration_str = "N/A"
+
+        report_data.append({
+            "id": record.id,
+            "full_name": record.full_name,
+            "identity_card": record.identity_card,
+            "check_in_time": record.check_in_time.strftime("%H:%M:%S %d/%m/%Y") if record.check_in_time else "N/A",
+            "check_out_time": record.check_out_time.strftime("%H:%M:%S %d/%m/%Y") if record.check_out_time else "N/A",
+            "accepted_datetime": record.accepted_datetime.strftime("%H:%M:%S %d/%m/%Y") if record.accepted_datetime else "N/A",
+            "created_time": record.created_time.strftime("%H:%M:%S %d/%m/%Y"),
+            "duration": duration_str,
+        })
+
+    return render_template("reports.html", username=current_user.username, report_data=report_data)
 
 
 @core.route("/info")

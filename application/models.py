@@ -86,6 +86,8 @@ class CheckIn(db.Model):
     status = db.Column(db.String(50), default="created", nullable=False)  # Status: created, accepted, etc.
     token = db.Column(db.String(255), default=lambda: str(uuid.uuid4()), unique=True, nullable=False)
     accepted_datetime = db.Column(db.DateTime, nullable=True)
+    check_in_time = db.Column(db.DateTime, nullable=True)
+    check_out_time = db.Column(db.DateTime, nullable=True)
 
     def __repr__(self):
         return f"<CheckIn {self.id} - {self.full_name}>"

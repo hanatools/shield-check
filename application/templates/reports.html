@@ -17,38 +17,40 @@
             <table>
                 <thead>
                 <tr>
+                    <th>ID</th>
                     <th>Họ và tên</th>
                     <th>Số CCCD</th>
                     <th>Thời gian vào</th>
                     <th>Thời gian ra</th>
                     <th>Số giờ ra-vào</th>
+                    <th>Thời gian duyệt</th>
+                    <th>Thời gian tạo</th>
                 </tr>
                 </thead>
                 <tbody>
+                {% for record in report_data %}
                 <tr>
-                    <td>Nguyễn Văn A</td>
-                    <td>123455679</td>
-                    <td>08:00:00 20/10/2024</td>
-                    <td>17:20:55 20/10/2024</td>
-                    <td>9:20:29</td>
+                    <td>{{ record.id }}</td>
+                    <td>{{ record.full_name }}</td>
+                    <td>{{ record.identity_card }}</td>
+                    <td>{{ record.check_in_time }}</td>
+                    <td>{{ record.check_out_time }}</td>
+                    <td>{{ record.duration }}</td>
+                    <td>{{ record.accepted_datetime }}</td>
+                    <td>{{ record.created_time }}</td>
                 </tr>
-                <tr>
-                    <td>Trần Văn B</td>
-                    <td>326598741</td>
-                    <td>08:12:36 21/10/2024</td>
-                    <td>10:10:20 21/10/2024</td>
-                    <td>1:57:44</td>
-                </tr>
+                {% endfor %}
                 </tbody>
             </table>
         </div>
+        <!-- Filter Section -->
         <div class="filter-box">
             <h4>Lọc thông tin</h4>
-            <form>
+            <form method="GET" action="/reports">
                 <label for="fromDate1">Từ ngày</label>
-                <input type="date" id="fromDate1">
+                <input type="date" id="fromDate1" name="from_date" value="{{ request.args.get('from_date', '') }}">
                 <label for="toDate1">Đến ngày</label>
-                <input type="date" id="toDate1">
+                <input type="date" id="toDate1" name="to_date" value="{{ request.args.get('to_date', '') }}">
                 <button type="submit">Xác nhận</button>
             </form>
         </div>
