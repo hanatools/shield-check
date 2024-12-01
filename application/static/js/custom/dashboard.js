@@ -321,12 +321,37 @@ document.getElementById("capture-photo").addEventListener("click", async () => {
         const result = await response.json();
 
         if (response.ok) {
-            alert("Xác minh thành công!");
-            console.log("Server response:", result);
+            // Create a Bootstrap alert
+            const alertDiv = document.createElement("div");
+            alertDiv.className = "alert alert-success alert-dismissible fade show";
+            alertDiv.role = "alert";
+            alertDiv.innerHTML = `
+        <strong>Xác minh thành công!</strong> Thông tin đã được cập nhật.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+
+            // Insert the alert at the top of the content
+            const contentDiv = document.querySelector(".content");
+            contentDiv.insertBefore(alertDiv, contentDiv.firstChild);
+
             // Close the modal
             const faceScanModal = bootstrap.Modal.getInstance(document.getElementById("faceScanModal"));
             faceScanModal.hide();
-        } else {
+
+            // Reload the page after 2 seconds to reflect updated details
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        }
+        // if (response.ok) {
+        //     alert("Xác minh thành công!");
+        //     console.log("Server response:", result);
+        //     // Close the modal
+        //     const faceScanModal = bootstrap.Modal.getInstance(document.getElementById("faceScanModal"));
+        //     faceScanModal.hide();
+        // }
+
+        else {
             alert(result.error || "Xác minh thất bại. Vui lòng thử lại.");
             console.error("Server error:", result);
         }

@@ -538,12 +538,7 @@ def approve_check_out(user_id, token):
             message=f"Có lỗi xảy ra: {str(e)}"
         )
 
-# from flask import request, jsonify
-# import base64
-# import os
-# import face_recognition
-
-@app.route("/validate-face-scan", methods=["POST"])
+@core.route("/validate-face-scan", methods=["POST"])
 def validate_face_scan():
     try:
         data = request.json
@@ -585,10 +580,34 @@ def validate_face_scan():
 
         match = face_recognition.compare_faces([stored_encoding], captured_encoding[0], tolerance=0.6)
 
-        if match[0]:
-            return jsonify({"message": "Xác minh thành công!"}), 200
-        else:
+        if not match[0]:
             return jsonify({"error": "Khuôn mặt không khớp với dữ liệu đã lưu."}), 400
+
+        # Validate if identity_card matches identity found in face recognition
+        recognized_identity_card = os.path.basename(stored_encoding_path).split(".")[0]
+        if recognized_identity_card != identity_card:
+            return jsonify({"error": "CCCD từ nhận diện không khớp với dữ liệu."}), 400
+
+        # Update database: check_out_time or check_in_time
+        current_time = datetime.utcnow()
+        if not check_in_record.check_out_time:
+            check_in_record.check_out_time = current_time
+        else:
+            check_in_record.check_in_time = current_time
+            check_in_record.status = "completed"
+
+        db.session.commit()
+
+        return jsonify({
+            "message": "Xác minh thành công!",
+            "check_in_record": {
+                "id": check_in_record.id,
+                "identity_card": check_in_record.identity_card,
+                "status": check_in_record.status,
+                "check_in_time": check_in_record.check_in_time.isoformat() if check_in_record.check_in_time else None,
+                "check_out_time": check_in_record.check_out_time.isoformat() if check_in_record.check_out_time else None,
+            }
+        }), 200
 
     except Exception as e:
         return jsonify({"error": f"Lỗi xảy ra: {str(e)}"}), 500

@@ -42,6 +42,7 @@
                                      {% elif record.status == 'reject' %} bg-danger
                                      {% elif record.status == 'cancel' %} bg-secondary
                                      {% elif record.status == 'expired' %} bg-primary
+                                     {% elif record.status == 'completed' %} bg-info
                                      {% endif %}">
                              {% if record.status == 'created' %}
                                                 Đã tạo
@@ -53,7 +54,11 @@
                                                 Đã hủy
                                             {% elif record.status == 'expired' %}
                                                 Hết hạn
+                                                   {% elif record.status == 'completed' %}
+
+                                                Hoàn thành
                                             {% else %}
+
                                                 Thông báo
                                             {% endif %}
                         </span>
