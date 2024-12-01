@@ -215,10 +215,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (data.error) {
                     errorMessage.textContent = `Error: ${data.error}`; // Show error message
                 } else {
-                    alert("Soldier registered check in successfully!");
+                    alert("Bạn đã tạo yêu cầu thành công.  Xin hãy đợi duyệt");
                     console.log(data);
                     // Optionally redirect to another page or reset form
-                    // location.href = "/success"; // Redirect to success page
+                    location.href = "/reports"; // Redirect to success page
                 }
             })
             .catch((error) => {

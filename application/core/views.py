@@ -87,6 +87,7 @@ def reports():
         report_data.append({
             "id": record.id,
             "full_name": record.full_name,
+            "status": record.status,
             "identity_card": record.identity_card,
             "check_in_time": record.check_in_time.strftime("%H:%M:%S %d/%m/%Y") if record.check_in_time else "N/A",
             "check_out_time": record.check_out_time.strftime("%H:%M:%S %d/%m/%Y") if record.check_out_time else "N/A",

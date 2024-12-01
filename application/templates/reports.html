@@ -20,7 +20,9 @@
                 <tr>
                     <th>ID</th>
                     <th>Họ và tên</th>
+                    <th>Trạng thái</th>
                     <th>Số CCCD</th>
+
                     <th>Thời gian vào</th>
                     <th>Thời gian ra</th>
                     <th>Số giờ ra-vào</th>
@@ -33,6 +35,17 @@
                 <tr>
                     <td>{{ record.id }}</td>
                     <td>{{ record.full_name }}</td>
+                    <td class="text-center">
+                        <span class="badge
+                                     {% if record.status == 'created' %} bg-warning text-dark
+                                     {% elif record.status == 'accepted' %} bg-success
+                                     {% elif record.status == 'reject' %} bg-danger
+                                     {% elif record.status == 'cancel' %} bg-secondary
+                                     {% elif record.status == 'expired' %} bg-primary
+                                     {% endif %}">
+                            {{ record.status | capitalize }}
+                        </span>
+                    </td>
                     <td>{{ record.identity_card }}</td>
                     <td>{{ record.check_in_time }}</td>
                     <td>{{ record.check_out_time }}</td>
