@@ -43,7 +43,19 @@
                                      {% elif record.status == 'cancel' %} bg-secondary
                                      {% elif record.status == 'expired' %} bg-primary
                                      {% endif %}">
-                            {{ record.status | capitalize }}
+                             {% if record.status == 'created' %}
+                                                Đã tạo
+                                            {% elif record.status == 'accepted' %}
+                                                Đã duyệt
+                                            {% elif record.status == 'reject' %}
+                                                Lỗi
+                                            {% elif record.status == 'cancel' %}
+                                                Đã hủy
+                                            {% elif record.status == 'expired' %}
+                                                Hết hạn
+                                            {% else %}
+                                                Thông báo
+                                            {% endif %}
                         </span>
                     </td>
                     <td>{{ record.identity_card }}</td>
