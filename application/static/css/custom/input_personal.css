@@ -1,0 +1,487 @@
+/* Content Area */
+.content {
+    padding: 20px;
+    background-color: #f8f9fa; /* Light gray background */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden; /* Prevent content overflow */
+}
+
+/* Button Group */
+.button-group {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.button-group .btn {
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-active {
+    background-color: #10b981;
+    color: white;
+}
+.btn-active:hover {
+    background-color: #0b6749;
+    color: white;
+}
+
+.btn-inactive {
+    background-color: #374151; /* Dark gray */
+    color: white;
+}
+
+.btn-inactive:hover {
+    background-color: #111827; /* Darker gray on hover */
+    color: white;
+}
+
+/* Card Section */
+.card {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    text-align: center;
+    width: 100%;
+    max-width: 600px;
+    overflow: hidden; /* Prevent overflow */
+}
+
+.card h4 {
+    font-size: 18px;
+    font-weight: bold;
+    color: #1e3a8a; /* Dark navy for the title */
+    margin-bottom: 20px;
+}
+
+/* QR Placeholder */
+.qr-placeholder {
+    position: relative;
+    width: 100%; /* Make it responsive */
+    max-width: 600px; /* Constrain maximum size */
+    height: 0;
+    padding-bottom: 75%; /* Maintain 4:3 aspect ratio */
+    border: 2px solid #22c55e;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    background-color: #e5e7eb; /* Light gray placeholder background */
+}
+
+.qr-placeholder video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Capture Button */
+.btn-capture {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.btn-capture:hover {
+    background-color: #1d4ed8;
+}
+
+/* QR Result */
+.qr-result {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9fafb;
+    width: 100%;
+    max-width: 600px;
+    word-wrap: break-word; /* Ensure long text wraps */
+}
+
+.step {
+    max-width: 600px;
+    display: none;
+    width: 100%;
+    transition: transform 0.5s ease, opacity 0.5s ease;
+    opacity: 0;
+}
+
+/* Active step */
+.step.active {
+    display: block;
+    transform: translateX(0);
+    opacity: 1;
+}
+
+/* Transition effect for sliding */
+.step.slide-out-left {
+    transform: translateX(-100%);
+    opacity: 0;
+}
+
+.step.slide-in-right {
+    transform: translateX(100%);
+    opacity: 0;
+}
+
+.management-level-error {
+    color: red;
+    font-size: 12px;
+    text-align: left;
+}
+
+#personal-info-form label {
+    text-align: left;
+}
+
+/* Personal Info Form Styling */
+#personal-info-form {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff; /* White background */
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+}
+
+/* Form Title */
+#personal-info-form h4 {
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    color: #1e3a8a; /* Dark navy for title */
+    margin-bottom: 20px;
+}
+
+/* Form Group */
+#personal-info-form .form-group {
+    margin-bottom: 15px;
+    text-align: left; /* Align text to the left */
+}
+
+/* Labels */
+#personal-info-form label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    display: block; /* Block-level to ensure alignment */
+}
+
+/* Inputs */
+#personal-info-form input {
+    width: 100%; /* Full width within the form */
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box; /* Include padding and border in the width */
+    font-size: 14px;
+}
+
+/* Error Messages */
+#personal-info-form .error-message {
+    color: red;
+    font-size: 12px;
+    margin-top: -5px; /* Adjust space between input and error */
+    margin-bottom: 10px; /* Space before the next field */
+    display: block; /* Ensure error is on its own line */
+}
+
+/* Button Group */
+#personal-info-form .button-group {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+/* Buttons */
+#personal-info-form .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#personal-info-form .btn-primary {
+    background-color: #2563eb; /* Blue button */
+    color: white;
+}
+#personal-info-form .btn-primary:hover {
+    background-color: #1d4ed8;
+}
+
+#personal-info-form .btn-secondary {
+    background-color: #6b7280; /* Gray button */
+    color: white;
+}
+#personal-info-form .btn-secondary:hover {
+    background-color: #4b5563;
+}
+
+/* Scoped CSS for Step 3 using #step-3-form */
+/* Step 3 Form Styling */
+#step-3-form {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff; /* White background */
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+/* Title */
+#step-3-form h4 {
+    font-size: 18px;
+    font-weight: bold;
+    color: #1e3a8a; /* Dark navy */
+    margin-bottom: 20px;
+}
+
+/* Photo Section */
+#step-3-form .photo-section {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+/* Main Camera Section */
+#step-3-form .main-camera {
+    flex: 1 1 60%; /* Take 60% of available width */
+    position: relative;
+    background-color: #e5e7eb; /* Light gray */
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    overflow: hidden;
+    text-align: center;
+}
+
+#step-3-form .main-camera video {
+    width: 100%;
+    height: auto;
+}
+
+#step-3-form .capture-button {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#step-3-form .capture-button:hover {
+    background-color: #1d4ed8;
+}
+
+/* Side Photos Section */
+#step-3-form .side-photos {
+    flex: 1 1 35%; /* Take 35% of available width */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+#step-3-form .side-photo {
+    text-align: center;
+}
+
+/*#step-3-form .photo-placeholder {*/
+/*    background-color: #e5e7eb; !* Light gray placeholder *!*/
+/*    width: 100px;*/
+/*    height: 100px;*/
+/*    border: 1px solid #ccc;*/
+/*    border-radius: 5px;*/
+/*    margin: 0 auto;*/
+/*    cursor: pointer;*/
+/*    background-size: cover;*/
+/*    background-position: center;*/
+/*}*/
+
+#step-3-form .side-photo label {
+    margin-top: 5px;
+    display: block;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+#step-3-form .photo-placeholder {
+    width: 100px;
+    height: 100px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background-color: #e5e7eb;
+}
+
+#step-3-form .photo-preview {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: cover;
+}
+
+#reset-capture-photo {
+    background-color: #ffc107; /* Warning color */
+    color: #000; /* Black text */
+    border: none;
+    border-radius: 5px;
+    padding: 5px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#reset-capture-photo:hover {
+    background-color: #e0a800; /* Darker warning color on hover */
+    color: white;
+}
+
+#step-4-form {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #ffffff; /* White background */
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    font-family: Arial, sans-serif;
+    text-align: center;
+    overflow: hidden;
+}
+
+/* Title Styling */
+#step-4-form h4 {
+    font-size: 20px;
+    font-weight: bold;
+    color: #1e3a8a; /* Navy blue */
+    margin-bottom: 30px;
+}
+
+/* Input Group Styling */
+#step-4-form .input-group {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#step-4-form .input-group label {
+    font-weight: bold;
+    font-size: 16px;
+    color: #374151; /* Gray */
+    margin-right: 20px;
+    width: 30%; /* Ensure consistent width */
+    text-align: left; /* Align labels to the left */
+}
+
+#step-4-form .input-group input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #d1d5db; /* Light gray */
+    border-radius: 5px;
+    font-size: 14px;
+    color: #374151;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Image Confirmation Section */
+#step-4-form .side-photos {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+#step-4-form .side-photo {
+    width: 30%;
+    text-align: center;
+}
+
+#step-4-form .photo-placeholder-confirm {
+    width: 100%;
+    height: auto;
+    border: 2px solid #d1d5db; /* Light gray */
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+#step-4-form .photo-placeholder-confirm img {
+    width: 100%;
+    height: auto;
+    object-fit: cover; /* Crop image to fit placeholder */
+}
+
+#step-4-form .side-photo label {
+    font-size: 14px;
+    font-weight: bold;
+    color: #1e3a8a;
+}
+
+/* Buttons */
+#step-4-form .form-buttons {
+    margin-top: 30px;
+    display: flex;
+    justify-content: space-between;
+}
+
+#step-4-form .form-buttons button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+#step-4-form .btn-back {
+    background-color: #374151; /* Gray */
+    color: white;
+}
+
+#step-4-form .btn-back:hover {
+    background-color: #111827; /* Darker gray */
+}
+
+#step-4-form .btn-finish {
+    background-color: #2563eb; /* Blue */
+    color: white;
+}
+
+#step-4-form .btn-finish:hover {
+    background-color: #1d4ed8; /* Darker blue */
+}

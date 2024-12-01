@@ -1,0 +1,77 @@
+/* Content Styling */
+.content {
+    padding: 20px;
+    background-color: #f8f9fa; /* Light gray background */
+    min-height: calc(100vh - 70px); /* Account for the header height (70px) */
+    padding-top: 70px;
+}
+
+/* Search Box */
+.search-box {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.search-box input {
+    flex: 1;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 16px;
+}
+
+.search-box button {
+    background-color: #2563eb; /* Blue button */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.search-box button:hover {
+    background-color: #1d4ed8; /* Darker blue */
+}
+
+/* Table Section */
+.table-container {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    padding: 20px;
+    width: 100%;
+}
+
+.table-container table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-container th,
+.table-container td {
+    padding: 10px;
+    text-align: left;
+    border: 1px solid #e5e7eb; /* Light gray border */
+    font-size: 14px;
+}
+
+.table-container th {
+    background-color: #2563eb; /* Blue for headers */
+    color: white;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.table-container td a {
+    color: #2563eb; /* Link color */
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.table-container td a:hover {
+    text-decoration: underline;
+}

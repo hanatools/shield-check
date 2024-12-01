@@ -6,6 +6,13 @@
 
 {% block stylecss %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/custom/login.css') }}">
+<style>
+    .error-message {
+        color: red;
+        font-size: 14px;
+        margin-bottom: 15px;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -14,52 +21,44 @@
         <img class="img-fluid rounded-3" src="{{ url_for('static', filename='images/logo.png') }}" alt="HRM Logo">
         <h2 class="login-title">HRM</h2>
         <p class="login-subtitle">Welcome Back<br>Login to access your account</p>
+
+        <!-- Display error messages -->
+        {% if error %}
+        <div class="error-message">{{ error }}</div>
+        {% endif %}
+
         <form id="loginForm" method="post" action="{{ url_for('users.login') }}">
+            {{ form.hidden_tag() }}
             <div class="form-group">
                 <label for="username">Username</label>
-                <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username" required>
+                <input
+                        type="text"
+                        class="form-control"
+                        id="username"
+                        name="username"
+                        placeholder="Enter your username"
+                        value="{{ form.username.data }}"
+                        required>
+                {% for error in form.username.errors %}
+                <div class="text-danger">{{ error }}</div>
+                {% endfor %}
             </div>
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
+                <input
+                        type="password"
+                        class="form-control"
+                        id="password"
+                        name="password"
+                        placeholder="Enter your password"
+                        required>
+                {% for error in form.password.errors %}
+                <div class="text-danger">{{ error }}</div>
+                {% endfor %}
             </div>
             <button type="submit" class="btn login-button">Login</button>
         </form>
         <p class="footer">© 2024 HRM Application. All rights reserved.</p>
     </div>
 </div>
-
-<!-- Error Modal -->
-<div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="errorModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="errorModalLabel">Login Failed</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                Invalid username or password. Please try again.
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-{% endblock %}
-
-
-
-{% block stylejs %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Simulate showing the modal on login failure
-        {% if error %}
-        $('#errorModal').modal('show');
-        {% endif %}
-    });
-</script>
 {% endblock %}

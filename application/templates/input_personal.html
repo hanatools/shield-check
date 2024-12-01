@@ -1,0 +1,204 @@
+{% extends "member_base.html" %}
+
+{% block stylecss %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/custom/input_personal.css') }}">
+{% endblock %}
+
+{% block title %}
+<title>Nhập thông tin theo cá nhân</title>
+{% endblock %}
+
+{% block content %}
+<div class="content">
+    <!-- Button Group -->
+    <div class="button-group">
+        <button class="btn btn-active">Nhập thông tin cá nhân</button>
+        <button class="btn btn-inactive">Nhập thông tin theo lô</button>
+    </div>
+    <!-- Step 1: QR Code Scanning -->
+    <div id="step-1" class="step active">
+        <!-- Card Section -->
+        <div class="card">
+            <h4>Hãy quét mã QR trên thẻ CCCD</h4>
+            <div class="qr-placeholder">
+                <video id="camera-stream" autoplay></video>
+                <img id="captured-image" style="display: none;" alt="Captured QR Frame" src="">
+            </div>
+            <div id="qr-result-container" style="display: none;">
+                <p id="qr-result"></p>
+                <button class="btn btn-capture" id="reset-button">Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="step-2" class="step">
+        <div class="card">
+            <h4>Nhập thông tin cá nhân</h4>
+            <form id="personal-info-form" class="container-fluid">
+                <div class="form-group">
+                    <label for="identity-card-number">Số CCCD </label>
+                    <input
+                            type="text"
+                            id="identity-card-number"
+                            class="form-control"
+                            readonly
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="full-name">Nhập họ và tên <span class="text-danger">(*)</span></label>
+                    <input
+                            type="text"
+                            id="full-name"
+                            class="form-control"
+                            placeholder="Nhập họ và tên"
+                            value="Nguyễn Văn A"
+                    />
+                    <span id="full-name-error" class="error-message"></span>
+                </div>
+                <div class="form-group">
+                    <label for="unit-name">Nhập tên đơn vị <span class="text-danger">(*)</span></label>
+                    <input
+                            type="text"
+                            id="unit-name"
+                            class="form-control"
+                            placeholder="Nhập tên đơn vị"
+                            value="Đơn vị 1"
+                    />
+                    <span id="unit-name-error" class="error-message"></span>
+                </div>
+                <div class="form-group">
+                    <label for="management-level">Cấp quản lý <span class="text-danger">(*)</span></label>
+                    <input
+                            type="text"
+                            id="management-level"
+                            class="form-control"
+                            placeholder="Cấp quản lý"
+                            value="Cấp 1"
+                    />
+                    <span id="management-level-error" class="error-message"></span>
+                </div>
+                <div class="button-group">
+                    <button
+                            type="button"
+                            id="back-to-step-1"
+                            class="btn btn-secondary"
+                    >
+                        Quay lại
+                    </button>
+                    <button
+                            type="button"
+                            id="next-to-step-3"
+                            class="btn btn-primary"
+                            disabled
+                    >
+                        Tiếp theo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="step-3" class="step">
+        <form id="step-3-form">
+            <h4>Chụp ảnh gương mặt</h4>
+            <div class="photo-section">
+                <div class="main-camera">
+                    <video id="face-camera" autoplay></video>
+
+                    <div class="form-group d-flex justify-content-center pt-4">
+                        <button type="button" class="btn btn-secondary btn-sm mx-2" id="back-to-step-2"><i class="bi bi-arrow-left"></i></button>
+                        <button type="button" class="btn btn-info btn-sm mx-2" id="capture-photo"><i class="bi bi-camera"></i></button>
+                        <button type="button" class="btn btn-warning btn-sm mx-2" id="reset-capture-photo"><i class="bi bi-arrow-counterclockwise"></i> </button>
+                        <button type="button" class="btn btn-primary btn-sm mx-2" id="next-to-step-4" disabled><i class="bi bi-arrow-right"></i></button>
+                    </div>
+
+                </div>
+                <div class="side-photos">
+                    <div class="side-photo">
+                        <div id="left-photo" class="photo-placeholder">
+                            <img id="left-photo-preview" class="photo-preview" style="display: none;" />
+                        </div>
+                        <label for="left-photo">Bên trái</label>
+                    </div>
+                    <div class="side-photo">
+                        <div id="right-photo" class="photo-placeholder">
+                            <img id="right-photo-preview" class="photo-preview" style="display: none;" />
+                        </div>
+                        <label for="right-photo">Bên phải</label>
+                    </div>
+                    <div class="side-photo">
+                        <div id="front-photo" class="photo-placeholder">
+                            <img id="front-photo-preview" class="photo-preview" style="display: none;" />
+                        </div>
+                        <label for="front-photo">Đối diện</label>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </div>
+
+    <div id="step-4" class="step">
+        <form id="step-4-form">
+            <h4>Kết quả</h4>
+            {{ form.hidden_tag() }}
+            <!-- User Information -->
+            <div class="input-group">
+                <label for="full-name-confirm">Họ và tên:</label>
+                <input type="text" id="full-name-confirm" disabled />
+            </div>
+            <div class="input-group">
+                <label for="identity-card-confirm">Số CCCD:</label>
+                <input type="text" id="identity-card-confirm" disabled />
+            </div>
+            <div class="input-group">
+                <label for="management-level-confirm">Cấp quản lý:</label>
+                <input type="text" id="management-level-confirm" disabled />
+            </div>
+            <div class="input-group">
+                <label for="unit-name-confirm">Đơn vị:</label>
+                <input type="text" id="unit-name-confirm" disabled />
+            </div>
+
+            <!-- Photo Confirmation -->
+            <div class="side-photos">
+                <div class="side-photo">
+                    <div id="left-photo-preview-confirm" class="photo-placeholder-confirm">
+                        <img src="" alt="Bên trái" />
+                    </div>
+                    <label>Bên trái</label>
+                </div>
+                <div class="side-photo">
+                    <div id="right-photo-preview-confirm" class="photo-placeholder-confirm">
+                        <img src="" alt="Bên phải" />
+                    </div>
+                    <label>Bên phải</label>
+                </div>
+                <div class="side-photo">
+                    <div id="front-photo-preview-confirm" class="photo-placeholder-confirm">
+                        <img src="" alt="Đối diện" />
+                    </div>
+                    <label>Đối diện</label>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="form-group d-flex justify-content-center pt-4">
+                <button type="button" class="btn btn-secondary btn-sm mx-2" id="back-to-step-3"><i class="bi bi-arrow-left"></i></button>
+                <button type="button" class="btn btn-primary btn-sm mx-2" id="finish-form" ><i class="bi bi-arrow-right"></i></button>
+            </div>
+
+
+        </form>
+    </div>
+
+
+
+</div>
+{% endblock %}
+
+
+{% block stylejs %}
+<script src="https://cdn.jsdelivr.net/npm/@zxing/library@latest/umd/index.min.js"></script>
+<script src="{{ url_for('static', filename='js/custom/input_personal.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,110 @@
+/* Center Content */
+.content {
+    padding: 20px;
+    background-color: #f8f9fa; /* Light gray background */
+    min-height: 100vh; /* Full-page height */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Button Group */
+.button-group {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.button-group .btn {
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-active {
+    background-color: #10b981; /* Green */
+    color: white;
+}
+
+.btn-inactive {
+    background-color: #374151; /* Dark gray */
+    color: white;
+}
+
+.btn-inactive:hover {
+    background-color: #111827; /* Darker gray on hover */
+}
+
+/* Card Section */
+.card {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    text-align: center;
+    width: 100%;
+    max-width: 600px; /* Set max-width for responsiveness */
+    position: relative;
+}
+
+/* Placeholder Box */
+.placeholder-box {
+    background-color: #e5e7eb; /* Light gray placeholder background */
+    border-radius: 10px;
+    width: 100%;
+    height: 300px; /* Fixed height */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 16px;
+    color: #6b7280; /* Neutral gray text */
+    margin-bottom: 20px;
+    position: relative;
+}
+
+/* Template Download Button */
+.template-btn {
+    position: absolute;
+    top: 10px; /* Align with placeholder padding */
+    right: 10px;
+    background-color: #2563eb; /* Blue background */
+    color: white; /* White text */
+    border: none;
+    border-radius: 5px;
+    padding: 5px 10px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    height: 1.8rem;
+}
+
+.template-btn:hover {
+    background-color: #1d4ed8; /* Darker blue on hover */
+}
+
+.template-btn:focus {
+    outline: none;
+    box-shadow: 0 0 5px rgba(37, 99, 235, 0.5); /* Subtle blue glow */
+}
+
+/* Excel Upload Button */
+.upload-btn {
+    background-color: #374151; /* Dark gray */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: all 0.3s ease;
+}
+
+.upload-btn:hover {
+    background-color: #111827; /* Darker gray on hover */
+}

@@ -1,19 +1,17 @@
 # Form Based Imports
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
-from wtforms.validators import DataRequired, Email, EqualTo
+from wtforms import StringField, PasswordField, SubmitField, HiddenField
+from wtforms.validators import DataRequired, Email, EqualTo, Length
 from wtforms import ValidationError
 from flask_wtf.file import FileField, FileAllowed
-
-# User Based Imports
-from flask_login import current_user
 from application.models import User
 
-
 class LoginForm(FlaskForm):
-    email = StringField("Email", validators=[DataRequired(), Email()])
+    username = StringField(
+        "Username", validators=[DataRequired(), Length(min=3, max=25)]
+    )
     password = PasswordField("Password", validators=[DataRequired()])
-    submit = SubmitField("Log In")
+    submit = SubmitField("Login")
 
 
 class RegistrationForm(FlaskForm):
@@ -57,3 +55,16 @@ class UpdateUserForm(FlaskForm):
         # Check if not None for that username!
         if User.query.filter_by(username=field.data).first():
             raise ValidationError("Sorry, that username is taken!")
+
+class DeleteUserForm(FlaskForm):
+    csrf_token = HiddenField()
+
+class SoldierRegistrationForm(FlaskForm):
+    full_name = StringField("Họ và Tên", validators=[DataRequired()])
+    management_level = StringField("Cấp Quản Lý", validators=[DataRequired()])
+    unit_name = StringField("Đơn vị", validators=[DataRequired()])
+    submit = SubmitField("Tiếp Theo")
+
+
+class InputPersonalForm(FlaskForm):
+    pass

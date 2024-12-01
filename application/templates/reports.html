@@ -1,0 +1,96 @@
+{% extends "member_base.html" %}
+
+{% block stylecss %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/custom/reports.css') }}">
+{% endblock %}
+
+{% block title %}
+<title>HRM - Quản lý thông tin - Báo Cáo</title>
+{% endblock %}
+
+{% block content %}
+<div class="content">
+
+    <!-- Quân Nhân Report -->
+    <div class="report-section">
+        <div class="table-container">
+            <div class="report-title">Báo Cáo Ra-Vào Quân Nhân</div>
+            <table>
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Họ và tên</th>
+                    <th>Trạng thái</th>
+                    <th>Số CCCD</th>
+
+                    <th>Thời gian vào</th>
+                    <th>Thời gian ra</th>
+                    <th>Số giờ ra-vào</th>
+                    <th>Thời gian duyệt</th>
+                    <th>Thời gian tạo</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for record in report_data %}
+                <tr>
+                    <td>{{ record.id }}</td>
+                    <td>{{ record.full_name }}</td>
+                    <td class="text-center">
+                        <span class="badge
+                                     {% if record.status == 'created' %} bg-warning text-dark
+                                     {% elif record.status == 'accepted' %} bg-success
+                                     {% elif record.status == 'reject' %} bg-danger
+                                     {% elif record.status == 'cancel' %} bg-secondary
+                                     {% elif record.status == 'expired' %} bg-primary
+                                     {% elif record.status == 'completed' %} bg-info
+                                     {% endif %}">
+                             {% if record.status == 'created' %}
+                                                Đã tạo
+                                            {% elif record.status == 'accepted' %}
+                                                Đã duyệt
+                                            {% elif record.status == 'reject' %}
+                                                Lỗi
+                                            {% elif record.status == 'cancel' %}
+                                                Đã hủy
+                                            {% elif record.status == 'expired' %}
+                                                Hết hạn
+                                                   {% elif record.status == 'completed' %}
+
+                                                Hoàn thành
+                                            {% else %}
+
+                                                Thông báo
+                                            {% endif %}
+                        </span>
+                    </td>
+                    <td>{{ record.identity_card }}</td>
+                    <td>{{ record.check_in_time }}</td>
+                    <td>{{ record.check_out_time }}</td>
+                    <td>{{ record.duration }}</td>
+                    <td>{{ record.accepted_datetime }}</td>
+                    <td>{{ record.created_time }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <!-- Filter Section -->
+        <div class="filter-box">
+            <h4>Lọc thông tin</h4>
+            <form method="GET" action="/reports">
+                <label for="fromDate1">Từ ngày</label>
+                <input type="date" id="fromDate1" name="from_date" value="{{ request.args.get('from_date', '') }}">
+                <label for="toDate1">Đến ngày</label>
+                <input type="date" id="toDate1" name="to_date" value="{{ request.args.get('to_date', '') }}">
+                <button type="submit">Xác nhận</button>
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+
+{% block stylejs %}
+<script src="{{ url_for('static', filename='js/custom/reports.js') }}"></script>
+{% endblock %}

@@ -58,3 +58,4 @@ app_venv
 migrations
 shield_check_db.sqlite
 __pycache__
+static/*

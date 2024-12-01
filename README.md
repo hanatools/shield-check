@@ -30,6 +30,7 @@ flask db init
 flask db migrate -m "Initial database."
 flask db upgrade
 python create_default_user.py
+flask db downgrade base
 ```
 
 ### Format code

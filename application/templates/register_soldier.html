@@ -1,0 +1,216 @@
+{% extends "member_base.html" %}
+
+{% block stylecss %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/custom/register_soldier.css') }}">
+{% endblock %}
+
+{% block title %}
+<title>HRM - Đăng ký quân nhân</title>
+{% endblock %}
+
+{% block content %}
+<div class="content">
+
+    <div id="step-1" class="step active">
+        <div class="form-section">
+            <h4>Nhập thông tin quân nhân</h4>
+            <hr>
+            <form method="POST" id="register-form">
+                {{ form.hidden_tag() }}
+                <div class="mb-3">
+                    <label for="fullname" class="form-label">Họ và tên: <span class="text-danger">(*)</span> </label>
+                    <input
+                            type="text"
+                            class="form-control"
+                            id="fullname"
+                            name="fullname"
+                            placeholder="Nhập họ và tên"
+                            value="Nguyễn Văn A"
+                    />
+                    <small id="fullname-error" class="text-danger"></small>
+                </div>
+                <div class="mb-3">
+                    <label for="management_level" class="form-label">Cấp quản lý:<span class="text-danger">(*)</span> </label>
+                    <input
+                            type="text"
+                            class="form-control"
+                            id="management_level"
+                            name="management_level"
+                            placeholder="Nhập cấp quản lý"
+                            value="Cấp 1d"
+                    />
+                    <small id="management_level-error" class="text-danger"></small>
+                </div>
+                <div class="mb-3">
+                    <label for="identity_card" class="form-label">Số CCCD:  </label>
+                    <input
+                            type="text"
+                            class="form-control"
+                            id="identity_card"
+                            name="identity_card"
+                            placeholder="Nhập số CCCD"
+                            readonly
+                    />
+                </div>
+
+                <div class="mb-3">
+                    <label for="unit_name" class="form-label">Đơn vị:<span class="text-danger">(*)</span>  </label>
+                    <input
+                            type="text"
+                            class="form-control"
+                            id="unit_name"
+                            name="unit_name"
+                            placeholder="Nhập Đơn vị"
+                            value="Đơn vị 1"
+                    />
+                </div>
+                <div class="mb-3">
+                    <label for="file-scan-step1" class="form-label">File scan:</label>
+                    <input
+                            type="file"
+                            id="file-scan-step1"
+                            class="form-control"
+                            accept=".pdf,.png,.jpg,.jpeg"
+                            data-max-size="10485760"
+                    />
+                    <small id="file-scan-error" class="text-danger"></small>
+
+                </div>
+                <div class="mb-3 text-danger" id="error-message"></div>
+                <div class="mb-3 text-center">
+                    <button
+                            type="button"
+                            class="btn btn-primary"
+                            id="next-step"
+                            disabled
+                    >
+                        Tiếp theo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="step-2" class="step hidden">
+        <div class="form-section">
+            <h4>Chụp ảnh Quân nhân</h4>
+            <hr>
+            <div class="photo-section">
+                <div class="main-camera">
+                    <video id="face-camera" autoplay></video>
+                    <div class="form-group d-flex justify-content-center pt-4">
+                        <!-- Back Button -->
+                        <button type="button" class="btn btn-secondary btn-sm mx-2" id="back-step">
+                            <i class="bi bi-arrow-left"></i>
+                        </button>
+
+                        <!-- Capture Button -->
+                        <button type="button" class="btn btn-info btn-sm mx-2" id="capture-photo">
+                            <i class="bi bi-camera"></i>
+                        </button>
+
+                        <!-- Reset Button -->
+                        <button type="button" class="btn btn-warning btn-sm mx-2" id="reset-capture-photo">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </button>
+
+                        <!-- Next Button -->
+                        <button type="button" class="btn btn-primary btn-sm mx-2" id="next-step-3" disabled>
+                            <i class="bi bi-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="side-photos">
+                    <div class="side-photo">
+                        <div id="left-photo" class="photo-placeholder">
+                            <img id="left-photo-preview" class="photo-preview" style="display: none;" />
+                        </div>
+                        <label for="left-photo">Bên trái</label>
+                    </div>
+                    <div class="side-photo">
+                        <div id="right-photo" class="photo-placeholder">
+                            <img id="right-photo-preview" class="photo-preview" style="display: none;" />
+                        </div>
+                        <label for="right-photo">Bên phải</label>
+                    </div>
+                    <div class="side-photo">
+                        <div id="front-photo" class="photo-placeholder">
+                            <img id="front-photo-preview" class="photo-preview" style="display: none;" />
+                        </div>
+                        <label for="front-photo">Đối diện</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="step-3" class="step hidden">
+        <div class="form-section">
+            <h4>Chụp hình ảnh Quân nhân</h4>
+            <div id="result-error-message" class="text-danger mt-2"></div>
+            <hr>
+            <div class="row">
+                <!-- Form Details -->
+                <div style="flex: 2">
+                    <div class="form-group">
+                        <label for="fullname-step3">Họ và tên:</label>
+                        <input type="text" class="form-control" id="fullname-step3" readonly />
+                    </div>
+                    <div class="form-group">
+                        <label for="identity-card-step3">Số CCCD:</label>
+                        <input type="text" class="form-control" id="identity-card-step3" readonly />
+                    </div>
+                    <div class="form-group">
+                        <label for="management-level-step3">Cấp quản lý:</label>
+                        <input type="text" class="form-control" id="management-level-step3" readonly />
+                    </div>
+                    <div class="form-group">
+                        <label for="unit-step3">Đơn vị:</label>
+                        <input type="text" class="form-control" id="unit-step3" readonly />
+                    </div>
+                    <div class="form-group">
+                        <label for="file-scan-step3">File scan:</label>
+                        <input type="text" class="form-control" id="file-scan-step3" readonly />
+                    </div>
+                </div>
+                <!-- Photo Placeholders -->
+                <div style="flex: 1" class="side-photos">
+                    <div class="side-photo">
+                        <div id="left-photo-step3" class="photo-placeholder">
+                            <img id="left-photo-preview-step3" class="photo-preview" />
+                        </div>
+                        <label for="left-photo-step3">Bên trái</label>
+                    </div>
+                    <div class="side-photo">
+                        <div id="right-photo-step3" class="photo-placeholder">
+                            <img id="right-photo-preview-step3" class="photo-preview" />
+                        </div>
+                        <label for="right-photo-step3">Bên phải</label>
+                    </div>
+                    <div class="side-photo">
+                        <div id="front-photo-step3" class="photo-placeholder">
+                            <img id="front-photo-preview-step3" class="photo-preview" />
+                        </div>
+                        <label for="front-photo-step3">Đối diện</label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group text-center">
+                <button type="button" class="btn btn-secondary btn-sm mx-2" id="back-to-step-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Quay lại">
+                    <i class="bi bi-arrow-left"></i>
+                </button>
+                <button type="button" class="btn btn-primary btn-sm mx-2" id="finish-step" data-bs-toggle="tooltip" data-bs-placement="top" title="Hoàn thành" >
+                    <i class="bi bi-arrow-right"></i>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+
+{% block stylejs %}
+<script src="{{ url_for('static', filename='js/custom/register_soldier.js') }}"></script>
+{% endblock %}

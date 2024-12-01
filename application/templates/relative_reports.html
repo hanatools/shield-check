@@ -1,0 +1,73 @@
+{% extends "member_base.html" %}
+
+{% block stylecss %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/custom/relative_reports.css') }}">
+{% endblock %}
+
+{% block title %}
+<title>HRM - Quản lý thông tin - Báo Cáo</title>
+{% endblock %}
+
+{% block content %}
+<div class="content">
+    <!-- Người Thân Report -->
+    <!-- Relative Report Section -->
+    <div class="report-section">
+        <div class="table-container">
+            <div class="report-title">Báo Cáo Ra-Vào Người Thân</div>
+            <table>
+                <thead>
+                <tr>
+                    <th>Họ và tên</th>
+                    <th>Số CCCD</th>
+                    <th>Số CCCD quân nhân</th>
+                    <th>Tên quân nhân</th>
+                    <th>Cấp quản lý</th>
+                    <th>Đơn vị</th>
+                    <th>Thời gian vào</th>
+                    <th>Thời gian ra</th>
+                    <th>Số giờ ra-vào</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% if report_data %}
+                {% for record in report_data %}
+                <tr>
+                    <td>{{ record.full_name }}</td>
+                    <td>{{ record.identity_card }}</td>
+                    <td>{{ record.soldier_identity_card }}</td>
+                    <td>{{ record.soldier_name }}</td>
+                    <td>{{ record.management_level }}</td>
+                    <td>{{ record.unit_name }}</td>
+                    <td>{{ record.check_in_time }}</td>
+                    <td>{{ record.check_out_time }}</td>
+                    <td>{{ record.duration }}</td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="9" style="text-align: center;">Không có dữ liệu</td>
+                </tr>
+                {% endif %}
+                </tbody>
+            </table>
+        </div>
+        <!-- Filter Section -->
+        <div class="filter-box">
+            <h4>Lọc thông tin</h4>
+            <form method="GET" action="/relative_reports">
+                <label for="fromDate2">Từ ngày</label>
+                <input type="date" id="fromDate2" name="from_date" value="{{ request.args.get('from_date', '') }}">
+                <label for="toDate2">Đến ngày</label>
+                <input type="date" id="toDate2" name="to_date" value="{{ request.args.get('to_date', '') }}">
+                <button type="submit">Xác nhận</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block stylejs %}
+<script src="{{ url_for('static', filename='js/custom/relative_reports.js') }}"></script>
+{% endblock %}

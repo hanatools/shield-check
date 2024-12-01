@@ -1,0 +1,94 @@
+{% extends "member_base.html" %}
+
+{% block stylecss %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/custom/soldier_info.css') }}">
+{% endblock %}
+
+{% block title %}
+<title>HRM - Quản lý thông tin - Thông tin quân nhân</title>
+{% endblock %}
+
+{% block content %}
+<div class="content">
+    <!-- Search Box -->
+    <div class="search-box">
+
+        <input
+                type="text"
+                id="search"
+                class="form-control"
+                placeholder="Tìm kiếm theo tên, số CCCD..."
+                oninput="handleSearch(this.value)"
+        />
+        <button type="button"  onclick="handleSearch(this.value)" >Tìm kiếm</button>
+    </div>
+
+    <!-- Table Section -->
+    <div class="table-container">
+        <table >
+            <thead>
+            <tr class="text-center">
+                <th class="text-center" >ID</th>
+                <th class="text-center"></th>
+                <th class="text-center" >Họ và Tên</th>
+                <th class="text-center" >Số CCCD</th>
+                <th class="text-center" >Cấp Quản Lý</th>
+                <th class="text-center" >Đơn Vị</th>
+                <th class="text-center">Email</th>
+            </tr>
+            </thead>
+            <tbody id="member-table" >
+            {% for user in users %}
+            <tr>
+                <td class="text-center">{{ user.id }}</td>
+                <td class="text-center">
+                    <button
+                            class="btn btn-info btn-sm"
+                            data-bs-toggle="tooltip"
+                            title="Xem"
+                            onclick="viewUser({{ user.id }})"
+                    >
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <button
+                            class="btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip"
+                            title="Sửa"
+                            onclick="editUser({{ user.id }})"
+                    >
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <!--                    <form-->
+                    <!--                            action="{{ url_for('users.delete', user_id=user.id) }}"-->
+                    <!--                            method="POST"-->
+                    <!--                            style="display: inline;"-->
+                    <!--                            onsubmit="return confirm('Bạn có chắc muốn xóa?');"-->
+                    <!--                    >-->
+                    <!--                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />-->
+                    <!--                        <button-->
+                    <!--                                class="btn btn-danger btn-sm"-->
+                    <!--                                type="submit"-->
+                    <!--                                data-bs-toggle="tooltip"-->
+                    <!--                                title="Xóa"-->
+                    <!--                        >-->
+                    <!--                            <i class="bi bi-trash"></i>-->
+                    <!--                        </button>-->
+                    </form>
+                </td>
+                <td>{{ user.full_name }}</td>
+                <td class="text-center" >{{ user.identity_card }}</td>
+                <td>{{ user.management_level }}</td>
+                <td>{{ user.unit_name }}</td>
+                <td>{{ user.email }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block stylejs %}
+<script src="{{ url_for('static', filename='js/custom/soldier_info.js') }}"></script>
+{% endblock %}

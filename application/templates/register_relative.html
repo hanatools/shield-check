@@ -1,0 +1,52 @@
+{% extends "member_base.html" %}
+
+{% block stylecss %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/custom/register_relative.css') }}">
+{% endblock %}
+
+{% block title %}
+<title>HRM - Đăng ký người thân</title>
+{% endblock %}
+
+{% block content %}
+<div class="content">
+    <div class="form-section">
+        <h4>Đăng ký ra vào dành cho người thân</h4>
+        <hr>
+        <form>
+            <div class="mb-3">
+                <label for="relativeName" class="form-label">Họ tên người thân:</label>
+                <input type="text" class="form-control" id="relativeName" placeholder="Nhập họ tên người thân">
+            </div>
+            <div class="mb-3">
+                <label for="relativeId" class="form-label">Số CCCD:</label>
+                <input type="text" class="form-control" id="relativeId" placeholder="Nhập số CCCD">
+            </div>
+            <div class="mb-3">
+                <label for="sponsorName" class="form-label">Tên Quân nhân bảo lãnh:</label>
+                <input type="text" class="form-control" id="sponsorName" placeholder="Nhập tên Quân nhân bảo lãnh">
+            </div>
+            <div class="mb-3">
+                <label for="sponsorId" class="form-label">Số CCCD của Quân nhân:</label>
+                <input type="text" class="form-control" id="sponsorId" placeholder="Nhập số CCCD của Quân nhân">
+            </div>
+            <div class="mb-3">
+                <label for="rank" class="form-label">Cấp quản lý Quân nhân:</label>
+                <input type="text" class="form-control" id="rank" placeholder="Nhập cấp quản lý Quân nhân">
+            </div>
+            <div class="mb-3">
+                <label for="unit" class="form-label">Đơn vị của Quân nhân:</label>
+                <input type="text" class="form-control" id="unit" placeholder="Nhập đơn vị của Quân nhân">
+            </div>
+            <div class="mb-3 text-center">
+                <button type="submit" class="btn btn-primary">Đăng ký</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block stylejs %}
+<script src="{{ url_for('static', filename='js/custom/register_relative.js') }}"></script>
+{% endblock %}

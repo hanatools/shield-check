@@ -4,14 +4,46 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
 from application.config import Config
+from flask_wtf.csrf import CSRFProtect
+from flask_mail import Mail, Message
+import logging
+
+csrf = CSRFProtect()
+
 
 app = Flask(__name__)
 
 app.config.from_object(Config)
-
+csrf.init_app(app)
 db = SQLAlchemy(app)
 Migrate(app, db)
+mail = Mail(app)
 
+def send_email(subject, recipient, body_html=None):
+    """
+    Sends an email with the given subject and body to the specified recipient.
+    Supports both plain text and HTML content.
+    """
+    try:
+        logging.info(f"Preparing to send email to {recipient}")
+
+        # Create the email message
+        msg = Message(
+            subject=subject,
+            sender=app.config["MAIL_DEFAULT_SENDER"],
+            recipients=[recipient],
+        )
+        msg.html = body_html  # HTML content
+
+        # Send the email
+        mail.send(msg)
+
+        logging.info(f"Email sent successfully to {recipient}")
+        return {"status": "success", "message": f"Email sent successfully to {recipient}"}
+
+    except Exception as e:
+        logging.error(f"Failed to send email to {recipient}: {str(e)}")
+        return {"status": "error", "message": f"Failed to send email to {recipient}: {str(e)}"}
 
 ###########################
 #### LOGIN CONFIGS #######
@@ -34,10 +66,12 @@ def create_app():
     login_manager.init_app(app)
 
     from application.models import User, BlogPost
+
     with app.app_context():
         db.create_all()
 
     return app
+
 
 ###########################
 #### BLUEPRINT CONFIGS #######
