@@ -1,10 +1,13 @@
 import base64
 import os
 import uuid
+from datetime import datetime
+
 import face_recognition
 from flask import render_template, request, Blueprint, Response, url_for
 
 from application import db, send_email, app
+from application.email import generate_html_email
 from application.models import BlogPost, User, CheckIn, RelativeCheckIn
 from flask_login import login_required, current_user
 import threading
@@ -296,26 +299,14 @@ def register_soldier_checkin_data():
         # Prepare and send approval email
         token=str(uuid.uuid4())
         approval_url = f"{app.config.get('WEB_HOST_URL')}/approve/{user.id}/check-out/{token}"  # Example approval URL
-        email_body = f"""
-        Dear Admin,
-
-        A new user has submitted their details for approval:
-
-        Full Name: {user.full_name}
-        Identity Card: {user.identity_card}
-        Management Level: {user.management_level}
-        Unit Name: {user.unit_name}
-
-        Please review and approve the submission here:
-        {approval_url}
-
-        Best regards,
-        HRM System
-        """
-        email_sent = send_email("Approval Request for New User", app.config.get('MAIL_DEFAULT_RECEIVER'), email_body)
-
-        if not email_sent:
-            return jsonify({"error": "Data saved but failed to send approval email"}), 500
+        # Generate email content
+        subject = "ĐƠN XIN PHÉP RA NGOÀI"
+        created_datetime = datetime.utcnow()
+        formatted_date = created_datetime.strftime("%d/%m/%Y %H:%M:%S")
+        print(f"Created Datetime: {created_datetime}")
+        body_html = generate_html_email(user.full_name, user.unit_name, formatted_date, approval_url)
+        result = send_email(subject, app.config.get('MAIL_DEFAULT_RECEIVER'), body_html)
+        # logging.info(result["message"])
 
         # Save images to disk
         check_in_folder = os.path.join("static", "check-in")
@@ -347,6 +338,7 @@ def register_soldier_checkin_data():
             right_image_path=image_paths.get("right"),
             front_image_path=image_paths.get("front"),
             token=token,
+            created_time=created_datetime
         )
 
         # Save to the database

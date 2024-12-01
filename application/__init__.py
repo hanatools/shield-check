@@ -19,34 +19,29 @@ db = SQLAlchemy(app)
 Migrate(app, db)
 mail = Mail(app)
 
-def send_email(subject, recipient, body):
+def send_email(subject, recipient, body_html=None):
     """
     Sends an email with the given subject and body to the specified recipient.
-    Includes logging for success or failure of the email sending process.
+    Supports both plain text and HTML content.
     """
     try:
-        # Log the email details
         logging.info(f"Preparing to send email to {recipient}")
-        logging.debug(f"Email Subject: {subject}")
-        logging.debug(f"Email Body: {body}")
 
         # Create the email message
         msg = Message(
             subject=subject,
             sender=app.config["MAIL_DEFAULT_SENDER"],
             recipients=[recipient],
-            body=body
         )
+        msg.html = body_html  # HTML content
 
         # Send the email
         mail.send(msg)
 
-        # Log the success message
         logging.info(f"Email sent successfully to {recipient}")
         return {"status": "success", "message": f"Email sent successfully to {recipient}"}
 
     except Exception as e:
-        # Log the failure with the error
         logging.error(f"Failed to send email to {recipient}: {str(e)}")
         return {"status": "error", "message": f"Failed to send email to {recipient}: {str(e)}"}
 
