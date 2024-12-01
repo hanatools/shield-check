@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
         errorMessage: document.getElementById("error-message"),
         nextStepButton: document.getElementById("next-step"),
         backStepButton: document.getElementById("back-step"),
+        backToStep2Button: document.getElementById("back-to-step-2"),
         capturePhotoButton: document.getElementById("capture-photo"),
         resetPhotoButton: document.getElementById("reset-capture-photo"),
         nextStep3Button: document.getElementById("next-step-3"),
@@ -259,6 +260,7 @@ document.addEventListener("DOMContentLoaded", () => {
     elements.unitName.addEventListener("change", validateUser);
     elements.nextStepButton.addEventListener("click", () => toggleSteps(elements.step1, elements.step2, "start"));
     elements.backStepButton.addEventListener("click", () => toggleSteps(elements.step2, elements.step1, "stop"));
+    elements.backToStep2Button.addEventListener("click", () => toggleSteps(elements.step3, elements.step2, "start"));
     elements.capturePhotoButton.addEventListener("click", capturePhoto);
     elements.resetPhotoButton.addEventListener("click", resetCapturedPhotos);
     elements.nextStep3Button.addEventListener("click", () => {

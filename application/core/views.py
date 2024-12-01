@@ -1,7 +1,7 @@
 import base64
 import os
 import uuid
-
+import face_recognition
 from flask import render_template, request, Blueprint, Response, url_for
 
 from application import db
@@ -232,22 +232,6 @@ def decode_qr_code():
     qr_data = qr_codes[0].data.decode("utf-8")
     return jsonify({"success": True, "data": qr_data})
 
-# @core.route("/validate_identity_card", methods=["POST"])
-# def validate_identity_card():
-#     data = request.json
-#     full_name = data.get("full_name", "").strip()
-#     management_level = data.get("management_level", "").strip()
-#
-#     if not full_name or not management_level:
-#         return jsonify({"error": "Họ và tên và Cấp quản lý không được để trống."}), 400
-#
-#     # Check if the user exists
-#     user = User.query.filter_by(full_name=full_name, management_level=management_level).first()
-#     if user:
-#         return jsonify({"cccd": user.identity_card, "message": f"Người dùng đã tồn tại."}), 200
-#     else:
-#         return jsonify({"message": "Không tìm thấy người dùng."}), 404
-
 @core.route("/validate_identity_card", methods=["POST"])
 def validate_identity_card():
     data = request.json
@@ -305,6 +289,12 @@ def register_soldier_checkin_data():
         if not user:
             return jsonify({"error": f"User with identity card {identity_card} does not exist"}), 404
 
+            # Validate user image and identity card
+        is_valid, validation_message = validate_user_image(images, user)
+        print(f"Validation message: {validation_message}")
+        if not is_valid:
+            return jsonify({"error": validation_message}), 400
+
         # Save images to disk
         check_in_folder = os.path.join("static", "check-in")
         os.makedirs(check_in_folder, exist_ok=True)
@@ -357,6 +347,55 @@ def register_soldier_checkin_data():
 
     except Exception as e:
         return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
+
+def validate_user_image(base64_images, user):
+    temp_folder = os.path.join("static", "temp")
+    os.makedirs(temp_folder, exist_ok=True)
+    temp_images = {}
+
+    try:
+        # Save temporary images
+        for key, base64_image in base64_images.items():
+            temp_image_path = os.path.join(temp_folder, f"{key}_{uuid.uuid4().hex}.png")
+            with open(temp_image_path, "wb") as temp_image_file:
+                temp_image_file.write(base64.b64decode(base64_image.split(",")[1]))
+            temp_images[key] = temp_image_path
+
+        # Validate the front image
+        front_image_path = temp_images.get("front")
+        if not front_image_path:
+            return False, "Front image is required for validation."
+
+        front_image = face_recognition.load_image_file(front_image_path)
+        front_face_encodings = face_recognition.face_encodings(front_image)
+
+        if len(front_face_encodings) == 0:
+            return False, "No face detected in the front image."
+
+        front_encoding = front_face_encodings[0]
+        known_encoding_path = user.encoding_path
+
+        if not known_encoding_path or not os.path.exists(known_encoding_path):
+            return False, "No stored face encoding found for this user."
+
+        known_encoding = np.load(known_encoding_path)
+        is_face_match = face_recognition.compare_faces([known_encoding], front_encoding)[0]
+
+        if not is_face_match:
+            return False, "Face does not match the registered user."
+
+        # Verify identity card number
+        stored_identity_card = os.path.basename(known_encoding_path).split(".")[0]  # Extract ID from filename
+        if stored_identity_card != user.identity_card:
+            return False, f"Identity card mismatch: expected {user.identity_card}, found {stored_identity_card}."
+
+        return True, "Face and identity card validated successfully."
+
+    finally:
+        # Cleanup temporary files
+        for temp_image_path in temp_images.values():
+            if os.path.exists(temp_image_path):
+                os.remove(temp_image_path)
 
 @core.route("/relative_reports", methods=["GET", "POST"])
 @login_required
