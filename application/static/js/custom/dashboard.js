@@ -162,7 +162,7 @@ function populateUserDetails(record) {
     document.getElementById("manager").value = record.management_level;
     document.getElementById("check-in-record-id-hidden").value = record.id;
     document.getElementById("created_time").value = formatDateTime(record.created_time);
-    document.getElementById("status").value = record.status;
+    // document.getElementById("status").value = record.status;
     document.getElementById("check_out_time").value = formatDateTime(record.check_out_time);
     document.getElementById("accepted_datetime").value = formatDateTime(record.accepted_datetime);
 
@@ -176,8 +176,48 @@ function populateUserDetails(record) {
         openScanModalBtn.classList.add("d-none");
     }
 
+    const statusContainer = document.getElementById("status");
+    statusContainer.innerHTML = getStatusBadgeHTML(record.status);
 
 
+
+}
+
+function getStatusBadgeHTML(status) {
+    let badgeClass = "";
+    let badgeText = "";
+
+    switch (status) {
+        case "created":
+            badgeClass = "bg-warning text-dark";
+            badgeText = "Đã tạo";
+            break;
+        case "accepted":
+            badgeClass = "bg-success";
+            badgeText = "Đã duyệt";
+            break;
+        case "reject":
+            badgeClass = "bg-danger";
+            badgeText = "Lỗi";
+            break;
+        case "cancel":
+            badgeClass = "bg-secondary";
+            badgeText = "Đã hủy";
+            break;
+        case "expired":
+            badgeClass = "bg-primary";
+            badgeText = "Hết hạn";
+            break;
+        case "completed":
+            badgeClass = "bg-info";
+            badgeText = "Hoàn thành";
+            break;
+        default:
+            badgeClass = "bg-light text-dark";
+            badgeText = "Thông báo";
+    }
+
+    return `<span class="badge ${badgeClass}">${badgeText}</span>`;
 }
 
 function formatDateTime(dateTimeString) {
