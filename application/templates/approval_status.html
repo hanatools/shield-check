@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trạng thái phê duyệt</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/library/bootstrap.min.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom/common.css') }}">
+</head>
+<body style="background-color: #f8f9fa; font-family: Arial, sans-serif;">
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header text-center bg-{{ 'success' if status == 'success' else 'danger' if status == 'error' else 'info' }} text-white">
+                    <h3 class="my-2">
+                        {% if status == 'success' %}
+                        Phê duyệt thành công
+                        {% elif status == 'error' %}
+                        Lỗi
+                        {% elif status == 'info' %}
+                        Thông báo
+                        {% endif %}
+                    </h3>
+                </div>
+                <div class="card-body text-center">
+                    <p class="lead">{{ message }}</p>
+                    <hr>
+                    <a href="/" class="btn btn-primary mt-4">Quay lại trang chính</a>
+                </div>
+                <div class="card-footer text-center text-muted">
+                    <small>&copy; 2024 Quản lý quân nhân. Bảo lưu mọi quyền.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/library/jquery-3.2.1.slim.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/library/popper.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/library/bootstrap.min.js') }}"></script>
+
+<script src="{{ url_for('static', filename='js/custom/common.js') }}"></script>
+
+</body>
+</html>

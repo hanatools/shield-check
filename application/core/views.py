@@ -456,3 +456,42 @@ def relative_reports():
             })
 
     return render_template("relative_reports.html", username=current_user.username, report_data=report_data)
+
+@core.route("/approve/<int:user_id>/check-out/<string:token>", methods=["GET"])
+def approve_check_out(user_id, token):
+    try:
+        # Retrieve the check-in record
+        check_in_record = CheckIn.query.filter_by(user_id=user_id, token=token).first()
+
+        if not check_in_record:
+            return render_template(
+                "approval_status.html",
+                status="error",
+                message="Không tìm thấy yêu cầu phê duyệt này hoặc liên kết không hợp lệ."
+            )
+
+        # Check if the record has already been approved
+        if check_in_record.status == "accepted":
+            return render_template(
+                "approval_status.html",
+                status="info",
+                message=f"Yêu cầu ra ngoài của {check_in_record.full_name} đã được phê duyệt trước đó."
+            )
+
+        # Update the status and record approval time
+        check_in_record.status = "accepted"
+        check_in_record.accepted_datetime = datetime.utcnow()
+
+        db.session.commit()
+
+        return render_template(
+            "approval_status.html",
+            status="success",
+            message=f"Yêu cầu ra ngoài của {check_in_record.full_name} đã được phê duyệt thành công!"
+        )
+    except Exception as e:
+        return render_template(
+            "approval_status.html",
+            status="error",
+            message=f"Có lỗi xảy ra: {str(e)}"
+        )
