@@ -2,7 +2,7 @@ import base64
 import os
 import uuid
 from datetime import datetime
-
+from flask_wtf.csrf import generate_csrf
 import face_recognition
 from flask import render_template, request, Blueprint, Response, url_for
 
@@ -33,10 +33,52 @@ def index():
     return render_template("daskboard.html")
 
 
-@core.route("/daskboard")
+@core.route("/daskboard", methods=["GET"])
 @login_required
 def daskboard():
-    return render_template("daskboard.html", username=current_user.username)
+    csrf_token_value = generate_csrf()  # Rename to avoid conflict
+    return render_template("daskboard.html", username=current_user.username, csrf_token_value=csrf_token_value)
+@core.route("/api/scan-identity", methods=["POST"])
+def scan_identity():
+    try:
+        data = request.json
+        image_base64 = data.get("image")
+
+        if not image_base64:
+            return jsonify({"error": "No image provided"}), 400
+
+        # Decode and save the image
+        temp_image_path = os.path.join("static", "temp", f"{uuid.uuid4().hex}.png")
+        os.makedirs(os.path.dirname(temp_image_path), exist_ok=True)
+        with open(temp_image_path, "wb") as f:
+            f.write(base64.b64decode(image_base64.split(",")[1]))
+
+        # Perform OCR to extract identity number
+        identity_number = perform_ocr(temp_image_path)  # Your OCR function here
+
+        if not identity_number:
+            return jsonify({"error": "Không nhận diện được số CCCD"}), 400
+
+        return jsonify({"identity_card": identity_number}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@core.route("/api/check-in/<identity_card>", methods=["GET"])
+def get_latest_check_in(identity_card):
+    print(f"Identity card: {identity_card}")
+    check_in = CheckIn.query.filter_by(identity_card=identity_card, status="accepted").order_by(CheckIn.created_time.desc()).first()
+
+    if not check_in:
+        return jsonify({"error": "Không tìm thấy thông tin check-in đã được phê duyệt"}), 404
+
+    return jsonify({
+        "id": check_in.id,
+        "full_name": check_in.full_name,
+        "identity_card": check_in.identity_card,
+        "unit_name": check_in.unit_name,
+        "management_level": check_in.management_level,
+        "created_time": check_in.created_time.isoformat(),
+    }), 200
 
 
 @core.route("/input_personal")
@@ -495,3 +537,58 @@ def approve_check_out(user_id, token):
             status="error",
             message=f"Có lỗi xảy ra: {str(e)}"
         )
+
+# from flask import request, jsonify
+# import base64
+# import os
+# import face_recognition
+
+@app.route("/validate-face-scan", methods=["POST"])
+def validate_face_scan():
+    try:
+        data = request.json
+        identity_card = data.get("identity_card")
+        check_in_record_id = data.get("check_in_record_id")
+        captured_image = data.get("captured_image")
+
+        # Validate inputs
+        if not identity_card or not check_in_record_id or not captured_image:
+            return jsonify({"error": "Thiếu thông tin cần thiết để xác minh."}), 400
+
+        # Decode the captured image
+        image_data = base64.b64decode(captured_image.split(",")[1])
+        temp_image_path = os.path.join("static", "temp", f"{identity_card}_captured.png")
+        os.makedirs(os.path.dirname(temp_image_path), exist_ok=True)
+        with open(temp_image_path, "wb") as temp_image_file:
+            temp_image_file.write(image_data)
+
+        # Check if the user exists and has an approved check-in record
+        user = User.query.filter_by(identity_card=identity_card).first()
+        if not user:
+            return jsonify({"error": "Không tìm thấy người dùng."}), 404
+
+        check_in_record = CheckIn.query.filter_by(id=check_in_record_id, status="accepted").first()
+        if not check_in_record:
+            return jsonify({"error": "Không tìm thấy phiếu kiểm tra được phê duyệt."}), 404
+
+        # Compare the captured face with the user's stored encoding
+        stored_encoding_path = user.encoding_path
+        if not os.path.exists(stored_encoding_path):
+            return jsonify({"error": "Không tìm thấy dữ liệu nhận diện khuôn mặt."}), 404
+
+        stored_encoding = np.load(stored_encoding_path)
+        captured_image = face_recognition.load_image_file(temp_image_path)
+        captured_encoding = face_recognition.face_encodings(captured_image)
+
+        if not captured_encoding:
+            return jsonify({"error": "Không phát hiện khuôn mặt trong ảnh đã chụp."}), 400
+
+        match = face_recognition.compare_faces([stored_encoding], captured_encoding[0], tolerance=0.6)
+
+        if match[0]:
+            return jsonify({"message": "Xác minh thành công!"}), 200
+        else:
+            return jsonify({"error": "Khuôn mặt không khớp với dữ liệu đã lưu."}), 400
+
+    except Exception as e:
+        return jsonify({"error": f"Lỗi xảy ra: {str(e)}"}), 500

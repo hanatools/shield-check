@@ -14,40 +14,124 @@
         <form>
             <div class="mb-3">
                 <label for="fullname" class="form-label">Họ và tên:</label>
-                <input type="text" class="form-control" id="fullname" placeholder="Nhập họ và tên">
+                <input type="text" class="form-control" id="fullname" placeholder="Họ và tên" disabled>
             </div>
             <div class="mb-3">
-                <label for="cccd" class="form-label">Số CCCD:</label>
-                <input type="text" class="form-control" id="cccd" placeholder="Nhập số CCCD">
+                <label for="identity-card-number" class="form-label">Số CCCD:</label>
+                <input type="text" class="form-control" id="identity-card-number" placeholder="Số CCCD" disabled>
             </div>
             <div class="mb-3">
                 <label for="unit" class="form-label">Đơn vị:</label>
-                <input type="text" class="form-control" id="unit" placeholder="Nhập đơn vị">
+                <input type="text" class="form-control" id="unit" placeholder="Đơn vị" disabled>
             </div>
             <div class="mb-3">
                 <label for="manager" class="form-label">Quản lý:</label>
-                <input type="text" class="form-control" id="manager" placeholder="Nhập quản lý">
+                <input type="text" class="form-control" id="manager" placeholder="Quản lý" disabled>
             </div>
             <div class="mb-3">
-                <label for="registerTime" class="form-label">Thời gian Đăng ký:</label>
-                <input type="datetime-local" class="form-control" id="registerTime">
+                <label for="created_time" class="form-label">Thời gian Đăng ký:</label>
+                <input type="text" class="form-control" id="created_time" disabled />
             </div>
             <div class="mb-3">
                 <label for="reason" class="form-label">Lý do ra ngoài:</label>
-                <textarea class="form-control" id="reason" rows="3" placeholder="Nhập lý do ra ngoài"></textarea>
+                <textarea class="form-control" id="reason" rows="3" placeholder="Nhập lý do ra ngoài" disabled></textarea>
             </div>
-            <div class="mb-3 text-end">
-                <button type="submit" class="btn btn-primary">Gửi Thông Tin</button>
-            </div>
-            <p class="help-text">
-                Nếu không mang CCCD, vui lòng bấm <a href="#">tại đây</a>.
-            </p>
+
         </form>
+
+        <div class="mb-3 text-end">
+            <button type="button" id="openScanModalBtn" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#scanModal">
+                Quét CCCD
+            </button>
+            <button id="face-scan-button" type="button" class="btn btn-primary d-none" data-bs-toggle="modal" data-bs-target="#faceScanModal" >
+                Thông tin chính xác, tiến hành xác thực gương mặt
+            </button>
+
+
+        </div>
+        <p class="help-text">
+            Nếu không mang CCCD, vui lòng bấm <a href="#">tại đây</a>.
+        </p>
+
     </div>
 </div>
+
+<!-- Scan Modal -->
+<!-- Button to Open the Modal -->
+<!--<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#scanModal">-->
+<!--    Quét CCCD-->
+<!--</button>-->
+
+<!--<div id="face-scan-container" class="text-center mt-3">-->
+<!--    <button id="face-scan-button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#scanModal" >-->
+<!--        Thông tin chính xác, tiến hành xác thực gương mặt-->
+<!--    </button>-->
+<!--</div>-->
+
+<!-- Modal -->
+<div class="modal fade" id="scanModal" tabindex="-1" aria-labelledby="scanModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="scanModalLabel">Quét Mã CCCD</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="card">
+                    <h4>Hãy quét mã QR trên thẻ CCCD</h4>
+                    <div class="qr-placeholder">
+                        <video id="camera-stream" autoplay style="width: 100%;" ></video>
+                        <img id="captured-image" style="display: none;" alt="Captured QR Frame" src="">
+                    </div>
+                    <div id="qr-result-container" style="display: none;" class="mt-3">
+                        <p id="qr-result" class="fw-bold text-success"></p>
+                        <button class="btn btn-secondary mt-2" id="reset-button">Quét lại</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Error Modal -->
+<div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger" id="errorModalLabel">Lỗi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="error-message">Vé của bạn chưa được phê duyệt hoặc không tìm thấy thông tin.</p>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="faceScanModal" tabindex="-1" aria-labelledby="faceScanModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="faceScanModalLabel">Quét Gương Mặt</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <video id="face-camera" autoplay style="width: 100%;"></video>
+                <button type="button" class="btn btn-info btn-sm mx-2" id="capture-photo">
+                    <i class="bi bi-camera"></i> Chụp ảnh
+                </button>
+                <!-- Hidden Inputs -->
+                <input type="hidden" id="check-in-record-id-hidden" />
+                <input type="hidden" name="csrf_token" value="{{ csrf_token_value }}">
+            </div>
+        </div>
+    </div>
+</div>
+
+
 {% endblock %}
 
 
 {% block stylejs %}
+<script src="https://cdn.jsdelivr.net/npm/@zxing/library@latest/umd/index.min.js"></script>
 <script src="{{ url_for('static', filename='js/custom/dashboard.js') }}"></script>
 {% endblock %}
