@@ -129,9 +129,6 @@ function showResult(extractedValue, videoElement, imageElement) {
 
     // Reset the codeReader to stop listening for QR codes
     if (codeReader) {
-        // codeReader.reset();
-        // codeReader = null; // Completely remove the instance
-        // moveToStep2(extractedValue, videoElement, imageElement)
         console.log("Extracted value: ", extractedValue);
         sendToServer(extractedValue);
     }
@@ -165,6 +162,9 @@ function populateUserDetails(record) {
     document.getElementById("manager").value = record.management_level;
     document.getElementById("check-in-record-id-hidden").value = record.id;
     document.getElementById("created_time").value = formatDateTime(record.created_time);
+    document.getElementById("status").value = record.status;
+    document.getElementById("check_out_time").value = formatDateTime(record.check_out_time);
+    document.getElementById("accepted_datetime").value = formatDateTime(record.accepted_datetime);
 
     const faceScanButton = document.getElementById("face-scan-button");
     if (faceScanButton) {
@@ -321,35 +321,14 @@ document.getElementById("capture-photo").addEventListener("click", async () => {
         const result = await response.json();
 
         if (response.ok) {
-            // Create a Bootstrap alert
-            const alertDiv = document.createElement("div");
-            alertDiv.className = "alert alert-success alert-dismissible fade show";
-            alertDiv.role = "alert";
-            alertDiv.innerHTML = `
-        <strong>Xác minh thành công!</strong> Thông tin đã được cập nhật.
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    `;
-
-            // Insert the alert at the top of the content
-            const contentDiv = document.querySelector(".content");
-            contentDiv.insertBefore(alertDiv, contentDiv.firstChild);
+            // Show success alert
+            alert("Xác minh thành công!");
 
             // Close the modal
             const faceScanModal = bootstrap.Modal.getInstance(document.getElementById("faceScanModal"));
             faceScanModal.hide();
-
-            // Reload the page after 2 seconds to reflect updated details
-            setTimeout(() => {
-                window.location.reload();
-            }, 2000);
+            window.location.href = "/reports";
         }
-        // if (response.ok) {
-        //     alert("Xác minh thành công!");
-        //     console.log("Server response:", result);
-        //     // Close the modal
-        //     const faceScanModal = bootstrap.Modal.getInstance(document.getElementById("faceScanModal"));
-        //     faceScanModal.hide();
-        // }
 
         else {
             alert(result.error || "Xác minh thất bại. Vui lòng thử lại.");

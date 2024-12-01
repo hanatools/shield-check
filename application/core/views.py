@@ -77,7 +77,10 @@ def get_latest_check_in(identity_card):
         "identity_card": check_in.identity_card,
         "unit_name": check_in.unit_name,
         "management_level": check_in.management_level,
-        "created_time": check_in.created_time.isoformat(),
+        "created_time": check_in.created_time.isoformat() if check_in.created_time else None,
+        "check_out_time": check_in.check_out_time.isoformat() if check_in.check_out_time else None,
+        "accepted_datetime": check_in.accepted_datetime.isoformat() if check_in.accepted_datetime else None,
+        "status": check_in.status,
     }), 200
 
 

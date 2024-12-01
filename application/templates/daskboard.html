@@ -9,8 +9,10 @@
 {% endblock %}
 {% block content %}
 <div class="content">
+    <div id="alert-container"></div>
     <div class="form-section">
         <h4>Thông Tin Cá Nhân</h4>
+        <div id="info-result"></div>
         <form>
             <div class="mb-3">
                 <label for="fullname" class="form-label">Họ và tên:</label>
@@ -31,6 +33,18 @@
             <div class="mb-3">
                 <label for="created_time" class="form-label">Thời gian Đăng ký:</label>
                 <input type="text" class="form-control" id="created_time" disabled />
+            </div>
+            <div class="mb-3">
+                <label for="created_time" class="form-label">Thời gian Duyệt:</label>
+                <input type="text" class="form-control" id="accepted_datetime" disabled />
+            </div>
+            <div class="mb-3">
+                <label for="created_time" class="form-label">Thời gian Ra:</label>
+                <input type="text" class="form-control" id="check_out_time" disabled />
+            </div>
+            <div class="mb-3">
+                <label for="created_time" class="form-label">Trạng thái:</label>
+                <input type="text" class="form-control" id="status" disabled />
             </div>
             <div class="mb-3">
                 <label for="reason" class="form-label">Lý do ra ngoài:</label>
