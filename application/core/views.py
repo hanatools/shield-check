@@ -4,11 +4,9 @@ import uuid
 import face_recognition
 from flask import render_template, request, Blueprint, Response, url_for
 
-from application import db
+from application import db, send_email, app
 from application.models import BlogPost, User, CheckIn, RelativeCheckIn
 from flask_login import login_required, current_user
-from pyzbar.pyzbar import decode
-import numpy as np
 import threading
 
 from application.users.forms import SoldierRegistrationForm, InputPersonalForm
@@ -295,6 +293,30 @@ def register_soldier_checkin_data():
         if not is_valid:
             return jsonify({"error": validation_message}), 400
 
+        # Prepare and send approval email
+        token=str(uuid.uuid4())
+        approval_url = f"{app.config.get('WEB_HOST_URL')}/approve/{user.id}/check-out/{token}"  # Example approval URL
+        email_body = f"""
+        Dear Admin,
+
+        A new user has submitted their details for approval:
+
+        Full Name: {user.full_name}
+        Identity Card: {user.identity_card}
+        Management Level: {user.management_level}
+        Unit Name: {user.unit_name}
+
+        Please review and approve the submission here:
+        {approval_url}
+
+        Best regards,
+        HRM System
+        """
+        email_sent = send_email("Approval Request for New User", app.config.get('MAIL_DEFAULT_RECEIVER'), email_body)
+
+        if not email_sent:
+            return jsonify({"error": "Data saved but failed to send approval email"}), 500
+
         # Save images to disk
         check_in_folder = os.path.join("static", "check-in")
         os.makedirs(check_in_folder, exist_ok=True)
@@ -324,6 +346,7 @@ def register_soldier_checkin_data():
             left_image_path=image_paths.get("left"),
             right_image_path=image_paths.get("right"),
             front_image_path=image_paths.get("front"),
+            token=token,
         )
 
         # Save to the database
