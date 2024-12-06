@@ -164,6 +164,24 @@ def search_members():
     ]
     return jsonify(user_data)
 
+@users.route("/get_sponsor_details/<sponsor_id>", methods=["GET"])
+def get_sponsor_details(sponsor_id):
+    # Query the User model to find a user with the provided sponsor_id
+    user = User.query.filter_by(identity_card=sponsor_id).first()
+
+    if user:
+        # Return user details as JSON
+        return {
+            "id": user.id,
+            "full_name": user.full_name,
+            "identity_card": user.identity_card,
+            "management_level": user.management_level,
+            "email": user.email
+        }, 200
+    else:
+        # Return an error message if user not found
+        return {"error": "User not found"}, 404
+
 @users.route("/view/<int:user_id>", methods=["GET"])
 @login_required
 def view(user_id):

@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime
 from flask_wtf.csrf import generate_csrf
 import face_recognition
-from flask import render_template, request, Blueprint, Response, url_for
+from flask import render_template, request, Blueprint, Response, url_for, flash, redirect
 
 from application import db, send_email, app
 from application.email import generate_html_email
@@ -96,10 +96,25 @@ def input_personal():
 def batch_input():
     return render_template("batch_input.html", username=current_user.username)
 
-
-@core.route("/register_relative")
-# @login_required
+@core.route("/register_relative", methods=["GET", "POST"])
+@login_required
 def register_relative():
+    if request.method == "POST":
+        full_name = request.form["relativeName"]
+        identity_card = request.form["relativeId"]
+        management_level = request.form["rank"]
+        unit_name = request.form["unit"]
+        new_checkin = RelativeCheckIn(
+            soldier_user_id=current_user.id,
+            full_name=full_name,
+            identity_card=identity_card,
+            management_level=management_level,
+            unit_name=unit_name,
+        )
+        db.session.add(new_checkin)
+        db.session.commit()
+        flash("Relative check-in registered successfully.", "success")
+        return redirect(url_for("dashboard"))
     return render_template("register_relative.html", username=current_user.username)
 
 @core.route("/reports", methods=["GET", "POST"])
