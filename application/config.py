@@ -16,7 +16,9 @@ class Config:
         "DEFAULT_USER_EMAIL", "mr.william.technician1988@gmail.com"
     )
     DEFAULT_USERNAME = os.getenv("DEFAULT_USERNAME", "systemadmin")
-    DEFAULT_MANAGER_EMAIL = os.getenv("DEFAULT_MANAGER_EMAIL", "luongcongphap@gmail.com")
+    DEFAULT_MANAGER_EMAIL = os.getenv(
+        "DEFAULT_MANAGER_EMAIL", "luongcongphap@gmail.com"
+    )
     DEFAULT_MANAGER_USERNAME = os.getenv("DEFAULT_MANAGER_USERNAME", "admin")
     # DEFAULT_MANAGER_USERNAME = os.getenv("DEFAULT_MANAGER_USERNAME", "Thủ trưởng")
     DEFAULT_USER_PASSWORD = os.getenv("DEFAULT_USER_PASSWORD", "123456")

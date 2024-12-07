@@ -4,7 +4,7 @@ from flask import render_template, url_for, flash, redirect, request, Blueprint,
 from flask_login import login_user, current_user, logout_user, login_required
 from application import db, app
 from werkzeug.security import generate_password_hash, check_password_hash
-from application.models import User
+from application.models import User, MilitaryUnit
 from application.users.forms import (
     RegistrationForm,
     LoginForm,
@@ -110,7 +110,7 @@ def member_list():
             db.or_(
                 User.full_name.ilike(f"%{search_query}%"),
                 User.identity_card.ilike(f"%{search_query}%"),
-                User.unit_name.ilike(f"%{search_query}%"),
+                User.military_military_unit_id.ilike(f"%{search_query}%"),
             )
         )
 
@@ -137,7 +137,7 @@ def soldier_info():
             db.or_(
                 User.full_name.ilike(f"%{search_query}%"),
                 User.identity_card.ilike(f"%{search_query}%"),
-                User.unit_name.ilike(f"%{search_query}%"),
+                User.military_military_unit_id.ilike(f"%{search_query}%"),
             )
         )
 
@@ -165,7 +165,6 @@ def search_members():
             "id": user.id,
             "full_name": user.full_name,
             "identity_card": user.identity_card,
-            "management_level": user.management_level,
             "email": user.email,
         }
         for user in users
@@ -184,7 +183,6 @@ def get_sponsor_details(sponsor_id):
             "id": user.id,
             "full_name": user.full_name,
             "identity_card": user.identity_card,
-            "management_level": user.management_level,
             "email": user.email,
         }, 200
     else:
@@ -263,46 +261,92 @@ def account():
     return render_template("account.html", profile_image=profile_image, form=form)
 
 
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+
 @users.route("/input-personal-submit-data", methods=["POST"])
 @login_required
 def submit_data():
     try:
         # Parse and validate the input data
         data = request.get_json()
-        identity_card = data.get("identityCard", "").strip()
-        full_name = data.get("fullName", "").strip()
-        management_level = data.get("managementLevel", "").strip()
-        unit_name = data.get("unitName", "").strip()
+        # identity_card = data.get("identityCard", "").strip()
+        # full_name = data.get("fullName", "").strip()
+        # images = data.get("images", {})
+        # email = data.get("email", "").strip()
+        # militaryMilitaryUnitId = data.get("militaryMilitaryUnitId", "").strip()
+        # militaryManagerId = data.get("militaryManagerId", "").strip()
+        # note = data.get("note", "").strip()
+
+        identity_card = (data.get("identityCard") or "").strip()
+        full_name = (data.get("fullName") or "").strip()
+        email = (data.get("email") or "").strip()
+        military_military_unit_id = (data.get("militaryMilitaryUnitId") or "").strip()
+        military_manager_id = (data.get("militaryManagerId") or "").strip()
+        note = (data.get("note") or "").strip()
         images = data.get("images", {})
-        print(f"identity_card: {identity_card}")
+
+        logger.debug(
+            f"Received data: identity_card={identity_card}, full_name={full_name}, email={email}, "
+            f"military_military_unit_id={military_military_unit_id}, military_manager_id={military_manager_id}, "
+            f"note={note}, images_keys={list(images.keys())}"
+        )
 
         # Validate required fields
-        if not identity_card or not full_name or not management_level or not unit_name:
+        if not identity_card or not full_name or not military_military_unit_id:
             return jsonify({"error": "All fields are required"}), 400
 
         if not all(k in images for k in ["left", "right", "front"]):
             return jsonify({"error": "Missing one or more required images"}), 400
 
+        # Check for duplicate email if provided
+        if email:
+            existing_email_user = User.query.filter(User.email == email).first()
+            if existing_email_user and (
+                existing_email_user.identity_card != identity_card
+            ):
+                return jsonify({"error": "Email is already in use"}), 400
+
+        # Validate military unit if provided
+        if military_military_unit_id:
+            military_unit = MilitaryUnit.query.get(military_military_unit_id)
+            if not military_unit:
+                return jsonify({"error": "Invalid military unit ID"}), 400
+
+        # Validate manager ID if provided
+        if military_manager_id:
+            manager = User.query.get(military_manager_id)
+            if not manager:
+                return jsonify({"error": "Invalid manager ID"}), 400
+
         # Find the user by identity card
         existing_user = User.query.filter(User.identity_card == identity_card).first()
 
         if not existing_user:
-            email = ""
-            username = ""
-
             random_password = uuid.uuid4().hex
             target_user = User(
                 email=email,
-                username=username,
+                username=identity_card,  # Use identity card as default username
                 password=random_password,
                 identity_card=identity_card,
                 full_name=full_name,
-                management_level=management_level,
-                unit_name=unit_name,
+                military_military_unit_id=military_military_unit_id,
+                military_military_manager_id=military_manager_id,
+                note=note,
             )
             target_user.identity_card = identity_card
         else:
+            # Update the existing user
             target_user = existing_user
+            target_user.email = email
+            target_user.full_name = full_name
+            target_user.military_military_unit_id = military_military_unit_id
+            target_user.military_military_manager_id = military_manager_id
+            target_user.note = note
 
         # Save images to disk
         upload_folder = app.config.get("UPLOAD_FOLDER", "static/uploads")
@@ -338,8 +382,8 @@ def submit_data():
         # Update user data
         target_user.identity_card = identity_card
         target_user.full_name = full_name
-        target_user.management_level = management_level
-        target_user.unit_name = unit_name
+        target_user.military_military_unit_id = military_military_unit_id
+        target_user.military_military_manager_id = military_manager_id
         target_user.left_image_path = image_paths["left"]
         target_user.right_image_path = image_paths["right"]
         target_user.front_image_path = front_image_path
@@ -354,12 +398,13 @@ def submit_data():
             "id": target_user.id,
             "full_name": target_user.full_name,
             "identity_card": target_user.identity_card,
-            "management_level": target_user.management_level,
-            "unit_name": target_user.unit_name,
             "left_image_path": target_user.left_image_path,
             "right_image_path": target_user.right_image_path,
             "front_image_path": target_user.front_image_path,
             "encoding_path": target_user.encoding_path,
+            "military_military_unit_id": target_user.military_military_unit_id,
+            "military_military_manager_id": target_user.military_military_manager_id,
+            "note": target_user.note,
         }
 
         return (

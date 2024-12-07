@@ -16,7 +16,13 @@ from flask import (
 
 from application import db, send_email, app
 from application.email import generate_html_email
-from application.models import User, CheckIn, RelativeCheckIn, UserRelative, MilitaryUnit
+from application.models import (
+    User,
+    CheckIn,
+    RelativeCheckIn,
+    UserRelative,
+    MilitaryUnit,
+)
 from flask_login import login_required, current_user
 import threading
 
@@ -471,9 +477,10 @@ def validate_identity_card():
 @core.route("/register_soldier", methods=["GET", "POST"])
 def register_soldier():
     form = SoldierRegistrationForm()
-    return (render_template(
+    return render_template(
         "register_soldier.html", form=form, username=current_user.username
-    ))
+    )
+
 
 @core.route("/military_units", methods=["GET"])
 @login_required
@@ -484,32 +491,49 @@ def military_units():
 
     for unit in units:
         parent_unit = MilitaryUnit.query.get(unit.parent) if unit.parent else None
-        units_with_parents.append({
-            "id": unit.id,
-            "key": unit.key,
-            "name": unit.name,
-            "note": unit.note,
-            "created_date": unit.created_date.strftime('%Y-%m-%d %H:%M:%S'),
-            "parent_name": parent_unit.name if parent_unit else "Không có (Đơn vị gốc)"
-        })
+        units_with_parents.append(
+            {
+                "id": unit.id,
+                "key": unit.key,
+                "name": unit.name,
+                "note": unit.note,
+                "created_date": unit.created_date.strftime("%Y-%m-%d %H:%M:%S"),
+                "parent_name": (
+                    parent_unit.name if parent_unit else "Không có (Đơn vị gốc)"
+                ),
+            }
+        )
 
-    return render_template("military_units.html", units=units_with_parents, username=current_user.username, csrf_token_value=csrf_token_value)
+    return render_template(
+        "military_units.html",
+        units=units_with_parents,
+        username=current_user.username,
+        csrf_token_value=csrf_token_value,
+    )
+
 
 @core.route("/add_military_unit", methods=["POST"])
 @login_required
 def add_military_unit():
-    name = request.form.get("name")
-    key = request.form.get("key")
-    note = request.form.get("note")
-    parent_id = request.form.get("parent")  # Get the selected parent ID
+    name = request.form.get("military_units_name")
+    key = request.form.get("military_units_key")
+    note = request.form.get("military_units_note")
+    parent_id = request.form.get("military_units_parent")  # Get the selected parent ID
 
     # Validate inputs
     if not name or not key:
-        return jsonify({"success": False, "message": "Tên và Khóa không được để trống."})
+        return jsonify(
+            {"success": False, "message": "Tên và Khóa không được để trống."}
+        )
     # Check for duplicate key
     existing_unit = MilitaryUnit.query.filter_by(key=key).first()
     if existing_unit:
-        return jsonify({"success": False, "message": f"Khóa '{key}' đã tồn tại. Vui lòng chọn khóa khác."})
+        return jsonify(
+            {
+                "success": False,
+                "message": f"Khóa '{key}' đã tồn tại. Vui lòng chọn khóa khác.",
+            }
+        )
     # Find parent unit if provided
     parent_unit = None
     if parent_id:
@@ -530,6 +554,7 @@ def add_military_unit():
 
     return jsonify({"success": True, "message": "Đơn vị mới đã được thêm thành công."})
 
+
 @core.route("/get_military_unit/<int:unit_id>", methods=["GET"])
 @login_required
 def get_military_unit(unit_id):
@@ -543,23 +568,26 @@ def get_military_unit(unit_id):
         "name": unit.name,
         "key": unit.key,
         "note": unit.note,
-        "created_date": unit.created_date.strftime('%Y-%m-%d %H:%M:%S'),
-        "parent": unit.parent if unit.parent else None
+        "created_date": unit.created_date.strftime("%Y-%m-%d %H:%M:%S"),
+        "parent": unit.parent if unit.parent else None,
     }
     return jsonify({"success": True, "data": data})
+
 
 @core.route("/edit_military_unit", methods=["POST"])
 @login_required
 def edit_military_unit():
-    unit_id = request.form.get("id")
-    name = request.form.get("name")
-    key = request.form.get("key")
-    note = request.form.get("note")
-    parent_id = request.form.get("parent")
+    unit_id = request.form.get("edit_military_units_id")
+    name = request.form.get("edit_military_units_name")
+    key = request.form.get("edit_military_units_key")
+    note = request.form.get("edit_military_units_note")
+    parent_id = request.form.get("edit_military_units_parent")
 
     # Validate inputs
     if not unit_id or not name or not key:
-        return jsonify({"success": False, "message": "ID, Tên và Khóa không được để trống."})
+        return jsonify(
+            {"success": False, "message": "ID, Tên và Khóa không được để trống."}
+        )
 
     # Fetch the military unit to edit
     unit = MilitaryUnit.query.get(unit_id)
@@ -567,9 +595,16 @@ def edit_military_unit():
         return jsonify({"success": False, "message": "Đơn vị không tồn tại."})
 
     # Check for duplicate key (exclude current unit)
-    existing_unit = MilitaryUnit.query.filter(MilitaryUnit.key == key, MilitaryUnit.id != unit_id).first()
+    existing_unit = MilitaryUnit.query.filter(
+        MilitaryUnit.key == key, MilitaryUnit.id != unit_id
+    ).first()
     if existing_unit:
-        return jsonify({"success": False, "message": f"Khóa '{key}' đã tồn tại. Vui lòng chọn khóa khác."})
+        return jsonify(
+            {
+                "success": False,
+                "message": f"Khóa '{key}' đã tồn tại. Vui lòng chọn khóa khác.",
+            }
+        )
 
     # Update the unit details
     unit.name = name
@@ -586,18 +621,49 @@ def edit_military_unit():
         unit.parent = None
 
     db.session.commit()
-    return jsonify({"success": True, "message": "Thông tin đơn vị đã được cập nhật thành công."})
+    return jsonify(
+        {"success": True, "message": "Thông tin đơn vị đã được cập nhật thành công."}
+    )
+
 
 @core.route("/delete_military_unit/<int:unit_id>", methods=["DELETE"])
 @login_required
 def delete_military_unit(unit_id):
-    unit = MilitaryUnit.query.get(unit_id)
-    if not unit:
-        return jsonify({"success": False, "message": "Military unit not found."})
+    try:
+        # Retrieve the unit to delete
+        unit = MilitaryUnit.query.get(unit_id)
+        if not unit:
+            return (
+                jsonify(
+                    {"success": False, "message": "Không tìm thấy đơn vị quân đội."}
+                ),
+                404,
+            )
 
-    db.session.delete(unit)
-    db.session.commit()
-    return jsonify({"success": True, "message": "Military unit deleted successfully."})
+        # Check if the unit has children
+        child_units = MilitaryUnit.query.filter_by(parent=unit.id).all()
+        if child_units:
+            return (
+                jsonify(
+                    {"success": False, "message": "Không thể xóa đơn vị có đơn vị con."}
+                ),
+                400,
+            )
+
+        # Proceed to delete the unit
+        db.session.delete(unit)
+        db.session.commit()
+        return (
+            jsonify({"success": True, "message": "Đơn vị quân đội đã xóa thành công."}),
+            200,
+        )
+
+    except Exception as e:
+        return (
+            jsonify({"success": False, "message": f"An error occurred: {str(e)}"}),
+            500,
+        )
+
 
 @core.route("/register_soldier_checkin_data", methods=["POST"])
 def register_soldier_checkin_data():
@@ -778,13 +844,14 @@ def get_hierarchy():
         return {
             "name": unit.name,
             "key": unit.key,
-            "children": [build_hierarchy(child) for child in unit.sub_units]
+            "children": [build_hierarchy(child) for child in unit.sub_units],
         }
 
     root_units = MilitaryUnit.query.filter_by(parent=None).all()
     hierarchy = [build_hierarchy(unit) for unit in root_units]
 
     return jsonify(hierarchy)
+
 
 @core.route("/relative_reports", methods=["GET", "POST"])
 @login_required
@@ -991,3 +1058,19 @@ def validate_face_scan():
 
     except Exception as e:
         return jsonify({"error": f"Lỗi xảy ra: {str(e)}"}), 500
+
+
+@core.route("/get_military_units", methods=["GET"])
+@login_required
+def get_military_units():
+    units = MilitaryUnit.query.all()
+    units_data = [{"id": unit.id, "name": unit.name} for unit in units]
+    return jsonify(units_data)
+
+
+@core.route("/get_users_by_unit/<int:unit_id>", methods=["GET"])
+@login_required
+def get_users_by_unit(unit_id):
+    users = User.query.filter_by(military_military_unit_id=unit_id).all()
+    users_data = [{"id": user.id, "full_name": user.full_name} for user in users]
+    return jsonify(users_data)

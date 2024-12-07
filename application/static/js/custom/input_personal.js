@@ -108,7 +108,7 @@ function showResult(extractedValue, videoElement, imageElement) {
 
 // Move to Step 2
 // Move to Step 2 with animation
-function moveToStep2(cardNumber, videoElement, imageElement) {
+async function moveToStep2(cardNumber, videoElement, imageElement) {
     const step1 = document.getElementById("step-1");
     const step2 = document.getElementById("step-2");
 
@@ -147,6 +147,42 @@ function moveToStep2(cardNumber, videoElement, imageElement) {
         stream.getTracks().forEach(track => track.stop());
         videoElement.srcObject = null;
     }
+
+    const noteMessage = document.getElementById("user-exists-note");
+
+
+    // Check if the user exists by using `/search_members`
+    try {
+        const response = await fetch(`/search_members?query=${cardNumber}`);
+        const users = await response.json();
+
+        if (users.length > 0) {
+            const user = users.find(u => u.identity_card === cardNumber);
+
+            if (user) {
+                // Populate Step 2 fields with the user's data
+                document.getElementById("full-name").value = user.full_name || "";
+                document.getElementById("email").value = user.email || "";
+
+                noteMessage.classList.remove("d-none");
+            } else {
+                // Clear the form if no user is found
+                document.getElementById("full-name").value = "";
+                document.getElementById("email").value = "";
+
+                noteMessage.classList.add("d-none");
+            }
+        } else {
+            // Clear the form if no user is found
+            document.getElementById("full-name").value = "";
+            document.getElementById("email").value = "";
+
+            noteMessage.classList.add("d-none");
+        }
+    } catch (error) {
+        console.error("Error checking user:", error);
+        alert("Đã xảy ra lỗi khi kiểm tra người dùng. Vui lòng thử lại.");
+    }
 }
 
 // Move back to Step 1 with animation
@@ -173,12 +209,10 @@ function validateForm() {
     let isValid = true;
 
     const fullNameInput = document.getElementById("full-name");
-    const unitNameInput = document.getElementById("unit-name");
-    const managementLevelInput = document.getElementById("management-level");
 
     const fullNameError = document.getElementById("full-name-error");
-    const unitNameError = document.getElementById("unit-name-error");
-    const managementLevelError = document.getElementById("management-level-error");
+    const unitNameError = document.getElementById("military_military_unit_error");
+    const managementLevelError = document.getElementById("military-manager-id-error");
 
     // Clear all previous error messages
     fullNameError.textContent = "";
@@ -188,18 +222,6 @@ function validateForm() {
     // Validate full name
     if (!fullNameInput.value.trim()) {
         fullNameError.textContent = "Họ và tên không được để trống.";
-        isValid = false;
-    }
-
-    // Validate unit name
-    if (!unitNameInput.value.trim()) {
-        unitNameError.textContent = "Tên đơn vị không được để trống.";
-        isValid = false;
-    }
-
-    // Validate management level
-    if (!managementLevelInput.value.trim()) {
-        managementLevelError.textContent = "Cấp quản lý không được để trống.";
         isValid = false;
     }
 
@@ -342,26 +364,6 @@ function checkAllPhotosCaptured() {
     }
 }
 
-function retakePhoto(photoKey) {
-    const index = captureOrder.indexOf(photoKey);
-    if (index !== -1) currentPhotoIndex = index;
-
-    const previewElement = document.getElementById(`${photoKey}-photo-preview`);
-    const placeholderElement = document.getElementById(`${photoKey}-photo`);
-
-    if (previewElement) {
-        previewElement.src = "";
-        previewElement.style.display = "none";
-    }
-
-    if (placeholderElement) {
-        placeholderElement.classList.remove("taken");
-    }
-
-    const nextButton = document.getElementById("next-to-step-4");
-    nextButton.disabled = true; // Disable Next button until all images are recaptured
-}
-
 function resetAllCapturedPhotos() {
     // Clear all captured images
     capturedImages = {
@@ -445,17 +447,28 @@ function moveBackStep3() {
     }, 300); // Match the CSS transition duration
 }
 
-
 function moveToStep4() {
     const step3 = document.getElementById("step-3");
     const step4 = document.getElementById("step-4");
+
     // Stop the camera from Step 3
     stopFaceCamera();
+
     // Populate Step 4 form
     document.getElementById("full-name-confirm").value = document.getElementById("full-name").value;
     document.getElementById("identity-card-confirm").value = document.getElementById("identity-card-number").value;
-    document.getElementById("management-level-confirm").value = document.getElementById("management-level").value;
-    document.getElementById("unit-name-confirm").value = document.getElementById("unit-name").value;
+    document.getElementById("email-confirm").value = document.getElementById("email").value;
+    // document.getElementById("military-manager-id-confirm").value = document.getElementById("military-manager-id").options[
+    //     document.getElementById("military-manager-id").selectedIndex
+    //     ].text;
+    const unitNameElement = document.getElementById("military_military_unit_id");
+    document.getElementById("military_military_unit_id_confirm").value = unitNameElement.options[unitNameElement.selectedIndex]?.text || "Không có đơn vị";
+
+    // Populate manager name
+    const managerElement = document.getElementById("military-manager-id");
+    document.getElementById("military-manager-id-confirm").value = managerElement.options[managerElement.selectedIndex]?.text || "Không có cấp quản lý";
+
+    document.getElementById("note-confirm").value = document.getElementById("note").value;
 
     // Populate images
     for (const [key, imageSrc] of Object.entries(capturedImages)) {
@@ -480,11 +493,14 @@ function moveToStep4() {
 // Finalize the form and send data to the server
 document.getElementById("finish-form").addEventListener("click", () => {
     const userInfo = {
-        fullName: document.getElementById("full-name-confirm").value,
-        identityCard: document.getElementById("identity-card-confirm").value,
-        managementLevel: document.getElementById("management-level-confirm").value,
-        unitName: document.getElementById("unit-name-confirm").value,
-        images: capturedImages, // Include images
+        fullName: document.getElementById("full-name").value.trim(), // From Step 2
+        identityCard: document.getElementById("identity-card-number").value.trim(), // From Step 2
+        email: document.getElementById("email").value.trim(), // From Step 2
+        militaryManagerId: document.getElementById("military-manager-id").value.trim() || null, // Optional, from Step 2
+        militaryMilitaryUnitId: document.getElementById("military_military_unit_id").value.trim() || null, // From Step 2
+        note: document.getElementById("note").value.trim() || "", // From Step 2
+        images: capturedImages, // Include images from Step 3
+
     };
 
     console.log("Submitting user data:", userInfo);
@@ -550,5 +566,47 @@ $(document).ready(function() {
 // Event listeners for navigation
     document.getElementById("next-to-step-4").addEventListener("click", moveToStep4);
     document.getElementById("back-to-step-3").addEventListener("click", moveBackStep3);
+
+    const unitNameSelect = document.getElementById("military_military_unit_id");
+    const managementLevelSelect = document.getElementById("military-manager-id");
+
+    // Fetch Military Units
+    fetch("/get_military_units")
+        .then((response) => response.json())
+        .then((units) => {
+            units.forEach((unit) => {
+                const option = document.createElement("option");
+                option.value = unit.id;
+                option.textContent = unit.name;
+                unitNameSelect.appendChild(option);
+            });
+        });
+
+    // Handle Unit Name Change
+    unitNameSelect.addEventListener("change", function () {
+        const unitId = this.value;
+
+        // Clear and disable the Management Level dropdown
+        managementLevelSelect.innerHTML = '<option value="">-- Chọn cấp quản lý --</option>';
+        managementLevelSelect.disabled = true;
+
+        if (unitId) {
+            // Fetch Users for the selected Military Unit
+            fetch(`/get_users_by_unit/${unitId}`)
+                .then((response) => response.json())
+                .then((users) => {
+                    if (users.length > 0) {
+                        // Populate Management Level dropdown
+                        users.forEach((user) => {
+                            const option = document.createElement("option");
+                            option.value = user.id;
+                            option.textContent = user.full_name;
+                            managementLevelSelect.appendChild(option);
+                        });
+                        managementLevelSelect.disabled = false;
+                    }
+                });
+        }
+    });
 
 });

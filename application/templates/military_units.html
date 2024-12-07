@@ -22,7 +22,7 @@
     <!-- Table and Other Elements -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <button class="btn btn-primary btn-lg" id="add-unit-btn">
+            <button class="btn btn-primary btn-lg" id="add_military_units_btn">
                 <i class="fas fa-plus"></i> Thêm Đơn Vị
             </button>
         </div>
@@ -37,7 +37,7 @@
             <th>ID</th>
             <th>Mã đơn vị</th>
             <th>Tên Đơn Vị</th>
-            <th>Đơn Vị Cha</th> <!-- New Column -->
+            <th>Đơn Vị Quản Lý</th> <!-- New Column -->
             <th>Ghi chú</th>
             <th>Ngày tạo</th>
         </tr>
@@ -71,26 +71,26 @@
 </div>
 
 <!-- Add Military Unit Modal -->
-<div class="modal fade" id="add-unit-modal" tabindex="-1" aria-labelledby="add-unit-label" aria-hidden="true">
+<div class="modal fade" id="add_military_units_modal" tabindex="-1" aria-labelledby="add_military_units_label" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form id="add-unit-form">
+            <form id="add_military_units_form">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="add-unit-label"><i class="fas fa-plus"></i> Thêm Đơn Vị</h5>
+                    <h5 class="modal-title" id="add_military_units_label"><i class="fas fa-plus"></i> Thêm Đơn Vị</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="unit-name" class="form-label">Tên Đơn Vị</label>
-                        <input type="text" id="unit-name" name="name" class="form-control" required>
+                        <label for="military_units_name" class="form-label">Tên Đơn Vị</label>
+                        <input type="text" id="military_units_name" name="military_units_name" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label for="unit-key" class="form-label">Khóa</label>
-                        <input type="text" id="unit-key" name="key" class="form-control" required>
+                        <label for="military_units_key" class="form-label">Mã Đơn Vị</label>
+                        <input type="text" id="military_units_key" name="military_units_key" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label for="unit-parent" class="form-label">Đơn Vị Cha</label>
-                        <select id="unit-parent" name="parent" class="form-control">
+                        <label for="military_units_parent" class="form-label">Đơn Vị Quản Lý</label>
+                        <select id="military_units_parent" name="military_units_parent" class="form-control">
                             <option value="" selected>Không có (Đơn vị gốc)</option>
                             {% for unit in units %}
                             <option value="{{ unit.id }}">{{ unit.name }}</option>
@@ -99,8 +99,8 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="unit-note" class="form-label">Ghi chú</label>
-                        <textarea id="unit-note" name="note" class="form-control"></textarea>
+                        <label for="military_units_note" class="form-label">Ghi chú</label>
+                        <textarea id="military_units_note" name="military_units_note" class="form-control"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -117,11 +117,14 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="confirm-delete-label"><i class="fas fa-exclamation-triangle"></i> Xác nhận xóa</h5>
+                <h5 class="modal-title" id="confirm-delete-label">
+                    <i class="fas fa-exclamation-triangle"></i> Xác nhận xóa
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                Bạn có chắc chắn muốn xóa đơn vị này không?
+                <p>Bạn có chắc chắn muốn xóa đơn vị này không?</p>
+                <p class="text-danger d-none" id="delete-error-message"></p> <!-- Error message area -->
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-danger" id="delete-confirm-btn">Xóa</button>
@@ -132,37 +135,38 @@
 </div>
 
 <!-- Edit Military Unit Modal -->
-<div class="modal fade" id="edit-unit-modal" tabindex="-1" aria-labelledby="edit-unit-label" aria-hidden="true">
+<div class="modal fade" id="edit_military_units_modal" tabindex="-1" aria-labelledby="edit_military_units_label" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form id="edit-unit-form">
+            <form id="edit_military_units_form">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="edit-unit-label"><i class="fas fa-edit"></i> Sửa Đơn Vị</h5>
+                    <h5 class="modal-title" id="edit_military_units_label"><i class="fas fa-edit"></i> Sửa Đơn Vị</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <input type="hidden" id="edit-unit-id" name="id">
+                    <input type="hidden" id="edit_military_units_id" name="edit_military_units_id">
                     <div class="mb-3">
-                        <label for="edit-unit-name" class="form-label">Tên Đơn Vị</label>
-                        <input type="text" id="edit-unit-name" name="name" class="form-control" required>
+                        <label for="edit_military_units_name" class="form-label">Tên Đơn Vị</label>
+                        <input type="text" id="edit_military_units_name" name="edit_military_units_name" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label for="edit-unit-key" class="form-label">Khóa</label>
-                        <input type="text" id="edit-unit-key" name="key" class="form-control" required>
+                        <label for="edit_military_units_key" class="form-label">Mã Đơn Vị</label>
+                        <input type="text" id="edit_military_units_key" name="edit_military_units_key" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label for="edit-unit-note" class="form-label">Ghi chú</label>
-                        <textarea id="edit-unit-note" name="note" class="form-control"></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="edit-unit-parent" class="form-label">Đơn Vị Cha</label>
-                        <select id="edit-unit-parent" name="parent" class="form-control">
+                        <label for="edit_military_units_parent" class="form-label">Đơn Vị Quản Lý</label>
+                        <select id="edit_military_units_parent" name="edit_military_units_parent" class="form-control">
                             <option value="" selected>Không có (Đơn vị gốc)</option>
                             {% for unit in units %}
                             <option value="{{ unit.id }}">{{ unit.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
+                    <div class="mb-3">
+                        <label for="edit_military_units_note" class="form-label">Ghi chú</label>
+                        <textarea id="edit_military_units_note" name="edit_military_units_note" class="form-control"></textarea>
+                    </div>
+
                 </div>
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-primary">Lưu Thay Đổi</button>
@@ -174,29 +178,29 @@
 </div>
 
 <!-- View Military Unit Modal -->
-<div class="modal fade" id="view-unit-modal" tabindex="-1" aria-labelledby="view-unit-label" aria-hidden="true">
+<div class="modal fade" id="view_military_units_modal" tabindex="-1" aria-labelledby="view_military_units_label" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="view-unit-label"><i class="fas fa-eye"></i> Chi Tiết Đơn Vị</h5>
+                <h5 class="modal-title" id="view_military_units_label"><i class="fas fa-eye"></i> Chi Tiết Đơn Vị</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <dl class="row">
                     <dt class="col-sm-4">Tên Đơn Vị:</dt>
-                    <dd class="col-sm-8" id="view-unit-name"></dd>
+                    <dd class="col-sm-8" id="view_military_units_name"></dd>
 
-                    <dt class="col-sm-4">Khóa:</dt>
-                    <dd class="col-sm-8" id="view-unit-key"></dd>
+                    <dt class="col-sm-4">Mã Đơn Vị:</dt>
+                    <dd class="col-sm-8" id="view_military_units_key"></dd>
 
                     <dt class="col-sm-4">Ghi chú:</dt>
-                    <dd class="col-sm-8" id="view-unit-note"></dd>
+                    <dd class="col-sm-8" id="view_military_units_note"></dd>
 
-                    <dt class="col-sm-4">Đơn Vị Cha:</dt>
-                    <dd class="col-sm-8" id="view-unit-parent"></dd>
+                    <dt class="col-sm-4">Đơn Vị Quản Lý:</dt>
+                    <dd class="col-sm-8" id="view_military_units_parent"></dd>
 
                     <dt class="col-sm-4">Ngày Tạo:</dt>
-                    <dd class="col-sm-8" id="view-unit-created-date"></dd>
+                    <dd class="col-sm-8" id="view_military_units_created-date"></dd>
                 </dl>
             </div>
             <div class="modal-footer">

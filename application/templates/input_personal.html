@@ -34,6 +34,12 @@
     <div id="step-2" class="step">
         <div class="card">
             <h4>Nhập thông tin cá nhân</h4>
+            <div class="alert alert-info d-none" role="alert" id="user-exists-note" >
+                Người dùng đã tồn tại. Bạn có thể chỉnh sửa thông tin nếu cần
+            </div>
+
+
+
             <form id="personal-info-form" class="container-fluid">
                 <div class="form-group">
                     <label for="identity-card-number">Số CCCD </label>
@@ -51,31 +57,33 @@
                             id="full-name"
                             class="form-control"
                             placeholder="Nhập họ và tên"
-                            value="Nguyễn Văn A"
+                            value=""
                     />
                     <span id="full-name-error" class="error-message"></span>
                 </div>
                 <div class="form-group">
-                    <label for="unit-name">Nhập tên đơn vị <span class="text-danger">(*)</span></label>
-                    <input
-                            type="text"
-                            id="unit-name"
-                            class="form-control"
-                            placeholder="Nhập tên đơn vị"
-                            value="Đơn vị 1"
-                    />
-                    <span id="unit-name-error" class="error-message"></span>
+                    <label for="email">Email</label>
+                    <input type="email" id="email" class="form-control" placeholder="Nhập email">
+                    <span id="email-error" class="error-message"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="military_military_unit_id">Chọn tên đơn vị </label>
+                    <select id="military_military_unit_id" class="form-control">
+                        <option value="">-- Chọn đơn vị --</option>
+                    </select>
+                    <span id="military_military_unit_error" class="error-message"></span>
                 </div>
                 <div class="form-group">
-                    <label for="management-level">Cấp quản lý <span class="text-danger">(*)</span></label>
-                    <input
-                            type="text"
-                            id="management-level"
-                            class="form-control"
-                            placeholder="Cấp quản lý"
-                            value="Cấp 1"
-                    />
-                    <span id="management-level-error" class="error-message"></span>
+                    <label for="military-manager-id">Chức danh quản lý</label>
+                    <select id="military-manager-id" class="form-control" disabled>
+                        <option value="">-- Chọn cấp quản lý --</option>
+                    </select>
+                    <span id="military-manager-id-error" class="error-message"></span>
+                </div>
+                <div class="form-group">
+                    <label for="note">Ghi chú</label>
+                    <textarea id="note" class="form-control" placeholder="Thêm ghi chú"></textarea>
                 </div>
                 <div class="button-group">
                     <button
@@ -152,13 +160,25 @@
                 <input type="text" id="identity-card-confirm" disabled />
             </div>
             <div class="input-group">
-                <label for="management-level-confirm">Cấp quản lý:</label>
-                <input type="text" id="management-level-confirm" disabled />
+                <label for="email-confirm">Email:</label>
+                <input type="text" id="email-confirm" disabled />
             </div>
             <div class="input-group">
-                <label for="unit-name-confirm">Đơn vị:</label>
-                <input type="text" id="unit-name-confirm" disabled />
+                <label for="military_military_unit_id_confirm">Đơn vị:</label>
+                <input type="text" id="military_military_unit_id_confirm" disabled />
             </div>
+            <div class="input-group">
+                <label for="military-manager-id-confirm">Cấp quản lý:</label>
+                <input type="text" id="military-manager-id-confirm" disabled />
+            </div>
+
+
+            <div class="input-group">
+                <label for="note-confirm">Ghi chú:</label>
+
+                <textarea class="form-control" id="note-confirm" disabled></textarea>
+            </div>
+
 
             <!-- Photo Confirmation -->
             <div class="side-photos">

@@ -1,47 +1,3 @@
-// $(document).ready(function () {
-//     // Initialize DataTable
-//     $("#military-units-table").DataTable();
-//
-//     // Add Military Unit Modal
-//     $("#add-unit-btn").on("click", function () {
-//         $("#add-unit-modal").modal("show");
-//     });
-//
-//     // Handle Add Military Unit Form Submission
-//     $("#add-unit-form").on("submit", function (e) {
-//         e.preventDefault();
-//         const data = $(this).serialize();
-//         $.post("/add_military_unit", data, function (response) {
-//             alert(response.message);
-//             if (response.success) {
-//                 location.reload();
-//             }
-//         });
-//     });
-//
-//     // Handle Delete Button Click
-//     $(".delete-btn").on("click", function () {
-//         const unitId = $(this).data("id");
-//         $("#delete-confirm-btn").data("id", unitId);
-//         $("#confirm-delete-modal").modal("show");
-//     });
-//
-//     // Confirm Delete
-//     $("#delete-confirm-btn").on("click", function () {
-//         const unitId = $(this).data("id");
-//         $.ajax({
-//             url: `/delete_military_unit/${unitId}`,
-//             type: "DELETE",
-//             success: function (response) {
-//                 alert(response.message);
-//                 if (response.success) {
-//                     location.reload();
-//                 }
-//             },
-//         });
-//     });
-// });
-
 $(document).ready(function () {
 
     $("#military-units-table").DataTable({
@@ -65,24 +21,12 @@ $(document).ready(function () {
     });
 
     // Add Military Unit Modal
-    $("#add-unit-btn").on("click", function () {
-        $("#add-unit-modal").modal("show");
+    $("#add_military_units_btn").on("click", function () {
+        $("#add_military_units_modal").modal("show");
     });
 
     // Handle Add Military Unit Form Submission
-    // $("#add-unit-form").on("submit", function (e) {
-    //     e.preventDefault();
-    //     const data = $(this).serialize();
-    //     $.post("/add_military_unit", data, function (response) {
-    //         alert(response.message);
-    //         if (response.success) {
-    //             location.reload();
-    //         }
-    //     });
-    // });
-
-    // Handle Add Military Unit Form Submission
-    $("#add-unit-form").on("submit", function (e) {
+    $("#add_military_units_form").on("submit", function (e) {
         e.preventDefault();
 
         const data = $(this).serialize(); // Serialize form data, including `parent`
@@ -93,11 +37,11 @@ $(document).ready(function () {
             } else {
                 // Display error message in modal
                 const errorAlert = `<div class="alert alert-danger" role="alert">${response.message}</div>`;
-                $("#add-unit-modal .modal-body").prepend(errorAlert);
+                $("#add_military_units_modal .modal-body").prepend(errorAlert);
 
                 // Remove error message after a few seconds
                 setTimeout(() => {
-                    $("#add-unit-modal .alert-danger").remove();
+                    $("#add_military_units_modal .alert-danger").remove();
                 }, 5000);
             }
         });
@@ -113,14 +57,31 @@ $(document).ready(function () {
     // Confirm Delete
     $("#delete-confirm-btn").on("click", function () {
         const unitId = $(this).data("id");
+
         $.ajax({
             url: `/delete_military_unit/${unitId}`,
             type: "DELETE",
             success: function (response) {
-                alert(response.message);
                 if (response.success) {
+                    // If deletion is successful, reload the page
+                    alert(response.message);
                     location.reload();
+                } else {
+                    // If deletion fails, display the error message in the modal
+                    $("#delete-error-message")
+                        .text(response.message) // Set the error message
+                        .removeClass("d-none"); // Show the error message
                 }
+            },
+            error: function (xhr) {
+                // Handle unexpected errors
+                const errorMessage =
+                    xhr.responseJSON && xhr.responseJSON.message
+                        ? xhr.responseJSON.message
+                        : "An unexpected error occurred.";
+                $("#delete-error-message")
+                    .text(errorMessage) // Set the error message
+                    .removeClass("d-none"); // Show the error message
             },
         });
     });
@@ -201,14 +162,14 @@ $(document).ready(function () {
                 const unit = response.data;
 
                 // Populate modal fields
-                $("#edit-unit-id").val(unit.id);
-                $("#edit-unit-name").val(unit.name);
-                $("#edit-unit-key").val(unit.key);
-                $("#edit-unit-note").val(unit.note);
-                $("#edit-unit-parent").val(unit.parent || ""); // Select parent if exists
+                $("#edit_military_units_id").val(unit.id);
+                $("#edit_military_units_name").val(unit.name);
+                $("#edit_military_units_key").val(unit.key);
+                $("#edit_military_units_note").val(unit.note);
+                $("#edit_military_units_parent").val(unit.parent || ""); // Select parent if exists
 
                 // Show the edit modal
-                $("#edit-unit-modal").modal("show");
+                $("#edit_military_units_modal").modal("show");
             } else {
                 alert(response.message);
             }
@@ -216,7 +177,7 @@ $(document).ready(function () {
     });
 
     // Handle Edit Military Unit Form Submission
-    $("#edit-unit-form").on("submit", function (e) {
+    $("#edit_military_units_form").on("submit", function (e) {
         e.preventDefault();
 
         const data = $(this).serialize(); // Serialize form data
@@ -227,11 +188,11 @@ $(document).ready(function () {
             } else {
                 // Display error message in modal
                 const errorAlert = `<div class="alert alert-danger" role="alert">${response.message}</div>`;
-                $("#edit-unit-modal .modal-body").prepend(errorAlert);
+                $("#edit_military_units_modal .modal-body").prepend(errorAlert);
 
                 // Remove error message after a few seconds
                 setTimeout(() => {
-                    $("#edit-unit-modal .alert-danger").remove();
+                    $("#edit_military_units_modal .alert-danger").remove();
                 }, 5000);
             }
         });
@@ -247,14 +208,14 @@ $(document).ready(function () {
                 const unit = response.data;
 
                 // Populate modal fields
-                $("#view-unit-name").text(unit.name);
-                $("#view-unit-key").text(unit.key);
-                $("#view-unit-note").text(unit.note || "Không có");
-                $("#view-unit-parent").text(unit.parent || "Không có (Đơn vị gốc)");
-                $("#view-unit-created-date").text(unit.created_date);
+                $("#view_military_units_name").text(unit.name);
+                $("#view_military_units_key").text(unit.key);
+                $("#view_military_units_note").text(unit.note || "Không có");
+                $("#view_military_units_parent").text(unit.parent || "Không có (Đơn vị gốc)");
+                $("#view_military_units_created-date").text(unit.created_date);
 
                 // Show the view modal
-                $("#view-unit-modal").modal("show");
+                $("#view_military_units_modal").modal("show");
             } else {
                 alert(response.message);
             }
