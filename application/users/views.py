@@ -4,8 +4,13 @@ from flask import render_template, url_for, flash, redirect, request, Blueprint,
 from flask_login import login_user, current_user, logout_user, login_required
 from application import db, app
 from werkzeug.security import generate_password_hash, check_password_hash
-from application.models import User, BlogPost
-from application.users.forms import RegistrationForm, LoginForm, UpdateUserForm, DeleteUserForm
+from application.models import User
+from application.users.forms import (
+    RegistrationForm,
+    LoginForm,
+    UpdateUserForm,
+    DeleteUserForm,
+)
 from application.users.picture_handler import add_profile_pic
 import os
 import base64
@@ -45,9 +50,9 @@ def login():
 
             # Handle user existence and password validation
             if not user:
-                error = "User does not exist."
+                error = "Người dùng không tồn tại."
             elif not user.check_password(form.password.data):
-                error = "Incorrect password."
+                error = "Mật khẩu không đúng."
             else:
                 # Log in the user
                 try:
@@ -57,7 +62,7 @@ def login():
                         next_page = url_for("core.daskboard")
                     return redirect(next_page)
                 except Exception as e:
-                    error = "An unexpected error occurred. Please try again later."
+                    error = "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại sau."
 
         # If form validation fails
         elif form.errors:
@@ -88,7 +93,7 @@ def profile():
 @users.route("/change_password")
 @login_required
 def change_password():
-    return (redirect(url_for("users.change_password")))
+    return redirect(url_for("users.change_password"))
 
 
 @users.route("/member_list")
@@ -113,7 +118,10 @@ def member_list():
     users_list = pagination.items
 
     # return render_template("member_list.html", users=users_list, pagination=pagination)
-    return render_template("member_list.html", users=users_list, pagination=pagination, form=form)
+    return render_template(
+        "member_list.html", users=users_list, pagination=pagination, form=form
+    )
+
 
 @users.route("/soldier_info")
 @login_required
@@ -136,8 +144,9 @@ def soldier_info():
     pagination = query.paginate(page=page, per_page=10)
     users_list = pagination.items
 
-    return render_template("soldier_info.html", users=users_list, pagination=pagination, form=form)
-
+    return render_template(
+        "soldier_info.html", users=users_list, pagination=pagination, form=form
+    )
 
 
 @users.route("/search_members", methods=["GET"])
@@ -146,8 +155,7 @@ def search_members():
     query = request.args.get("query", "").strip()
     if query:
         users = User.query.filter(
-            User.full_name.ilike(f"%{query}%")
-            | User.identity_card.ilike(f"%{query}%")
+            User.full_name.ilike(f"%{query}%") | User.identity_card.ilike(f"%{query}%")
         ).all()
     else:
         users = User.query.all()
@@ -158,11 +166,12 @@ def search_members():
             "full_name": user.full_name,
             "identity_card": user.identity_card,
             "management_level": user.management_level,
-            "email": user.email
+            "email": user.email,
         }
         for user in users
     ]
     return jsonify(user_data)
+
 
 @users.route("/get_sponsor_details/<sponsor_id>", methods=["GET"])
 def get_sponsor_details(sponsor_id):
@@ -176,11 +185,12 @@ def get_sponsor_details(sponsor_id):
             "full_name": user.full_name,
             "identity_card": user.identity_card,
             "management_level": user.management_level,
-            "email": user.email
+            "email": user.email,
         }, 200
     else:
         # Return an error message if user not found
         return {"error": "User not found"}, 404
+
 
 @users.route("/view/<int:user_id>", methods=["GET"])
 @login_required
@@ -205,6 +215,7 @@ def edit(user_id):
 
     return render_template("edit_user.html", user=user)
 
+
 @users.route("/delete/<int:user_id>", methods=["POST"])
 @login_required
 def delete(user_id):
@@ -221,6 +232,7 @@ def delete(user_id):
         flash("User not found.", "warning")
 
     return redirect(url_for("users.member_list"))
+
 
 @users.route("/account", methods=["GET", "POST"])
 @login_required
@@ -251,35 +263,24 @@ def account():
     return render_template("account.html", profile_image=profile_image, form=form)
 
 
-@users.route("/<username>")
-def user_posts(username):
-    page = request.args.get("page", 1, type=int)
-    user = User.query.filter_by(username=username).first_or_404()
-    blog_posts = (
-        BlogPost.query.filter_by(author=user)
-        .order_by(BlogPost.date.desc())
-        .paginate(page=page, per_page=5)
-    )
-    return render_template("user_blog_posts.html", blog_posts=blog_posts, user=user)
-
 @users.route("/input-personal-submit-data", methods=["POST"])
 @login_required
 def submit_data():
     try:
         # Parse and validate the input data
         data = request.get_json()
-        identity_card = data.get('identityCard', '').strip()
-        full_name = data.get('fullName', '').strip()
-        management_level = data.get('managementLevel', '').strip()
-        unit_name = data.get('unitName', '').strip()
-        images = data.get('images', {})
+        identity_card = data.get("identityCard", "").strip()
+        full_name = data.get("fullName", "").strip()
+        management_level = data.get("managementLevel", "").strip()
+        unit_name = data.get("unitName", "").strip()
+        images = data.get("images", {})
         print(f"identity_card: {identity_card}")
 
         # Validate required fields
         if not identity_card or not full_name or not management_level or not unit_name:
             return jsonify({"error": "All fields are required"}), 400
 
-        if not all(k in images for k in ['left', 'right', 'front']):
+        if not all(k in images for k in ["left", "right", "front"]):
             return jsonify({"error": "Missing one or more required images"}), 400
 
         # Find the user by identity card
@@ -304,7 +305,7 @@ def submit_data():
             target_user = existing_user
 
         # Save images to disk
-        upload_folder = app.config.get('UPLOAD_FOLDER', 'static/uploads')
+        upload_folder = app.config.get("UPLOAD_FOLDER", "static/uploads")
         os.makedirs(upload_folder, exist_ok=True)
 
         image_paths = {}
@@ -315,7 +316,7 @@ def submit_data():
             image_paths[key] = file_path
 
         # Process front image for face encoding
-        front_image_path = image_paths['front']
+        front_image_path = image_paths["front"]
         face_encoding_path = None
         try:
             image = face_recognition.load_image_file(front_image_path)
@@ -323,9 +324,11 @@ def submit_data():
 
             if len(face_encodings) > 0:
                 encoding = face_encodings[0]
-                encoding_folder = app.config.get('FACE_DATA', 'static/face_data')
+                encoding_folder = app.config.get("FACE_DATA", "static/face_data")
                 os.makedirs(encoding_folder, exist_ok=True)
-                face_encoding_path = os.path.join(encoding_folder, f"{identity_card}.npy")
+                face_encoding_path = os.path.join(
+                    encoding_folder, f"{identity_card}.npy"
+                )
                 np.save(face_encoding_path, encoding)
             else:
                 return jsonify({"error": "No face detected in the front image"}), 400
@@ -337,8 +340,8 @@ def submit_data():
         target_user.full_name = full_name
         target_user.management_level = management_level
         target_user.unit_name = unit_name
-        target_user.left_image_path = image_paths['left']
-        target_user.right_image_path = image_paths['right']
+        target_user.left_image_path = image_paths["left"]
+        target_user.right_image_path = image_paths["right"]
         target_user.front_image_path = front_image_path
         target_user.encoding_path = face_encoding_path
 
@@ -359,10 +362,10 @@ def submit_data():
             "encoding_path": target_user.encoding_path,
         }
 
-        return jsonify({
-            "message": "Data submitted successfully!",
-            "user": user_details
-        }), 200
+        return (
+            jsonify({"message": "Data submitted successfully!", "user": user_details}),
+            200,
+        )
 
     except Exception as e:
         return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500

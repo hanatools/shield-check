@@ -1,0 +1,217 @@
+{% extends "member_base.html" %}
+
+{% block stylecss %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.3.3/css/buttons.dataTables.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/custom/military_units.css') }}">
+{% endblock %}
+
+{% block title %}
+<title>Quản lý đơn vị</title>
+{% endblock %}
+
+{% block content %}
+<div class="content">
+    <h2><i class="fas fa-building"></i> Quản lý Đơn Vị</h2>
+    <!-- Hierarchy Map Container -->
+    <h5>Bản đồ phân cấp</h5>
+    <div id="hierarchy-map" class="mb-4" style="width: 100%; height: 400px; border: 1px solid #dee2e6; border-radius: 10px;"></div>
+
+    <h5>Danh sách đơn vị</h5>
+    <!-- Table and Other Elements -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <button class="btn btn-primary btn-lg" id="add-unit-btn">
+                <i class="fas fa-plus"></i> Thêm Đơn Vị
+            </button>
+        </div>
+        <div class="text-muted">
+            <small><i class="fas fa-info-circle"></i> Bạn có thể thêm, sửa, xem hoặc xóa đơn vị tại đây.</small>
+        </div>
+    </div>
+    <table id="military-units-table" class="display table table-bordered table-hover" style="width:100%">
+        <thead>
+        <tr>
+            <th>Hành động</th>
+            <th>ID</th>
+            <th>Mã đơn vị</th>
+            <th>Tên Đơn Vị</th>
+            <th>Đơn Vị Cha</th> <!-- New Column -->
+            <th>Ghi chú</th>
+            <th>Ngày tạo</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for unit in units %}
+        <tr>
+            <td>
+                <button class="btn btn-info btn-sm edit-btn" data-id="{{ unit.id }}" data-bs-toggle="tooltip" title="Sửa">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-secondary btn-sm view-btn" data-id="{{ unit.id }}" data-bs-toggle="tooltip" title="Xem">
+                    <i class="fas fa-eye"></i>
+                </button>
+                <button class="btn btn-danger btn-sm delete-btn" data-id="{{ unit.id }}" data-bs-toggle="tooltip" title="Xóa">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+            <td>{{ unit.id }}</td>
+            <td>{{ unit.key }}</td>
+            <td>{{ unit.name }}</td>
+            <td>{{ unit.parent_name }}</td> <!-- Parent Name -->
+            <td>{{ unit.note }}</td>
+            <td>{{ unit.created_date }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <input type="hidden" name="csrf_token" value="{{ csrf_token_value }}">
+</div>
+
+<!-- Add Military Unit Modal -->
+<div class="modal fade" id="add-unit-modal" tabindex="-1" aria-labelledby="add-unit-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="add-unit-form">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="add-unit-label"><i class="fas fa-plus"></i> Thêm Đơn Vị</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="unit-name" class="form-label">Tên Đơn Vị</label>
+                        <input type="text" id="unit-name" name="name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="unit-key" class="form-label">Khóa</label>
+                        <input type="text" id="unit-key" name="key" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="unit-parent" class="form-label">Đơn Vị Cha</label>
+                        <select id="unit-parent" name="parent" class="form-control">
+                            <option value="" selected>Không có (Đơn vị gốc)</option>
+                            {% for unit in units %}
+                            <option value="{{ unit.id }}">{{ unit.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="unit-note" class="form-label">Ghi chú</label>
+                        <textarea id="unit-note" name="note" class="form-control"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Thêm</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Confirm Delete Modal -->
+<div class="modal fade" id="confirm-delete-modal" tabindex="-1" aria-labelledby="confirm-delete-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirm-delete-label"><i class="fas fa-exclamation-triangle"></i> Xác nhận xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Bạn có chắc chắn muốn xóa đơn vị này không?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" id="delete-confirm-btn">Xóa</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Military Unit Modal -->
+<div class="modal fade" id="edit-unit-modal" tabindex="-1" aria-labelledby="edit-unit-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="edit-unit-form">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="edit-unit-label"><i class="fas fa-edit"></i> Sửa Đơn Vị</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="edit-unit-id" name="id">
+                    <div class="mb-3">
+                        <label for="edit-unit-name" class="form-label">Tên Đơn Vị</label>
+                        <input type="text" id="edit-unit-name" name="name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-unit-key" class="form-label">Khóa</label>
+                        <input type="text" id="edit-unit-key" name="key" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-unit-note" class="form-label">Ghi chú</label>
+                        <textarea id="edit-unit-note" name="note" class="form-control"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-unit-parent" class="form-label">Đơn Vị Cha</label>
+                        <select id="edit-unit-parent" name="parent" class="form-control">
+                            <option value="" selected>Không có (Đơn vị gốc)</option>
+                            {% for unit in units %}
+                            <option value="{{ unit.id }}">{{ unit.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Lưu Thay Đổi</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- View Military Unit Modal -->
+<div class="modal fade" id="view-unit-modal" tabindex="-1" aria-labelledby="view-unit-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="view-unit-label"><i class="fas fa-eye"></i> Chi Tiết Đơn Vị</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <dl class="row">
+                    <dt class="col-sm-4">Tên Đơn Vị:</dt>
+                    <dd class="col-sm-8" id="view-unit-name"></dd>
+
+                    <dt class="col-sm-4">Khóa:</dt>
+                    <dd class="col-sm-8" id="view-unit-key"></dd>
+
+                    <dt class="col-sm-4">Ghi chú:</dt>
+                    <dd class="col-sm-8" id="view-unit-note"></dd>
+
+                    <dt class="col-sm-4">Đơn Vị Cha:</dt>
+                    <dd class="col-sm-8" id="view-unit-parent"></dd>
+
+                    <dt class="col-sm-4">Ngày Tạo:</dt>
+                    <dd class="col-sm-8" id="view-unit-created-date"></dd>
+                </dl>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block stylejs %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.3/js/dataTables.buttons.min.js"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="{{ url_for('static', filename='js/custom/military_units.js') }}"></script>
+{% endblock %}

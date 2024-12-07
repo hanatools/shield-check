@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // const sponsorIdInput = document.getElementById("sponsorId");
     // const relativeIdInput = document.getElementById("relativeId");
     const relativeNameInput = document.getElementById("relativeName");
+    const relationshipInput = document.getElementById("relationship");
     // const submitButton = document.querySelector("button[type='submit']");
 
 
@@ -75,7 +76,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 displayError(sponsorIdInput, "Số CCCD của Quân nhân phải gồm 12 ký tự.");
                 isValid = false;
             }
+        }  else if (inputElement === relationshipInput) {
+            if (relationshipInput.value.trim() === "") {
+                displayError(relationshipInput, "Họ tên người thân không được để trống.");
+                isValid = false;
+            }
         }
+
+
 
         return isValid;
     }
@@ -85,6 +93,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const isRelativeNameValid = validateField(relativeNameInput);
         const isRelativeIdValid = validateField(relativeIdInput);
         const isSponsorIdValid = validateField(sponsorIdInput);
+        const relationshipIdValid = validateField(relationshipInput);
 
         // Enable submit button if all fields are valid
         submitButton.disabled = !(isRelativeNameValid && isRelativeIdValid && isSponsorIdValid);
@@ -102,6 +111,12 @@ document.addEventListener("DOMContentLoaded", function () {
     relativeNameInput.addEventListener("input", () => {
         touchedFields.add(relativeNameInput); // Mark field as touched
         validateField(relativeNameInput);
+        validateForm();
+    });
+
+    relationshipInput.addEventListener("input", () => {
+        touchedFields.add(relationshipInput); // Mark field as touched
+        validateField(relationshipInput);
         validateForm();
     });
 
@@ -141,4 +156,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
         }
     });
+
+//      submit form
+    document.querySelector("form").addEventListener("submit", (event) => {
+        validateForm(); // Final client-side validation
+        if (submitButton.disabled) {
+            event.preventDefault(); // Prevent submission if the form is invalid
+            alert("Please correct the errors before submitting.");
+        }
+    });
+
 });

@@ -1,0 +1,55 @@
+body {
+    background-color: #f8f9fa;
+}
+
+.content {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    font-weight: bold;
+    color: #007bff;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.btn {
+    border-radius: 20px;
+}
+
+#military-units-table {
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+}
+
+#military-units-table th {
+    background-color: #007bff;
+    color: white;
+    text-align: center;
+}
+
+#military-units-table td {
+    vertical-align: middle;
+    text-align: center;
+}
+
+.modal-content {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.modal-header {
+    background-color: #007bff;
+    color: white;
+}
+
+.modal-title {
+    font-weight: bold;
+}
+
+.btn-close {
+    background-color: white;
+    color: #007bff;
+}

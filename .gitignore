@@ -55,7 +55,7 @@ hrm_app/hrm_app/
 hrm_app/ui/__pycache__/
 ~$*
 app_venv
-migrations
+#migrations
 shield_check_db.sqlite
 __pycache__
 static/*

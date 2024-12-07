@@ -53,13 +53,23 @@
       </div>
 
       <a href="#" class="main-button" data-toggle="submenu" data-target="#mgrInfoSubmenu">
-        <span class="icon">&#9881;</span> <!-- User Icon -->
+
+        <span class="icon">&#128196;</span>
         <span class="text">Quản lý thông tin</span>
       </a>
       <div class="submenu" id="mgrInfoSubmenu">
         <a href="{{ url_for('users.soldier_info') }}" id="soldier_info">Thông tin Quân Nhân</a>
         <a href="{{ url_for('core.reports') }}" id="reports">Báo cáo quân nhân</a>
         <a href="{{ url_for('core.relative_reports') }}" id="relative_reports">Báo cáo người thân</a>
+      </div>
+
+      <!-- Main Button with Submenu -->
+      <a href="#" class="main-button " data-toggle="submenu" data-target="#settingSubmenu">
+        <span class="icon">&#9881;</span>
+        <span class="text">Quản lý hệ thống</span>
+      </a>
+      <div class="submenu" id="settingSubmenu">
+        <a href="{{ url_for('core.military_units') }}"  id="input_military_units">Đơn vị</a>
       </div>
 
     </div>

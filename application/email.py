@@ -181,6 +181,7 @@
 #     </html>
 #     """
 
+
 def generate_html_email(user_full_name, unit_name, leave_date, verify_url):
     """
     Generate a beautiful HTML email for "Đơn xin phép ra ngoài" in Vietnamese.
