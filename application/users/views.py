@@ -141,7 +141,7 @@ def soldier_info():
             )
         )
 
-    pagination = query.paginate(page=page, per_page=10)
+    pagination = query.paginate(page=page, per_page=100)
     users_list = pagination.items
 
     return render_template(
