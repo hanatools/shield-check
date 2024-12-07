@@ -43,6 +43,19 @@
 // });
 
 $(document).ready(function () {
+
+    $("#military-units-table").DataTable({
+        responsive: true,
+        autoWidth: false,
+        columnDefs: [
+            {
+                targets: [0, 1, 5, 6], // Exclude "Hành động", "ID", "Ngày tạo" from search
+                searchable: false,
+            },
+        ],
+    });
+
+
     // Set CSRF token in AJAX headers
     const csrfToken = $('input[name="csrf_token"]').val();
     $.ajaxSetup({
