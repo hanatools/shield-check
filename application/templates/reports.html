@@ -45,23 +45,9 @@
                                      {% elif record.status == 'expired' %} bg-primary
                                      {% elif record.status == 'completed' %} bg-info
                                      {% endif %}">
-                             {% if record.status == 'created' %}
-                                                Đã tạo
-                                            {% elif record.status == 'accepted' %}
-                                                Đã duyệt
-                                            {% elif record.status == 'reject' %}
-                                                Lỗi
-                                            {% elif record.status == 'cancel' %}
-                                                Đã hủy
-                                            {% elif record.status == 'expired' %}
-                                                Hết hạn
-                                                   {% elif record.status == 'completed' %}
 
-                                                Hoàn thành
-                                            {% else %}
 
-                                                Thông báo
-                                            {% endif %}
+                                        {{ STATUS_TRANSLATIONS.get(record.status, "Đã tạo") }}
                         </span>
                     </td>
                     <td>
@@ -73,7 +59,8 @@
                                              {% elif record.acceptor_level_1_status == 'rejected' %} bg-danger
                                              {% else %} bg-warning text-dark
                                              {% endif %}">
-                                    {{ record.acceptor_level_1_status or 'Chờ duyệt' }}
+
+                                            {{ STATUS_TRANSLATIONS.get(record.acceptor_level_1_status, "Chưa gửi") }}
                                 </span>
                             </div>
                             <div>
@@ -83,7 +70,8 @@
                                              {% elif record.acceptor_level_2_status == 'rejected' %} bg-danger
                                              {% else %} bg-warning text-dark
                                              {% endif %}">
-                                    {{ record.acceptor_level_2_status or 'Chờ duyệt' }}
+                                              {{ STATUS_TRANSLATIONS.get(record.acceptor_level_2_status, "Chưa gửi") }}
+
                                 </span>
                             </div>
                             <div>
@@ -93,7 +81,7 @@
                                              {% elif record.acceptor_level_3_status == 'rejected' %} bg-danger
                                              {% else %} bg-warning text-dark
                                              {% endif %}">
-                                    {{ record.acceptor_level_3_status or 'Chờ duyệt' }}
+                                {{ STATUS_TRANSLATIONS.get(record.acceptor_level_3_status, "Chưa gửi") }}
                                 </span>
                             </div>
                         </div>
