@@ -88,7 +88,7 @@
           <span>{{ current_user.username if current_user.username else "Guest" }}</span>
         </a>
         <div class="dropdown-menu">
-          <a href="#" class="d-flex align-items-center gap-2">
+          <a href="{{ url_for('users.soldier_info_personal_user', user_id=current_user.id) }}" class="d-flex align-items-center gap-2">
             <i class="bi bi-person"></i> <!-- Profile Icon -->
             <span>Profile</span>
           </a>
