@@ -45,7 +45,6 @@ class MilitaryUnit(db.Model):
     def __repr__(self):
         return f"<MilitaryUnit {self.name} - Key: {self.key}>"
 
-
 class User(db.Model, UserMixin):
     __tablename__ = "users"
 
@@ -53,20 +52,32 @@ class User(db.Model, UserMixin):
     profile_image = db.Column(
         db.String(255), nullable=False, default="default_profile.png"
     )
-    email = db.Column(db.String(255), unique=True, nullable=False)
+    email = db.Column(db.String(255), unique=True, nullable=True)
     username = db.Column(db.String(64), unique=True, nullable=True)
     password = db.Column(db.String(500))
     second_level_password = db.Column(db.String(500))
     identity_card = db.Column(db.String(50), unique=True, index=True)
-    # Identity card attributes
-
     full_name = db.Column(db.String(255), nullable=True)
-    military_military_manager_id = db.Column(db.String(255), nullable=True)
-    military_military_unit_id = db.Column(db.String(255), nullable=True)
-    military_military_unit_name = db.Column(db.String(255), nullable=True)
-    military_military_manager_full_name = db.Column(db.String(255), nullable=True)
+    military_unit_name = db.Column(db.String(255), nullable=True)
+    military_manager_full_name = db.Column(db.String(255), nullable=True)
     note = db.Column(db.Text, nullable=True)
-    is_manager = db.Column(db.Boolean, default=False, nullable=False)
+    is_manager = db.Column(db.Boolean, default=False, nullable=True)
+    military_unit_id = db.Column(
+        db.Integer, db.ForeignKey("military_units.id", name="fk_user_military_unit"), nullable=True
+    )
+    military_manager_id = db.Column(
+        db.Integer, db.ForeignKey("users.id", name="fk_user_military_manager"), nullable=True
+    )
+    created_by_id = db.Column(
+        db.Integer, db.ForeignKey("users.id", name="fk_user_created_by"), nullable=True
+    )
+    created_time = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    update_time = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    military_unit = db.relationship("MilitaryUnit", backref="users", foreign_keys=[military_unit_id])
+    military_manager = db.relationship("User", remote_side=[id], foreign_keys=[military_manager_id])
+    created_by = db.relationship("User", remote_side=[id], backref="created_users", foreign_keys=[created_by_id])
 
     # Image paths
     left_image_path = db.Column(db.String(256), nullable=True)
@@ -77,10 +88,11 @@ class User(db.Model, UserMixin):
     reset_token = db.Column(db.String(256), nullable=True)
     reset_second_token = db.Column(db.String(256), nullable=True)
 
-    def __init__(self, email, username, password, **kwargs):
+    def __init__(self, email, username, password, second_level_password, **kwargs):
         self.email = email
         self.username = username
         self.password = generate_password_hash(password)
+        self.second_level_password = generate_password_hash(second_level_password)
 
         # Set additional fields if provided
         for key, value in kwargs.items():
@@ -93,71 +105,36 @@ class User(db.Model, UserMixin):
         return f"UserName: {self.username} - IdentityCard: {self.identity_card}"
 
 
-class UserRelative(db.Model):
-    __tablename__ = "user_relatives"
-
-    id = db.Column(db.Integer, primary_key=True)
-    full_name = db.Column(db.String(255), nullable=False)
-    identity_card = db.Column(db.String(50), nullable=False, index=True)
-    relationship = db.Column(db.String(64), nullable=True)
-    note = db.Column(db.Text, nullable=True)
-    profile_image = db.Column(
-        db.String(255), nullable=False, default="default_profile.png"
-    )
-
-    # sponsor
-    sponsor_id = db.Column(db.String(50), db.ForeignKey("users.id"), nullable=False)
-    sponsor_identity_card = db.Column(
-        db.String(50), db.ForeignKey("users.identity_card"), nullable=False
-    )
-    sponsor_full_name = db.Column(db.String(255), nullable=True)
-    sponsor_military_management_level = db.Column(db.String(255), nullable=True)
-    sponsor_military_military_unit = db.Column(db.String(255), nullable=True)
-
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    created_by = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    # Relationship with User
-    sponsor = db.relationship(
-        "User", backref="relatives", foreign_keys=[sponsor_identity_card]
-    )
-
-    def __init__(self, full_name, identity_card, **kwargs):
-        self.full_name = full_name
-        self.identity_card = identity_card
-
-        # Set additional fields if provided
-        for key, value in kwargs.items():
-            setattr(self, key, value)
-
-    def __repr__(self):
-        return f"<UserRelative {self.full_name} - SponsorID: {self.sponsor_id}>"
-
-
-class CheckIn(db.Model):
-    __tablename__ = "check_in"
+class SponsorCheckIn(db.Model):
+    __tablename__ = "sponsor_check_in"
 
     id = db.Column(db.Integer, primary_key=True)
 
     acceptor_level_1_id = db.Column(
-        db.Integer, db.ForeignKey("users.id"), nullable=True
+        db.Integer, db.ForeignKey("users.id", name="fk_sponsor_check_in_acceptor_level_1_id"), nullable=True
     )
-    acceptor_level_1_full_name = db.Column(db.String(255), nullable=False)
+    acceptor_level_1_full_name = db.Column(db.String(255), nullable=True)
     acceptor_level_2_id = db.Column(
-        db.Integer, db.ForeignKey("users.id"), nullable=True
+        db.Integer, db.ForeignKey("users.id", name="fk_sponsor_check_in_acceptor_level_2_id"), nullable=True
     )
-    acceptor_level_2_full_name = db.Column(db.String(255), nullable=False)
+    acceptor_level_2_full_name = db.Column(db.String(255), nullable=True)
     acceptor_level_3_id = db.Column(
-        db.Integer, db.ForeignKey("users.id"), nullable=True
+        db.Integer, db.ForeignKey("users.id", name="fk_sponsor_check_in_acceptor_level_3_id"), nullable=True
     )
-    acceptor_level_3_full_name = db.Column(db.String(255), nullable=False)
+    acceptor_level_3_full_name = db.Column(db.String(255), nullable=True)
 
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    email = db.Column(db.String(255), nullable=False)
+    email = db.Column(db.String(255), nullable=True)
     full_name = db.Column(db.String(255), nullable=False)
     identity_card = db.Column(db.String(255), nullable=False)
 
-    military_military_manager_id = db.Column(db.String(255), nullable=False)
-    military_military_manager_full_name = db.Column(db.String(255), nullable=False)
+    military_manager_full_name = db.Column(db.String(255), nullable=True)
+    military_manager_id = db.Column(
+        db.Integer, db.ForeignKey("users.id", name="fk_sponsor_check_in_military_manager_id"), nullable=True
+    )
+    military_unit_name = db.Column(db.String(255), nullable=True)
+    military_unit_id = db.Column(
+        db.Integer, db.ForeignKey("military_units.id", name="fk_sponsor_check_in_military_unit_id"), nullable=True
+    )
 
     file_scan_path = db.Column(db.String(255), nullable=True)
     left_image_path = db.Column(db.String(255), nullable=True)
@@ -166,12 +143,26 @@ class CheckIn(db.Model):
     created_time = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     status = db.Column(db.String(50), default="created", nullable=False)
     token = db.Column(
-        db.String(255), default=lambda: str(uuid.uuid4()), unique=True, nullable=False
+        db.String(255), default=lambda: str(uuid.uuid4()), unique=True, nullable=True
     )
     accepted_datetime = db.Column(db.DateTime, nullable=True)
     check_in_time = db.Column(db.DateTime, nullable=True)
     check_out_time = db.Column(db.DateTime, nullable=True)
     note = db.Column(db.Text, nullable=True)
+
+    # Relationships
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("users.id", name="fk_sponsor_check_in_user_id"), nullable=True
+    )
+    user = db.relationship(
+        "User", foreign_keys=[user_id], backref="sponsor_check_ins"
+    )
+    military_manager = db.relationship(
+        "User", foreign_keys=[military_manager_id], backref="managed_sponsor_check_ins"
+    )
+    military_unit = db.relationship(
+        "MilitaryUnit", foreign_keys=[military_unit_id], backref="unit_sponsor_check_ins"
+    )
 
     def __init__(self, full_name, identity_card, **kwargs):
         self.full_name = full_name
@@ -182,29 +173,27 @@ class CheckIn(db.Model):
             setattr(self, key, value)
 
     def __repr__(self):
-        return f"<CheckIn {self.id} - {self.full_name}>"
-
-
+        return f"<SponsorCheckIn {self.id} - {self.full_name}>"
 class RelativeCheckIn(db.Model):
     __tablename__ = "relative_check_in"
 
     id = db.Column(db.Integer, primary_key=True)
     soldier_user_id = db.Column(
-        db.Integer, db.ForeignKey("users.id"), nullable=False
-    )  # Link to the User table
+        db.Integer, db.ForeignKey("users.id", name="fk_relative_check_in_soldier_user_id"), nullable=True
+    )
 
     acceptor_level_1_id = db.Column(
-        db.Integer, db.ForeignKey("users.id"), nullable=True
+        db.Integer, db.ForeignKey("users.id", name="fk_relative_check_in_acceptor_level_1_id"), nullable=True
     )
-    acceptor_level_1_full_name = db.Column(db.String(255), nullable=False)
+    acceptor_level_1_full_name = db.Column(db.String(255), nullable=True)
     acceptor_level_2_id = db.Column(
-        db.Integer, db.ForeignKey("users.id"), nullable=True
+        db.Integer, db.ForeignKey("users.id", name="fk_relative_check_in_acceptor_level_2_id"), nullable=True
     )
-    acceptor_level_2_full_name = db.Column(db.String(255), nullable=False)
+    acceptor_level_2_full_name = db.Column(db.String(255), nullable=True)
     acceptor_level_3_id = db.Column(
-        db.Integer, db.ForeignKey("users.id"), nullable=True
+        db.Integer, db.ForeignKey("users.id", name="fk_relative_check_in_acceptor_level_3_id"), nullable=True
     )
-    acceptor_level_3_full_name = db.Column(db.String(255), nullable=False)
+    acceptor_level_3_full_name = db.Column(db.String(255), nullable=True)
 
     full_name = db.Column(db.String(255), nullable=False)
     identity_card = db.Column(db.String(255), nullable=False)
@@ -214,8 +203,7 @@ class RelativeCheckIn(db.Model):
         db.String(255), nullable=False, default="default_profile.png"
     )
 
-    management_level = db.Column(db.String(255), nullable=False)
-    unit_name = db.Column(db.String(255), nullable=False)
+    unit_name = db.Column(db.String(255), nullable=True)
     file_scan_path = db.Column(db.String(255), nullable=True)
     left_image_path = db.Column(db.String(255), nullable=True)
     right_image_path = db.Column(db.String(255), nullable=True)
@@ -225,22 +213,46 @@ class RelativeCheckIn(db.Model):
         db.String(50), default="created", nullable=False
     )  # Status: created, accepted, etc.
     token = db.Column(
-        db.String(255), default=lambda: str(uuid.uuid4()), unique=True, nullable=False
+        db.String(255), default=lambda: str(uuid.uuid4()), unique=True, nullable=True
     )
     accepted_datetime = db.Column(db.DateTime, nullable=True)
     check_in_time = db.Column(db.DateTime, nullable=True)
     check_out_time = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    created_by = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    created_by = db.Column(
+        db.Integer, db.ForeignKey("users.id", name="fk_relative_check_in_created_by"), nullable=True
+    )
+    note = db.Column(db.Text, nullable=True)
 
     # sponsor
-    sponsor_id = db.Column(db.String(50), db.ForeignKey("users.id"), nullable=False)
-    sponsor_identity_card = db.Column(
-        db.String(50), db.ForeignKey("users.identity_card"), nullable=False
-    )
     sponsor_full_name = db.Column(db.String(255), nullable=True)
-    sponsor_military_management_level = db.Column(db.String(255), nullable=True)
-    sponsor_military_military_unit = db.Column(db.String(255), nullable=True)
+    sponsor_military_unit_name = db.Column(db.String(255), nullable=True)
+    sponsor_military_manager_full_name = db.Column(db.String(255), nullable=True)
+
+    # Sponsor relationships
+    sponsor_id = db.Column(
+        db.Integer, db.ForeignKey("users.id", name="fk_relative_check_in_sponsor_id"), nullable=True
+    )
+    sponsor_identity_card = db.Column(
+        db.String(50), db.ForeignKey("users.identity_card", name="fk_relative_check_in_sponsor_identity_card"), nullable=True
+    )
+    sponsor_military_unit_id = db.Column(
+        db.Integer, db.ForeignKey("military_units.id", name="fk_relative_check_in_sponsor_military_unit_id"), nullable=True
+    )
+    sponsor_military_manager_id = db.Column(
+        db.Integer, db.ForeignKey("users.id", name="fk_relative_check_in_sponsor_military_manager_id"), nullable=True
+    )
+
+    # Sponsor Relationships
+    sponsor = db.relationship(
+        "User", foreign_keys=[sponsor_id], backref="sponsored_relatives"
+    )
+    sponsor_military_unit = db.relationship(
+        "MilitaryUnit", backref="related_checkins", foreign_keys=[sponsor_military_unit_id]
+    )
+    sponsor_military_manager = db.relationship(
+        "User", foreign_keys=[sponsor_military_manager_id]
+    )
 
     def __init__(self, full_name, identity_card, **kwargs):
         self.full_name = full_name

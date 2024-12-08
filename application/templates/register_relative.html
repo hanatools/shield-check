@@ -23,122 +23,60 @@
         {% endif %}
         {% endwith %}
 
-<!--        <form>-->
-<!--            <div class="mb-3">-->
-<!--                <label for="relativeName" class="form-label">Họ tên người thân:<span class="text-danger">(*)</span></label>-->
-<!--                <input type="text" class="form-control" id="relativeName" placeholder="Nhập họ tên người thân">-->
-<!--            </div>-->
-<!--            <div class="mb-3">-->
-<!--                <label for="relativeId" class="form-label">Số CCCD:<span class="text-danger">(*)</span></label>-->
-<!--                <input type="text" class="form-control" id="relativeId" placeholder="Nhập số CCCD">-->
-<!--            </div>-->
-<!--            <div class="mb-3">-->
-<!--                <label for="relationship" class="form-label">Mối quan hệ:<span class="text-danger">(*)</span></label>-->
-<!--                <input type="text" class="form-control" id="relationship" name="relationship" placeholder="Nhập mối quan hệ (VD: Cha, Mẹ,Anh em, Đồng chí...)">-->
-<!--            </div>-->
-<!--            <div class="mb-3">-->
-<!--                <label for="sponsorName" class="form-label">Tên Quân nhân bảo lãnh:</label>-->
-<!--                <input type="text" disabled class="form-control" id="sponsorName" placeholder="Tên Quân nhân bảo lãnh">-->
-<!--            </div>-->
-<!--            <div class="mb-3">-->
-<!--                <label for="sponsorId" class="form-label">Số CCCD của Quân nhân:<span class="text-danger">(*)</span></label>-->
-<!--                <input type="text" class="form-control" id="sponsorId" placeholder="Nhập số CCCD của Quân nhân">-->
-<!--            </div>-->
-<!--            <div class="mb-3">-->
-<!--                <label for="rank" class="form-label">Cấp quản lý Quân nhân:</label>-->
-<!--                <input type="text"  class="form-control" id="rank" disabled placeholder="Cấp quản lý Quân nhân">-->
-<!--            </div>-->
-<!--            <div class="mb-3">-->
-<!--                <label for="unit" class="form-label">Đơn vị của Quân nhân:</label>-->
-<!--                <input type="text" disabled class="form-control" id="unit" placeholder="Nhập đơn vị của Quân nhân">-->
-<!--            </div>-->
-<!--            <div class="mb-3 text-center">-->
-<!--                <button type="submit" disabled class="btn btn-primary">Đăng ký</button>-->
-<!--            </div>-->
-<!--        </form>-->
-
-<!--        <form method="POST" action="{{ url_for('core.register_relative') }}">-->
-<!--            {{ form.hidden_tag() }}-->
-<!--            <div class="mb-3">-->
-<!--                <label for="relativeName" class="form-label">Họ tên người thân:<span class="text-danger">(*)</span></label>-->
-<!--                <input type="text" class="form-control" id="relativeName" name="relativeName" placeholder="Nhập họ tên người thân">-->
-<!--            </div>-->
-<!--            <div class="mb-3">-->
-<!--                <label for="relativeId" class="form-label">Số CCCD:<span class="text-danger">(*)</span></label>-->
-<!--                <input type="text" class="form-control" id="relativeId" name="relativeId" placeholder="Nhập số CCCD">-->
-<!--            </div>-->
-<!--            <div class="mb-3">-->
-<!--                <label for="relationship" class="form-label">Mối quan hệ:</label>-->
-<!--                <input type="text" class="form-control" id="relationship" name="relationship" placeholder="Nhập mối quan hệ">-->
-<!--            </div>-->
-<!--            <div class="mb-3">-->
-<!--                                <label for="sponsorName" class="form-label">Tên Quân nhân bảo lãnh:</label>-->
-<!--                                <input type="text" disabled class="form-control" id="sponsorName" placeholder="Tên Quân nhân bảo lãnh">-->
-<!--                            </div>-->
-<!--            <div class="mb-3">-->
-<!--                <label for="sponsorId" class="form-label">Số CCCD của Quân nhân:<span class="text-danger">(*)</span></label>-->
-<!--                <input type="text" class="form-control" id="sponsorId" name="sponsorId" placeholder="Nhập số CCCD của Quân nhân" value="" >-->
-<!--            </div>-->
-<!--            <div class="mb-3">-->
-<!--                <label for="rank" class="form-label">Cấp quản lý Quân nhân:</label>-->
-<!--                <input type="text" class="form-control" disabled id="rank" name="rank" placeholder="Cấp quản lý Quân nhân">-->
-<!--            </div>-->
-<!--            <div class="mb-3">-->
-<!--                <label for="unit" class="form-label">Đơn vị của Quân nhân:</label>-->
-<!--                <input type="text" class="form-control" id="unit" disabled name="unit" placeholder="Nhập đơn vị của Quân nhân">-->
-<!--            </div>-->
-<!--            <div class="mb-3 text-center">-->
-<!--                <button type="submit" disabled class="btn btn-primary">Đăng ký</button>-->
-<!--            </div>-->
-<!--        </form>-->
-
         <form method="POST" action="{{ url_for('core.register_relative') }}">
             {{ form.hidden_tag() }}
-
             <div class="mb-3">
-                {{ form.relative_name.label(class="form-label") }}
-                {{ form.relative_name(class="form-control") }}
-                {% for error in form.relative_name.errors %}
-                <div class="error-message text-danger">{{ error }}</div>
-                {% endfor %}
+                <label for="full_name" class="form-label">Họ tên người thân:<span
+                        class="text-danger">(*)</span></label>
+                <input type="text" class="form-control" id="full_name" name="full_name"
+                       placeholder="Nhập họ tên người thân">
+            </div>
+            <div class="mb-3">
+                <label for="identity_card" class="form-label">Số CCCD:<span class="text-danger">(*)</span></label>
+                <input type="text" class="form-control" id="identity_card" name="identity_card" placeholder="Nhập số CCCD">
+            </div>
+            <div class="mb-3">
+                <label for="relationship" class="form-label">Mối quan hệ:</label>
+                <input type="text" class="form-control" id="relationship" name="relationship"
+                       placeholder="Nhập mối quan hệ">
+            </div>
+            <div class="mb-3">
+                <label for="sponsor_full_name" class="form-label">Tên Quân nhân bảo lãnh:</label>
+                <input type="text" disabled class="form-control" name="sponsor_full_name" id="sponsor_full_name" placeholder="Tên Quân nhân bảo lãnh">
+            </div>
+            <div class="mb-3">
+                <label for="sponsor_identity_card" class="form-label">Số CCCD của Quân nhân:<span
+                        class="text-danger">(*)</span></label>
+                <input type="text" class="form-control" id="sponsor_identity_card" name="sponsor_identity_card"
+                       placeholder="Nhập số CCCD của Quân nhân" value="">
             </div>
 
             <div class="mb-3">
-                {{ form.relative_id.label(class="form-label") }}
-                {{ form.relative_id(class="form-control") }}
-                {% for error in form.relative_id.errors %}
-                <div class="error-message text-danger">{{ error }}</div>
-                {% endfor %}
+                <label for="sponsor_military_unit_name" class="form-label">Đơn vị của Quân nhân:</label>
+                <input type="text" class="form-control" id="sponsor_military_unit_name" disabled name="sponsor_military_unit_name"
+                       placeholder="Nhập đơn vị của Quân nhân">
+                <input type="text" hidden="hidden" value="" id="sponsor_military_unit_id" name="sponsor_military_unit_id" >
+            </div>
+
+
+            <div class="mb-3">
+                <label for="sponsor_military_manager_full_name" class="form-label">Cấp quản lý Quân nhân:</label>
+                <input type="text" class="form-control" disabled id="sponsor_military_manager_full_name" name="sponsor_military_manager_full_name"
+                       placeholder="Cấp quản lý Quân nhân">
+                <input type="text" hidden="hidden" value="" id="sponsor_military_manager_id" name="sponsor_military_manager_id" >
             </div>
 
             <div class="mb-3">
-                {{ form.relationship.label(class="form-label") }}
-                {{ form.relationship(class="form-control") }}
-                {% for error in form.relationship.errors %}
-                <div class="error-message text-danger">{{ error }}</div>
-                {% endfor %}
+                <label for="note"  class="form-label" >Ghi chú</label>
+                <textarea id="note" name="note" class="form-control"></textarea>
             </div>
 
-            <div class="mb-3">
-                {{ form.rank.label(class="form-label") }}
-                {{ form.rank(class="form-control") }}
-                {% for error in form.rank.errors %}
-                <div class="error-message text-danger">{{ error }}</div>
-                {% endfor %}
-            </div>
-
-            <div class="mb-3">
-                {{ form.unit.label(class="form-label") }}
-                {{ form.unit(class="form-control") }}
-                {% for error in form.unit.errors %}
-                <div class="error-message text-danger">{{ error }}</div>
-                {% endfor %}
-            </div>
 
             <div class="mb-3 text-center">
-                {{ form.submit(class="btn btn-primary") }}
+                <button type="submit" disabled class="btn btn-primary">Đăng ký</button>
             </div>
         </form>
+
 
     </div>
 </div>

@@ -1,47 +1,8 @@
 from application import create_app, db
 from application.models import User
-from werkzeug.security import generate_password_hash
 
 app = create_app()
 
-# with app.app_context():
-#     # Check if the user already exists
-#     if not User.query.filter_by(email=app.config["DEFAULT_USER_EMAIL"]).first():
-#         # Create a new user
-#         default_user = User(
-#             email=app.config["DEFAULT_USER_EMAIL"],
-#             username=app.config["DEFAULT_USERNAME"],
-#             password=app.config["DEFAULT_USER_PASSWORD"],
-#             identity_card="000000000000",
-#             full_name="Default Admin",
-#             military_military_manager_id="Default Admin",
-#             military_military_unit="Default Unit",
-#             military_military_manager_full_name="Default Manager",
-#             note="This is the default admin user created during initialization.",
-#             role="SYSTEM_ADMIN_ROLE",
-#             is_manager=False,
-#         )
-#         # Add the user to the session and commit
-#         db.session.add(default_user)
-#         manager_user = User(
-#             email=app.config["DEFAULT_USER_EMAIL"],
-#             username=app.config["DEFAULT_USERNAME"],
-#             password=app.config["DEFAULT_USER_PASSWORD"],
-#             identity_card="000000000000",
-#             full_name="Default Admin",
-#             military_military_manager_id="Default Admin",
-#             military_military_unit="Default Unit",
-#             military_military_manager_full_name="Default Manager",
-#             note="This is the default admin user created during initialization.",
-#             role="ADMIN_ROLE",
-#             is_manager=True,
-#         )
-#         # Add the second user to the session
-#         db.session.add(manager_user)
-#
-#         # Commit both users to the database
-#         db.session.commit()
-#         print("Default users created.")
 with app.app_context():
     # Check if there are no users in the database
     if User.query.count() == 0:
@@ -53,9 +14,8 @@ with app.app_context():
             second_level_password=app.config["DEFAULT_USER_PASSWORD"],
             identity_card="000000000000",
             full_name="Default Admin",
-            military_military_manager_id="Default Admin",
-            military_military_unit="Default Unit",
-            military_military_manager_full_name="Default Manager",
+            military_manager_id="",
+            military_manager_full_name="",
             note="Đây là người dùng quản trị mặc định được tạo trong quá trình khởi tạo.",
             role="SYSTEM_ADMIN_ROLE",
             is_manager=False,
@@ -64,20 +24,49 @@ with app.app_context():
 
         # Create the second user (manager)
         manager_user = User(
-            email=app.config["DEFAULT_MANAGER_EMAIL"],
-            username=app.config["DEFAULT_MANAGER_USERNAME"],
+            email="luongcongphap@gmail.com",
+            username="111111111111",
             password=app.config["DEFAULT_USER_PASSWORD"],
             second_level_password=app.config["DEFAULT_USER_PASSWORD"],
             identity_card="111111111111",
             full_name="Thủ trưởng",
-            military_military_manager_id="",
-            military_military_unit="",
-            military_military_manager_full_name="",
+            military_manager_id="",
+            military_manager_full_name="",
             note="Tài khoản măc định của thủ trưởng",
             role="ADMIN_ROLE",
             is_manager=True,
         )
         db.session.add(manager_user)
+
+        manager_user_2 = User(
+            email="georewilliam12@gmail.com",
+            username="111111111112",
+            password=app.config["DEFAULT_USER_PASSWORD"],
+            second_level_password=app.config["DEFAULT_USER_PASSWORD"],
+            identity_card="111111111112",
+            full_name="Thủ trưởng",
+            military_manager_id="",
+            military_manager_full_name="",
+            note="Tài khoản măc định của thủ trưởng",
+            role="USER_ROLE",
+            is_manager=True,
+        )
+        db.session.add(manager_user_2)
+
+        manager_user_3 = User(
+            email="georewilliam19@gmail.com",
+            username="111111111113",
+            password=app.config["DEFAULT_USER_PASSWORD"],
+            second_level_password=app.config["DEFAULT_USER_PASSWORD"],
+            identity_card="111111111113",
+            full_name="Thủ trưởng",
+            military_manager_id="",
+            military_manager_full_name="",
+            note="Tài khoản măc định của thủ trưởng",
+            role="USER_ROLE",
+            is_manager=True,
+        )
+        db.session.add(manager_user_3)
 
         # Commit both users to the database
         db.session.commit()

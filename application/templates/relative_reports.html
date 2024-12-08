@@ -18,6 +18,8 @@
             <table>
                 <thead>
                 <tr>
+                    <th>ID</th>
+                    <th>Trạng thái</th>
                     <th>Họ và tên</th>
                     <th>Số CCCD</th>
                     <th>Số CCCD quân nhân</th>
@@ -27,12 +29,42 @@
                     <th>Thời gian vào</th>
                     <th>Thời gian ra</th>
                     <th>Số giờ ra-vào</th>
+                    <th>Thời gian tạo</th>
                 </tr>
                 </thead>
                 <tbody>
                 {% if report_data %}
                 {% for record in report_data %}
                 <tr>
+                    <td>{{ record.id }}</td>
+                    <td class="text-center">
+                        <span class="badge
+                                     {% if record.status == 'created' %} bg-warning text-dark
+                                     {% elif record.status == 'accepted' %} bg-success
+                                     {% elif record.status == 'reject' %} bg-danger
+                                     {% elif record.status == 'cancel' %} bg-secondary
+                                     {% elif record.status == 'expired' %} bg-primary
+                                     {% elif record.status == 'completed' %} bg-info
+                                     {% endif %}">
+                             {% if record.status == 'created' %}
+                                                Đã tạo
+                                            {% elif record.status == 'accepted' %}
+                                                Đã duyệt
+                                            {% elif record.status == 'reject' %}
+                                                Lỗi
+                                            {% elif record.status == 'cancel' %}
+                                                Đã hủy
+                                            {% elif record.status == 'expired' %}
+                                                Hết hạn
+                                                   {% elif record.status == 'completed' %}
+
+                                                Hoàn thành
+                                            {% else %}
+
+                                                Thông báo
+                                            {% endif %}
+                        </span>
+                    </td>
                     <td>{{ record.full_name }}</td>
                     <td>{{ record.identity_card }}</td>
                     <td>{{ record.soldier_identity_card }}</td>
@@ -42,6 +74,7 @@
                     <td>{{ record.check_in_time }}</td>
                     <td>{{ record.check_out_time }}</td>
                     <td>{{ record.duration }}</td>
+                    <td>{{ record.created_time }}</td>
                 </tr>
                 {% endfor %}
                 {% else %}

@@ -1,16 +1,25 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const sponsorIdInput = document.getElementById("sponsorId");
+    const full_name = document.getElementById("full_name");
+    const identity_card = document.getElementById("identity_card");
+    const relationship = document.getElementById("relationship");
+    const sponsor_full_name = document.getElementById("sponsor_full_name");
+    const sponsor_identity_card = document.getElementById("sponsor_identity_card");
+    const sponsor_military_unit_name = document.getElementById("sponsor_military_unit_name");
+    const sponsor_military_unit_id = document.getElementById("sponsor_military_unit_id");
+    const sponsor_military_manager_full_name = document.getElementById("sponsor_military_manager_full_name");
+
+    // const sponsorIdInput = document.getElementById("sponsorId");
     const sponsorNameInput = document.getElementById("sponsorName");
     const rankInput = document.getElementById("rank");
-    const relativeIdInput = document.getElementById("relativeId");
+    // const relativeIdInput = document.getElementById("relativeId");
     const submitButton = document.querySelector("button[type='submit']");
 
 
 
     // const sponsorIdInput = document.getElementById("sponsorId");
     // const relativeIdInput = document.getElementById("relativeId");
-    const relativeNameInput = document.getElementById("relativeName");
-    const relationshipInput = document.getElementById("relationship");
+    // const relativeNameInput = document.getElementById("relativeName");
+    // const relationshipInput = document.getElementById("relationship");
     // const submitButton = document.querySelector("button[type='submit']");
 
 
@@ -61,24 +70,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Perform validation based on input
         let isValid = true;
-        if (inputElement === relativeNameInput) {
-            if (relativeNameInput.value.trim() === "") {
-                displayError(relativeNameInput, "Họ tên người thân không được để trống.");
+        if (inputElement === full_name) {
+            if (full_name.value.trim() === "") {
+                displayError(full_name, "Họ tên người thân không được để trống.");
                 isValid = false;
             }
-        } else if (inputElement === relativeIdInput) {
-            if (relativeIdInput.value.trim().length !== 12) {
-                displayError(relativeIdInput, "Số CCCD phải gồm 12 ký tự.");
+        } else if (inputElement === identity_card) {
+            if (identity_card.value.trim().length !== 12) {
+                displayError(identity_card, "Số CCCD phải gồm 12 ký tự.");
                 isValid = false;
             }
-        } else if (inputElement === sponsorIdInput) {
-            if (sponsorIdInput.value.trim().length !== 12) {
-                displayError(sponsorIdInput, "Số CCCD của Quân nhân phải gồm 12 ký tự.");
+        } else if (inputElement === sponsor_identity_card) {
+            if (sponsor_identity_card.value.trim().length !== 12) {
+                displayError(sponsor_identity_card, "Số CCCD của Quân nhân phải gồm 12 ký tự.");
                 isValid = false;
             }
-        }  else if (inputElement === relationshipInput) {
-            if (relationshipInput.value.trim() === "") {
-                displayError(relationshipInput, "Họ tên người thân không được để trống.");
+        }  else if (inputElement === relationship) {
+            if (relationship.value.trim() === "") {
+                displayError(relationship, "Mối quan hệ không được để trống.");
                 isValid = false;
             }
         }
@@ -90,13 +99,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Function to validate the entire form and update submit button state
     function validateForm() {
-        const isRelativeNameValid = validateField(relativeNameInput);
-        const isRelativeIdValid = validateField(relativeIdInput);
-        const isSponsorIdValid = validateField(sponsorIdInput);
-        const relationshipIdValid = validateField(relationshipInput);
+        const isFullNameValid = validateField(full_name);
+        const isIdentityCardValid = validateField(identity_card);
+        const isSponsorMilitaryUnitIdValid = validateField(sponsor_military_unit_id);
+        const isRelationshipValid = validateField(relationship);
 
         // Enable submit button if all fields are valid
-        submitButton.disabled = !(isRelativeNameValid && isRelativeIdValid && isSponsorIdValid);
+        submitButton.disabled = !(isFullNameValid && isIdentityCardValid && isSponsorMilitaryUnitIdValid && isRelationshipValid);
     }
 
     // Function to display an error message under an input
@@ -108,33 +117,33 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Add event listeners for individual input validation
-    relativeNameInput.addEventListener("input", () => {
-        touchedFields.add(relativeNameInput); // Mark field as touched
-        validateField(relativeNameInput);
+    full_name.addEventListener("input", () => {
+        touchedFields.add(full_name); // Mark field as touched
+        validateField(full_name);
         validateForm();
     });
 
-    relationshipInput.addEventListener("input", () => {
-        touchedFields.add(relationshipInput); // Mark field as touched
-        validateField(relationshipInput);
+    relationship.addEventListener("input", () => {
+        touchedFields.add(relationship); // Mark field as touched
+        validateField(relationship);
         validateForm();
     });
 
-    relativeIdInput.addEventListener("input", () => {
-        touchedFields.add(relativeIdInput); // Mark field as touched
-        validateField(relativeIdInput);
+    identity_card.addEventListener("input", () => {
+        touchedFields.add(identity_card); // Mark field as touched
+        validateField(identity_card);
         validateForm();
     });
 
-    sponsorIdInput.addEventListener("input", () => {
-        touchedFields.add(sponsorIdInput); // Mark field as touched
-        validateField(sponsorIdInput);
+    sponsor_identity_card.addEventListener("input", () => {
+        touchedFields.add(sponsor_identity_card); // Mark field as touched
+        validateField(sponsor_identity_card);
         validateForm();
     });
 
     // Add sponsorId onchange logic to fetch sponsor details
-    sponsorIdInput.addEventListener("change", function () {
-        const sponsorId = sponsorIdInput.value.trim();
+    sponsor_identity_card.addEventListener("change", function () {
+        const sponsorId = sponsor_identity_card.value.trim();
 
         if (sponsorId.length === 12) {
             fetch(`/get_sponsor_details/${sponsorId}`)
@@ -146,12 +155,18 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
                 })
                 .then((data) => {
-                    document.getElementById("sponsorName").value = data.full_name || "";
-                    document.getElementById("rank").value = data.management_level || "";
+                    document.getElementById("sponsor_full_name").value = data.full_name || "";
+                    document.getElementById("sponsor_military_unit_name").value = data.sponsor_military_unit_name || "";
+                    document.getElementById("sponsor_military_unit_id").value = data.sponsor_military_unit_id || "";
+                    document.getElementById("sponsor_military_manager_full_name").value = data.sponsor_military_manager_full_name || "";
+                    document.getElementById("sponsor_military_manager_id").value = data.sponsor_military_manager_id || "";
                 })
                 .catch((error) => {
-                    document.getElementById("sponsorName").value = "";
-                    document.getElementById("rank").value = "";
+                    document.getElementById("sponsor_full_name").value =  "";
+                    document.getElementById("sponsor_military_unit_name").value =  "";
+                    document.getElementById("sponsor_military_unit_id").value =  "";
+                    document.getElementById("sponsor_military_manager_full_name").value =  "";
+                    document.getElementById("sponsor_military_manager_id").value ="";
                     alert("User not exist.");
                 });
         }

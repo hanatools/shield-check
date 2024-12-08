@@ -75,15 +75,15 @@ function openEditModal(userId) {
                         option.value = unit.id;
                         option.textContent = unit.name;
                         // Set selected value for military unit
-                        if (`${unit.id}` === user.military_military_unit_id) {
+                        if (`${unit.id}` === user.military_unit_id) {
                             option.selected = true;
                         }
                         unitNameSelect.appendChild(option);
                     });
 
                     // If user has a military unit, load management level users
-                    if (user.military_military_unit_id) {
-                        fetch(`/get_users_by_unit/${user.military_military_unit_id}`)
+                    if (user.military_unit_id) {
+                        fetch(`/get_users_by_unit/${user.military_unit_id}`)
                             .then((response) => response.json())
                             .then((users) => {
                                 users.forEach((manager) => {
@@ -236,8 +236,8 @@ $(document).ready(function () {
         .then((response) => response.json())
         .then((user) => {
             // Fetch and render military unit name
-            if (user.military_military_unit_id) {
-                fetch(`/get_military_unit_by_id/${user.military_military_unit_id}`)
+            if (user.military_unit_id) {
+                fetch(`/get_military_unit_by_id/${user.military_unit_id}`)
                     .then((response) => response.json())
                     .then((unit) => {
                         document.getElementById("military-unit-name").textContent = unit.name || "Chưa cập nhật";

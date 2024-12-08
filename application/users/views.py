@@ -108,7 +108,7 @@ def member_list():
             db.or_(
                 User.full_name.ilike(f"%{search_query}%"),
                 User.identity_card.ilike(f"%{search_query}%"),
-                User.military_military_unit_id.ilike(f"%{search_query}%"),
+                User.military_unit_id.ilike(f"%{search_query}%"),
             )
         )
 
@@ -135,7 +135,7 @@ def soldier_info():
             db.or_(
                 User.full_name.ilike(f"%{search_query}%"),
                 User.identity_card.ilike(f"%{search_query}%"),
-                User.military_military_unit_id.ilike(f"%{search_query}%"),
+                User.military_unit_id.ilike(f"%{search_query}%"),
             )
         )
 
@@ -170,22 +170,32 @@ def search_members():
     return jsonify(user_data)
 
 
-@users.route("/get_sponsor_details/<sponsor_id>", methods=["GET"])
-def get_sponsor_details(sponsor_id):
-    # Query the User model to find a user with the provided sponsor_id
-    user = User.query.filter_by(identity_card=sponsor_id).first()
+@users.route("/get_sponsor_details/<identity_card>", methods=["GET"])
+def get_sponsor_details(identity_card):
+    # Query the User model to find a user with the provided identity_card
+    user = User.query.filter_by(identity_card=identity_card).first()
 
     if user:
+        # Extract necessary details from military unit and manager
+        military_unit_name = user.military_unit.name if user.military_unit else None
+        military_unit_id = user.military_unit_id
+        manager_full_name = user.military_manager.full_name if user.military_manager else None
+        military_manager_id = user.military_manager_id
+
         # Return user details as JSON
-        return {
+        return jsonify({
             "id": user.id,
             "full_name": user.full_name,
             "identity_card": user.identity_card,
             "email": user.email,
-        }, 200
+            "military_unit_name": military_unit_name,
+            "military_unit_id": military_unit_id,
+            "manager_full_name": manager_full_name,
+            "military_manager_id": military_manager_id,
+        }), 200
     else:
         # Return an error message if user not found
-        return {"error": "User not found"}, 404
+        return jsonify({"error": "User not found"}), 404
 
 
 @users.route("/view/<int:user_id>", methods=["GET"])
@@ -275,14 +285,14 @@ def submit_data():
         identity_card = (data.get("identityCard") or "").strip()
         full_name = (data.get("fullName") or "").strip()
         email = (data.get("email") or "").strip()
-        military_military_unit_id = (data.get("militaryMilitaryUnitId") or "").strip()
+        military_unit_id = (data.get("militaryMilitaryUnitId") or "").strip()
         military_manager_id = (data.get("militaryManagerId") or "").strip()
         note = (data.get("note") or "").strip()
         images = data.get("images", {})
 
         logger.debug(
             f"Received data: identity_card={identity_card}, full_name={full_name}, email={email}, "
-            f"military_military_unit_id={military_military_unit_id}, military_manager_id={military_manager_id}, "
+            f"military_unit_id={military_unit_id}, military_manager_id={military_manager_id}, "
             f"note={note}, images_keys={list(images.keys())}"
         )
 
@@ -299,19 +309,19 @@ def submit_data():
             if existing_email_user and (
                 existing_email_user.identity_card != identity_card
             ):
-                return jsonify({"error": "Email is already in use"}), 400
+                return jsonify({"error": "Email đã được sử dụng"}), 400
 
         # Validate military unit if provided
-        if military_military_unit_id:
-            military_unit = MilitaryUnit.query.get(military_military_unit_id)
+        if military_unit_id:
+            military_unit = MilitaryUnit.query.get(military_unit_id)
             if not military_unit:
-                return jsonify({"error": "Invalid military unit ID"}), 400
+                return jsonify({"error": "Đơn vị quân đội không hợp lệ"}), 400
 
         # Validate manager ID if provided
         if military_manager_id:
             manager = User.query.get(military_manager_id)
             if not manager:
-                return jsonify({"error": "Invalid manager ID"}), 400
+                return jsonify({"error": "ID quản lý không hợp lệ"}), 400
 
         # Find the user by identity card
         existing_user = User.query.filter(User.identity_card == identity_card).first()
@@ -322,10 +332,11 @@ def submit_data():
                 email=email,
                 username=identity_card,  # Use identity card as default username
                 password=random_password,
+                second_level_password=random_password,
                 identity_card=identity_card,
                 full_name=full_name,
-                military_military_unit_id=military_military_unit_id,
-                military_military_manager_id=military_manager_id,
+                military_unit_id=military_unit_id,
+                military_manager_id=military_manager_id,
                 note=note,
             )
             target_user.identity_card = identity_card
@@ -334,8 +345,8 @@ def submit_data():
             target_user = existing_user
             target_user.email = email
             target_user.full_name = full_name
-            target_user.military_military_unit_id = military_military_unit_id
-            target_user.military_military_manager_id = military_manager_id
+            target_user.military_unit_id = military_unit_id
+            target_user.military_manager_id = military_manager_id
             target_user.note = note
 
         # Save images to disk
@@ -378,8 +389,8 @@ def submit_data():
         # Update user data
         target_user.identity_card = identity_card
         target_user.full_name = full_name
-        target_user.military_military_unit_id = military_military_unit_id
-        target_user.military_military_manager_id = military_manager_id
+        target_user.military_unit_id = military_unit_id
+        target_user.military_manager_id = military_manager_id
         target_user.left_image_path = image_paths["left"]
         target_user.right_image_path = image_paths["right"]
         target_user.front_image_path = front_image_path
@@ -398,8 +409,8 @@ def submit_data():
             "right_image_path": target_user.right_image_path,
             "front_image_path": target_user.front_image_path,
             "encoding_path": target_user.encoding_path,
-            "military_military_unit_id": target_user.military_military_unit_id,
-            "military_military_manager_id": target_user.military_military_manager_id,
+            "military_unit_id": target_user.military_unit_id,
+            "military_manager_id": target_user.military_manager_id,
             "note": target_user.note,
         }
 
@@ -431,7 +442,7 @@ def update_user(user_id):
     # Validate required fields
     full_name = (data.get("fullName") or "").strip()
     email = (data.get("email") or "").strip()
-    military_military_unit_id = (data.get("militaryUnitId") or "").strip()
+    military_unit_id = (data.get("militaryUnitId") or "").strip()
     military_manager_id = (data.get("militaryManagerId") or "").strip()
     note = (data.get("note") or "").strip()
     role = (data.get("role") or "").strip()
@@ -451,8 +462,8 @@ def update_user(user_id):
             return jsonify({"success": False, "message": "Email đã được sử dụng."}), 400
 
     # Validate military unit if provided
-    if military_military_unit_id:
-        military_unit = MilitaryUnit.query.get(military_military_unit_id)
+    if military_unit_id:
+        military_unit = MilitaryUnit.query.get(military_unit_id)
         if not military_unit:
             return (
                 jsonify({"success": False, "message": "ID đơn vị không hợp lệ."}),
@@ -471,8 +482,8 @@ def update_user(user_id):
     # Update the user details
     user.full_name = full_name
     user.email = email
-    user.military_military_unit_id = military_military_unit_id
-    user.military_military_manager_id = military_manager_id
+    user.military_unit_id = military_unit_id
+    user.military_manager_id = military_manager_id
     user.note = note
     user.role = role
 
@@ -492,8 +503,8 @@ def get_user_details(user_id):
             "id": user.id,
             "full_name": user.full_name,
             "email": user.email,
-            "military_military_unit_id": user.military_military_unit_id,
-            "military_manager_id": user.military_military_manager_id,
+            "military_unit_id": user.military_unit_id,
+            "military_manager_id": user.military_manager_id,
             "note": user.note,
             "role": user.role,
         }

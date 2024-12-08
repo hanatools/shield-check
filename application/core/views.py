@@ -19,9 +19,8 @@ from application import db, send_email, app
 from application.email import generate_html_email, generate_reset_second_password_email
 from application.models import (
     User,
-    CheckIn,
+    SponsorCheckIn,
     RelativeCheckIn,
-    UserRelative,
     MilitaryUnit,
 )
 from flask_login import login_required, current_user
@@ -94,8 +93,8 @@ def scan_identity():
 def get_latest_check_in(identity_card):
     print(f"Identity card: {identity_card}")
     check_in = (
-        CheckIn.query.filter_by(identity_card=identity_card, status="accepted")
-        .order_by(CheckIn.created_time.desc())
+        SponsorCheckIn.query.filter_by(identity_card=identity_card, status="accepted")
+        .order_by(SponsorCheckIn.created_time.desc())
         .first()
     )
 
@@ -147,75 +146,75 @@ def input_personal():
 def batch_input():
     return render_template("batch_input.html", username=current_user.username)
 
-
 @core.route("/register_relative", methods=["GET", "POST"])
 @login_required
 def register_relative():
     form = RegisterRelativeForm()
     if request.method == "POST":
+        print(f"request.form: {request.form}")
         # Get form data
-        full_name = request.form.get("relativeName").strip()
-        identity_card = request.form.get("relativeId").strip()
-        sponsor_id = current_user.identity_card
+        full_name = request.form.get("full_name", "").strip()
+        identity_card = request.form.get("identity_card", "").strip()
         relationship = request.form.get("relationship", "").strip()
-        management_level = request.form.get("rank").strip()
-        unit_name = request.form.get("unit").strip()
+        sponsor_identity_card = request.form.get("sponsor_identity_card", "").strip()
+        sponsor_military_unit_id = request.form.get("sponsor_military_unit_id", "").strip()
+        note = request.form.get("note", "").strip()
 
         # Validate inputs
         if not full_name or len(identity_card) != 12:
             flash(
-                "Invalid input: Please ensure all required fields are filled correctly.",
+                "Đầu vào không hợp lệ: Vui lòng đảm bảo tất cả các trường bắt buộc được điền chính xác.",
                 "danger",
             )
             return redirect(url_for("register_relative"))
 
         # Check if sponsor exists (should always be true since it's the logged-in user)
-        sponsor = User.query.filter_by(identity_card=sponsor_id).first()
+        sponsor = User.query.filter_by(identity_card=sponsor_identity_card).first()
         if not sponsor:
-            flash("Sponsor does not exist. Please contact support.", "danger")
+            flash("Nhà tài trợ không tồn tại. Vui lòng liên hệ bộ phận hỗ trợ.", "danger")
             return redirect(url_for("register_relative"))
 
-        # Check for duplicate relative
-        existing_relative = UserRelative.query.filter_by(
-            identity_card=identity_card, sponsor_id=sponsor_id
-        ).first()
-        if existing_relative:
-            flash(
-                "This relative is already registered under your sponsorship.", "warning"
-            )
-            return redirect(url_for("register_relative"))
+        # Initialize sponsor-related fields
+        sponsor_military_manager_id = None
+        sponsor_military_manager_full_name = None
+        sponsor_military_unit_name = None
 
-        # Add relative to UserRelative
-        new_relative = UserRelative(
+        # If sponsor_military_unit_id is provided, find the military manager and set the details
+        if sponsor_military_unit_id:
+            military_unit = MilitaryUnit.query.filter_by(id=sponsor_military_unit_id).first()
+            if military_unit:
+                military_manager = User.query.filter_by(military_unit_id=military_unit.id, is_manager=True).first()
+                if military_manager:
+                    sponsor_military_manager_id = military_manager.id
+                    sponsor_military_manager_full_name = military_manager.full_name
+                sponsor_military_unit_name = military_unit.name
+
+        # Add relative to RelativeCheckIn
+        new_relative = RelativeCheckIn(
             full_name=full_name,
             identity_card=identity_card,
-            sponsor_id=sponsor_id,
             relationship=relationship,
+            sponsor_identity_card=sponsor_identity_card,
+            sponsor_full_name=sponsor.full_name,
+            sponsor_military_unit_id=sponsor_military_unit_id or None,
+            sponsor_military_unit_name=sponsor_military_unit_name,
+            sponsor_military_manager_id=sponsor_military_manager_id,
+            sponsor_military_manager_full_name=sponsor_military_manager_full_name,
+            note=note,
             created_by=current_user.id,
         )
         db.session.add(new_relative)
 
-        # Add check-in record to RelativeCheckIn
-        new_checkin = RelativeCheckIn(
-            soldier_user_id=current_user.id,
-            full_name=full_name,
-            identity_card=identity_card,
-            management_level=management_level,
-            unit_name=unit_name,
-        )
-        db.session.add(new_checkin)
-
         # Commit the transaction
         db.session.commit()
 
-        flash("Relative registered and check-in created successfully.", "success")
-        return redirect(url_for("dashboard"))
+        flash("Người thân đã đăng ký và tạo thủ tục check-in thành công.", "success")
+        return redirect(url_for("core.daskboard"))
 
     # Render the registration form
     return render_template(
         "register_relative.html", username=current_user.username, form=form
     )
-
 
 def add_relative(full_name, identity_card, sponsor_id, relationship, creator_id):
     # Check if sponsor exists
@@ -256,16 +255,16 @@ def reports():
     to_date = request.args.get("to_date")
 
     # Base query
-    query = CheckIn.query
+    query = SponsorCheckIn.query
 
     # Apply filters if present
     if from_date:
-        query = query.filter(CheckIn.created_time >= from_date)
+        query = query.filter(SponsorCheckIn.created_time >= from_date)
     if to_date:
-        query = query.filter(CheckIn.created_time <= to_date)
+        query = query.filter(SponsorCheckIn.created_time <= to_date)
 
     # Order by created_time descending
-    check_ins = query.order_by(CheckIn.created_time.desc()).all()
+    check_ins = query.order_by(SponsorCheckIn.created_time.desc()).all()
 
     # Prepare data for rendering
     report_data = []
@@ -742,7 +741,7 @@ def register_soldier_checkin_data():
                 file.write(base64.b64decode(file_scan.split(",")[1]))
 
         # Create a new CheckIn record
-        check_in_record = CheckIn(
+        check_in_record = SponsorCheckIn(
             user_id=user.id,
             full_name=full_name,
             identity_card=identity_card,
@@ -976,78 +975,82 @@ def get_hierarchy():
 
     return jsonify(hierarchy)
 
-
+from sqlalchemy.orm import joinedload
 @core.route("/relative_reports", methods=["GET", "POST"])
 @login_required
 def relative_reports():
+    # Base query
+    # Retrieve filter inputs from the request
     from_date = request.args.get("from_date")
     to_date = request.args.get("to_date")
 
     # Base query
-    query = RelativeCheckIn.query.filter(
-        RelativeCheckIn.soldier_user_id.isnot(None)
-    )  # Ensure we fetch records linked to users
+    query = RelativeCheckIn.query.options(
+        joinedload(RelativeCheckIn.sponsor),
+        joinedload(RelativeCheckIn.sponsor_military_unit),
+    )
 
-    # Apply filters
+    # Apply date filters if provided
     if from_date:
         query = query.filter(RelativeCheckIn.created_time >= from_date)
     if to_date:
         query = query.filter(RelativeCheckIn.created_time <= to_date)
 
-    # Order by created_time descending
+
+    # Fetch all records for the report
     check_ins = query.order_by(RelativeCheckIn.created_time.desc()).all()
 
-    # Prepare data for rendering
+    # Debug log
+    print(f"Report check_ins: {check_ins}")
+
     report_data = []
     for record in check_ins:
-        # Fetch related user data
-        related_user = User.query.get(record.soldier_user_id)
-        if related_user:
-            # Calculate duration
-            if record.check_in_time and record.check_out_time:
-                duration = abs(
-                    (record.check_out_time - record.check_in_time).total_seconds()
-                )
-                duration_str = f"{int(duration // 3600)}:{int((duration % 3600) // 60)}:{int(duration % 60)}"
-            else:
-                duration_str = "N/A"
+        # Fetch related soldier user by identity card
+        soldier_user = User.query.filter_by(identity_card=record.sponsor_identity_card).first()
 
-            report_data.append(
-                {
-                    "full_name": related_user.full_name if related_user else "N/A",
-                    "identity_card": record.identity_card,
-                    "soldier_identity_card": (
-                        related_user.identity_card if related_user else "N/A"
-                    ),
-                    "soldier_name": related_user.full_name if related_user else "N/A",
-                    "management_level": (
-                        related_user.management_level if related_user else "N/A"
-                    ),
-                    "unit_name": related_user.unit_name if related_user else "N/A",
-                    "check_in_time": (
-                        record.check_in_time.strftime("%H:%M:%S %d/%m/%Y")
-                        if record.check_in_time
-                        else "N/A"
-                    ),
-                    "check_out_time": (
-                        record.check_out_time.strftime("%H:%M:%S %d/%m/%Y")
-                        if record.check_out_time
-                        else "N/A"
-                    ),
-                    "duration": duration_str,
-                }
-            )
+        if record.check_in_time and record.check_out_time:
+            duration = abs((record.check_out_time - record.check_in_time).total_seconds())
+            duration_str = f"{int(duration // 3600)}:{int((duration % 3600) // 60)}:{int(duration % 60)}"
+        else:
+            duration_str = "N/A"
+
+        # Prepare report row
+        report_data.append(
+            {
+                "id": record.id,
+                "full_name": record.full_name or "N/A",
+                "status": record.status or "",
+                "identity_card": record.identity_card or "N/A",
+                "soldier_identity_card": soldier_user.identity_card if soldier_user else "N/A",
+                "soldier_name": soldier_user.full_name if soldier_user else "N/A",
+                "management_level": soldier_user.military_manager_full_name if soldier_user and soldier_user.military_manager_full_name else "N/A",
+                "unit_name": soldier_user.military_unit.name if soldier_user and soldier_user.military_unit else "N/A",
+                "check_in_time": (
+                    record.check_in_time.strftime("%H:%M:%S %d/%m/%Y")
+                    if record.check_in_time
+                    else "N/A"
+                ),
+                "check_out_time": (
+                    record.check_out_time.strftime("%H:%M:%S %d/%m/%Y")
+                    if record.check_out_time
+                    else "N/A"
+                ),
+                "duration": duration_str,
+                "created_time": record.created_time.strftime("%H:%M:%S %d/%m/%Y") if record.created_time else "N/A",
+            }
+        )
 
     return render_template(
-        "relative_reports.html", username=current_user.username, report_data=report_data
+        "relative_reports.html",
+        username=current_user.username,
+        report_data=report_data,
     )
-
 
 @core.route("/approve/<int:user_id>/check-out/<string:token>", methods=["GET"])
 def approve_check_out(user_id, token):
     try:
         # Retrieve the check-in record
-        check_in_record = CheckIn.query.filter_by(user_id=user_id, token=token).first()
+        check_in_record = SponsorCheckIn.query.filter_by(user_id=user_id, token=token).first()
 
         if not check_in_record:
             return render_template(
@@ -1107,7 +1110,7 @@ def validate_face_scan():
         if not user:
             return jsonify({"error": "Không tìm thấy người dùng."}), 404
 
-        check_in_record = CheckIn.query.filter_by(
+        check_in_record = SponsorCheckIn.query.filter_by(
             id=check_in_record_id, status="accepted"
         ).first()
         if not check_in_record:
@@ -1195,7 +1198,7 @@ def get_military_units():
 @core.route("/get_users_by_unit/<int:unit_id>", methods=["GET"])
 @login_required
 def get_users_by_unit(unit_id):
-    users = User.query.filter_by(military_military_unit_id=unit_id).all()
+    users = User.query.filter_by(military_unit_id=unit_id).all()
     users_data = [{"id": user.id, "full_name": user.full_name} for user in users]
     return jsonify(users_data)
 

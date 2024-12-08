@@ -36,7 +36,7 @@
                 <th class="text-center">Đơn Vị</th>
                 <th class="text-center">Email</th>
                 <th class="text-center">Ghi chú</th>
-                <th class="text-center">Chức Vụ Quản Lý</th>
+                <th class="text-center">Ngày Tạo</th>
             </tr>
             </thead>
             <tbody id="member-table">
@@ -63,11 +63,13 @@
                 </td>
                 <td>{{ user.full_name }}</td>
                 <td class="text-center">{{ user.identity_card }}</td>
-                <td>{{ user.military_military_manager_full_name }}</td>
-                <td>{{ user.military_military_unit_name }}</td>
+                <td>{{ user.military_manager.full_name if user.military_manager else 'N/A' }}</td>
+                <td>{{ user.military_unit.name if user.military_unit else 'N/A' }}</td>
                 <td>{{ user.email }}</td>
                 <td>{{ user.note }}</td>
-                <td>{{ user.military_military_manager_id }}</td>
+                <td class="text-center">
+                    {{ user.created_date.strftime("%d/%m/%Y") if user.created_date else 'N/A' }}
+                </td>
             </tr>
             {% endfor %}
             </tbody>
