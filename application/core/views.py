@@ -90,6 +90,7 @@ def scan_identity():
 
 
 @core.route("/api/check-in/<identity_card>", methods=["GET"])
+@login_required
 def get_latest_check_in(identity_card):
     print(f"Identity card: {identity_card}")
     check_in = (
@@ -142,7 +143,7 @@ def input_personal():
 
 
 @core.route("/batch_input")
-# @login_required
+@login_required
 def batch_input():
     return render_template("batch_input.html", username=current_user.username)
 
@@ -310,6 +311,7 @@ def reports():
 
 
 @core.route("/info")
+@login_required
 def info():
     """
     Example view of any other "core" page. Such as a info page, about page,
@@ -381,6 +383,7 @@ def generate_frames():
 
 
 @core.route("/get_qr_data", methods=["GET"])
+@login_required
 def get_qr_data():
     # Safely retrieve the processed QR data
     user_id = get_user_id()
@@ -667,6 +670,7 @@ def delete_military_unit(unit_id):
 
 
 @core.route("/register_soldier_checkin_data", methods=["POST"])
+@login_required
 def register_soldier_checkin_data():
     try:
         # Extract user details from the request
@@ -802,6 +806,9 @@ def send_reset_second_password_email():
     # Generate reset link
     serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
     token = serializer.dumps(user.id, salt="reset-second-password")
+    user.reset_second_token = token
+    db.session.commit()
+
     reset_url = url_for("core.reset_second_password", token=token, _external=True)
 
     # Send email
@@ -813,39 +820,57 @@ def send_reset_second_password_email():
         {"success": True, "message": "Reset link has been sent to your email."}
     )
 
-
+import re
 @core.route("/reset_second_password/<token>", methods=["GET", "POST"])
 @login_required
 def reset_second_password(token):
     try:
-        # Decode the token
+        # Decode and validate the token
         serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
         user_id = serializer.loads(token, salt="reset-second-password", max_age=3600)
         user = User.query.get_or_404(user_id)
+
+        # Check if the token matches the user's current reset token
+        print(f"User reset token: {user.reset_second_token}")
+        print(f"User reuser.reset_second_token != tokenen: {user.reset_second_token != token}")
+        print(f"token: {token}")
+        if user.reset_second_token is None or user.reset_second_token != token:
+            csrf_token_value = generate_csrf()
+            print(f"dfvdfgdfgdfgdfgdfg: {token}")
+            return render_template(
+                "reset_error.html",
+                # csrf_token_value=csrf_token_value,
+                error_message="Liên kết đặt lại này không hợp lệ hoặc đã được sử dụng.",
+                # action_link=url_for("core.request_reset_second_password"),
+                action_text="Yêu cầu liên kết đặt lại mới",
+            )
+
         csrf_token_value = generate_csrf()
+
+        # Handle POST request for password reset
         if request.method == "POST":
-            # Validate and update the second password
             new_password = request.form.get("new_password", "").strip()
 
             # Validate password complexity
-            if len(new_password) < 8:
-                return (
-                    jsonify(
-                        {
-                            "success": False,
-                            "message": "Password must be at least 8 characters long.",
-                        }
-                    ),
-                    400,
-                )
+            if len(new_password) < 8 or not re.match(
+                    r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$",
+                    new_password,
+            ):
+                return jsonify(
+                    {
+                        "success": False,
+                        "message": "Password must be at least 8 characters long, "
+                                   "and include uppercase, lowercase, numbers, and special characters.",
+                    }
+                ), 400
 
-            # Save the new password
+            # Update the user's second password and invalidate the token
             user.second_password = generate_password_hash(new_password)
+            user.reset_second_token = None  # Mark the token as used
             db.session.commit()
 
-            return jsonify(
-                {"success": True, "message": "Second password has been updated."}
-            )
+            # JSON response for success
+            return jsonify({"success": True, "message": "Đã đặt lại mật khẩu thành công."})
 
         # Render the reset password form
         return render_template(
@@ -857,12 +882,34 @@ def reset_second_password(token):
         )
 
     except SignatureExpired:
-        return (
-            jsonify({"success": False, "message": "The reset link has expired."}),
-            400,
+        csrf_token_value = generate_csrf()
+        return render_template(
+            "reset_error.html",
+            csrf_token_value=csrf_token_value,
+            error_message="The reset link has expired.",
+            action_link=url_for("core.request_reset_second_password"),
+            action_text="Request a new reset link",
         )
     except BadSignature:
-        return jsonify({"success": False, "message": "Invalid reset link."}), 400
+        csrf_token_value = generate_csrf()
+        return render_template(
+            "reset_error.html",
+            csrf_token_value=csrf_token_value,
+            error_message="Invalid reset link.",
+            action_link=url_for("core.request_reset_second_password"),
+            action_text="Request a new reset link",
+        )
+
+    except SignatureExpired:
+        return render_template(
+            "reset_error.html",
+            error_message="The reset link has expired. Please request a new reset link."
+        )
+    except BadSignature:
+        return render_template(
+            "reset_error.html",
+            error_message="The reset link is invalid. Please request a new reset link."
+        )
 
 
 def validate_user_image(base64_images, user):

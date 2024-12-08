@@ -384,11 +384,19 @@ $(document).ready(function () {
     // Open confirmation modal when the reset link is clicked
     $("#reset-second-password-link").on("click", function (event) {
         event.preventDefault();
+        $("#changeSecondPasswordModal").modal("hide");
         $("#resetSecondPasswordConfirmModal").modal("show");
     });
 
     // Handle confirmation of reset second password
     $("#confirm-reset-second-password").on("click", function () {
+        const confirmButton = $(this);
+        const spinner = $("#confirm-reset-spinner");
+
+        // Disable the button and show the spinner
+        confirmButton.prop("disabled", true);
+        spinner.show();
+
         $.ajax({
             url: "/send_reset_second_password_email",
             type: "POST",
@@ -396,11 +404,16 @@ $(document).ready(function () {
                 "X-CSRFToken": $('input[name="csrf_token"]').val(),
             },
             success: function (response) {
-                alert("A reset link has been sent to your email.");
+                alert("Liên kết đặt lại đã được gửi tới email của bạn.");
                 $("#resetSecondPasswordConfirmModal").modal("hide");
             },
             error: function (xhr) {
-                alert(xhr.responseJSON.message || "Failed to send reset link.");
+                alert(xhr.responseJSON.message || "Không gửi được liên kết đặt lại.");
+            },
+            complete: function () {
+                // Re-enable the button and hide the spinner after request completes
+                confirmButton.prop("disabled", false);
+                spinner.hide();
             },
         });
     });
