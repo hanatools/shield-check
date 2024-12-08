@@ -353,8 +353,10 @@ $(document).ready(function () {
         }
 
         // Check if passwords match
+        console.log(newPassword, confirmPassword);
         if (newPassword !== confirmPassword) {
-            $("#change-second-password-error").text("Mật khẩu cấp hai mới không khớp.");
+            console.log("Passwords do not match");
+            $("#change-second-password-error").text("Xác nhận mật khẩu cấp hai mới không khớp.");
             return;
         }
 

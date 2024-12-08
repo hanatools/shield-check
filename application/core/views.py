@@ -827,21 +827,12 @@ def reset_second_password(token):
     try:
         # Decode and validate the token
         serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
-        user_id = serializer.loads(token, salt="reset-second-password", max_age=3600)
+        user_id = serializer.loads(token, salt="reset-second-password", max_age=300)
         user = User.query.get_or_404(user_id)
-
-        # Check if the token matches the user's current reset token
-        print(f"User reset token: {user.reset_second_token}")
-        print(f"User reuser.reset_second_token != tokenen: {user.reset_second_token != token}")
-        print(f"token: {token}")
         if user.reset_second_token is None or user.reset_second_token != token:
-            csrf_token_value = generate_csrf()
-            print(f"dfvdfgdfgdfgdfgdfg: {token}")
             return render_template(
                 "reset_error.html",
-                # csrf_token_value=csrf_token_value,
                 error_message="Liên kết đặt lại này không hợp lệ hoặc đã được sử dụng.",
-                # action_link=url_for("core.request_reset_second_password"),
                 action_text="Yêu cầu liên kết đặt lại mới",
             )
 
@@ -865,7 +856,7 @@ def reset_second_password(token):
                 ), 400
 
             # Update the user's second password and invalidate the token
-            user.second_password = generate_password_hash(new_password)
+            user.second_level_password = generate_password_hash(new_password)
             user.reset_second_token = None  # Mark the token as used
             db.session.commit()
 
@@ -1207,3 +1198,4 @@ def get_users_by_unit(unit_id):
     users = User.query.filter_by(military_military_unit_id=unit_id).all()
     users_data = [{"id": user.id, "full_name": user.full_name} for user in users]
     return jsonify(users_data)
+

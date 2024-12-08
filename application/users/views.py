@@ -2,8 +2,12 @@ import uuid
 from flask_wtf.csrf import generate_csrf
 from flask import render_template, url_for, flash, redirect, request, Blueprint, jsonify
 from flask_login import login_user, current_user, logout_user, login_required
-from application import db, app
+from itsdangerous import URLSafeTimedSerializer
+
+from application import db, app, send_email
 from werkzeug.security import generate_password_hash, check_password_hash
+
+from application.email import generate_reset_password_email
 from application.models import User, MilitaryUnit
 from application.users.forms import (
     RegistrationForm,
@@ -595,3 +599,40 @@ def change_second_level_password():
         ),
         200,
     )
+
+@users.route("/forget_password", methods=["GET", "POST"])
+def forget_password():
+    csrf_token = generate_csrf()
+
+    if request.method == "POST":
+        try:
+            # Parse request payload
+            data = request.get_json() if request.is_json else request.form
+            email = data.get("email")
+
+            user = User.query.filter_by(email=email).first()
+            if not user:
+                return jsonify({"success": False, "message": "Email không tồn tại."}), 400
+
+            # Generate reset token
+            serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
+            token = serializer.dumps(user.id, salt="reset-password")
+            user.reset_token = token
+            db.session.commit()
+
+            # Send reset link
+
+
+            reset_url = url_for("users.forget_password", token=token, _external=True)
+            subject = "Reset Your Password"
+            email_content = generate_reset_password_email(user.full_name, reset_url)
+            send_email(subject, user.email, email_content)
+
+            return jsonify({"success": True, "message": "Liên kết đặt lại mật khẩu đã được gửi đến email của bạn."}), 200
+
+        except Exception as e:
+            app.logger.error(f"Error during password reset: {str(e)}")
+            return jsonify({"success": False, "message": "Có lỗi xảy ra khi xử lý yêu cầu."}), 500
+
+    # Render reset password form for GET
+    return render_template("forget_password.html", csrf_token=csrf_token)
