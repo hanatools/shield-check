@@ -90,12 +90,6 @@ def profile():
     return redirect(url_for("users.account"))
 
 
-@users.route("/change_password")
-@login_required
-def change_password():
-    return redirect(url_for("users.change_password"))
-
-
 @users.route("/member_list")
 @login_required
 def member_list():
@@ -514,3 +508,90 @@ def get_military_unit_by_id(unit_id):
 def get_user_by_id(user_id):
     user = User.query.get_or_404(user_id)
     return jsonify({"id": user.id, "full_name": user.full_name})
+
+
+from flask import request, jsonify, render_template, redirect, url_for, flash
+from flask_login import login_required, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
+from application import db
+from application.models import User
+
+import re
+
+
+def is_password_strong(password):
+    """Check if password meets security requirements."""
+    regex = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
+    return bool(re.match(regex, password))
+
+
+@users.route("/change_password", methods=["POST"])
+@login_required
+def change_password():
+    data = request.get_json()
+    current_password = data.get("current_password", "").strip()
+    new_password = data.get("new_password", "").strip()
+
+    if not check_password_hash(current_user.password, current_password):
+        return (
+            jsonify({"success": False, "message": "Mật khẩu hiện tại không đúng."}),
+            400,
+        )
+
+    if not is_password_strong(new_password):
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "message": "Mật khẩu mới phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.",
+                }
+            ),
+            400,
+        )
+
+    current_user.password = generate_password_hash(new_password)
+    db.session.commit()
+    return (
+        jsonify({"success": True, "message": "Mật khẩu đã được thay đổi thành công."}),
+        200,
+    )
+
+
+@users.route("/change_second_level_password", methods=["POST"])
+@login_required
+def change_second_level_password():
+    data = request.get_json()
+    current_password = data.get("current_password", "").strip()
+    new_password = data.get("new_password", "").strip()
+
+    # Assuming `second_level_password` is a field in the User model
+    if not check_password_hash(current_user.second_level_password, current_password):
+        return (
+            jsonify(
+                {"success": False, "message": "Mật khẩu cấp hai hiện tại không đúng."}
+            ),
+            400,
+        )
+
+    if not is_password_strong(new_password):
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "message": "Mật khẩu mới phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.",
+                }
+            ),
+            400,
+        )
+
+    current_user.second_level_password = generate_password_hash(new_password)
+    db.session.commit()
+    return (
+        jsonify(
+            {
+                "success": True,
+                "message": "Mật khẩu cấp hai đã được thay đổi thành công.",
+            }
+        ),
+        200,
+    )

@@ -56,6 +56,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(255), unique=True, nullable=False)
     username = db.Column(db.String(64), unique=True, nullable=True)
     password = db.Column(db.String(255))
+    second_level_password = db.Column(db.String(255))
     identity_card = db.Column(db.String(50), unique=True, index=True)
     # Identity card attributes
 

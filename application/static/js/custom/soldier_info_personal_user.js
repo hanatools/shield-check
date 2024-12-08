@@ -259,5 +259,151 @@ $(document).ready(function () {
             console.error("Error fetching user details:", error);
         });
 
+    function validatePassword(password) {
+        const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        return regex.test(password);
+    }
+
+    // Function to display validation errors
+    function displayPasswordError(inputId, errorId, password) {
+        const errorMessageElement = $(`#${errorId}`);
+        errorMessageElement.text(""); // Clear previous errors
+
+        if (password.length < 8) {
+            errorMessageElement.text("Mật khẩu phải có ít nhất 8 ký tự.");
+            return false;
+        }
+
+        if (!/[A-Z]/.test(password)) {
+            errorMessageElement.text("Mật khẩu phải chứa ít nhất một chữ cái viết hoa.");
+            return false;
+        }
+
+        if (!/[a-z]/.test(password)) {
+            errorMessageElement.text("Mật khẩu phải chứa ít nhất một chữ cái viết thường.");
+            return false;
+        }
+
+        if (!/\d/.test(password)) {
+            errorMessageElement.text("Mật khẩu phải chứa ít nhất một số.");
+            return false;
+        }
+
+        if (!/[@$!%*?&]/.test(password)) {
+            errorMessageElement.text("Mật khẩu phải chứa ít nhất một ký tự đặc biệt.");
+            return false;
+        }
+
+        return true;
+    }
+
+    // Handle Change Password
+    $("#change-password-form").on("submit", function (event) {
+        event.preventDefault();
+
+        const currentPassword = $("#current-password").val();
+        const newPassword = $("#new-password").val();
+        const confirmPassword = $("#confirm-password").val();
+
+        if (!displayPasswordError("new-password", "change-password-error", newPassword)) {
+            return; // Stop submission if password is invalid
+        }
+
+        // Check if passwords match
+        if (newPassword !== confirmPassword) {
+            $("#change-password-error").text("Mật khẩu mới không khớp.");
+            return;
+        }
+
+        const data = {
+            current_password: currentPassword,
+            new_password: newPassword,
+        };
+
+        const csrfToken = $('input[name="csrf_token"]').val();
+
+        $.ajax({
+            url: "/change_password",
+            headers: {
+                "X-CSRFToken": csrfToken,
+            },
+            contentType: "application/json",
+            type: "POST",
+            data: JSON.stringify(data),
+            success: function (response) {
+                alert(response.message);
+                location.reload(); // Refresh page on success
+            },
+            error: function (xhr) {
+                $("#change-password-error").text(xhr.responseJSON.message);
+            },
+        });
+    });
+
+    // Handle Change Second Level Password
+    $("#change-second-password-form").on("submit", function (event) {
+        event.preventDefault();
+
+        const currentPassword = $("#current-second-password").val();
+        const newPassword = $("#new-second-password").val();
+        const confirmPassword = $("#confirm-second-password").val();
+
+        if (!displayPasswordError("new-second-password", "change-second-password-error", newPassword)) {
+            return; // Stop submission if password is invalid
+        }
+
+        // Check if passwords match
+        if (newPassword !== confirmPassword) {
+            $("#change-second-password-error").text("Mật khẩu cấp hai mới không khớp.");
+            return;
+        }
+
+        const data = {
+            current_password: currentPassword,
+            new_password: newPassword
+        };
+        const csrfToken = $('input[name="csrf_token"]').val();
+        $.ajax({
+            url: "/change_second_level_password",
+            type: "POST",
+            headers: {
+                "X-CSRFToken": csrfToken,
+            },
+            contentType: "application/json",
+            data: JSON.stringify(data),
+            success: function (response) {
+                alert(response.message);
+                location.reload(); // Refresh page on success
+            },
+            error: function (xhr) {
+                $("#change-second-password-error").text(xhr.responseJSON.message);
+            },
+        });
+    });
+
+    // Open confirmation modal when the reset link is clicked
+    $("#reset-second-password-link").on("click", function (event) {
+        event.preventDefault();
+        $("#resetSecondPasswordConfirmModal").modal("show");
+    });
+
+    // Handle confirmation of reset second password
+    $("#confirm-reset-second-password").on("click", function () {
+        $.ajax({
+            url: "/send_reset_second_password_email",
+            type: "POST",
+            headers: {
+                "X-CSRFToken": $('input[name="csrf_token"]').val(),
+            },
+            success: function (response) {
+                alert("A reset link has been sent to your email.");
+                $("#resetSecondPasswordConfirmModal").modal("hide");
+            },
+            error: function (xhr) {
+                alert(xhr.responseJSON.message || "Failed to send reset link.");
+            },
+        });
+    });
+
 
 });

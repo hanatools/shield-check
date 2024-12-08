@@ -1,8 +1,8 @@
 """Initial database.
 
-Revision ID: 60b7d7dbb4d6
+Revision ID: 23153163934a
 Revises: 
-Create Date: 2024-12-07 16:52:49.619780
+Create Date: 2024-12-08 10:29:47.140952
 
 """
 
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = "60b7d7dbb4d6"
+revision = "23153163934a"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -26,6 +26,7 @@ def upgrade():
         sa.Column("email", sa.String(length=255), nullable=False),
         sa.Column("username", sa.String(length=64), nullable=True),
         sa.Column("password", sa.String(length=255), nullable=True),
+        sa.Column("second_level_password", sa.String(length=255), nullable=True),
         sa.Column("identity_card", sa.String(length=50), nullable=True),
         sa.Column("full_name", sa.String(length=255), nullable=True),
         sa.Column("military_military_manager_id", sa.String(length=255), nullable=True),
@@ -103,7 +104,7 @@ def upgrade():
         "military_units",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("name", sa.String(length=255), nullable=False),
-        sa.Column("key", sa.String(length=50), nullable=False),
+        sa.Column("key", sa.String(length=128), nullable=False),
         sa.Column("parent", sa.Integer(), nullable=True),
         sa.Column("note", sa.Text(), nullable=True),
         sa.Column("created_date", sa.DateTime(), nullable=False),

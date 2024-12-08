@@ -61,6 +61,19 @@
             <i class="bi bi-pencil"></i> Chỉnh sửa
         </button>
     </div>
+
+    <!-- Display Links for Logged-in User -->
+    {% if current_user.id == user.id %}
+    <div class="user-actions mt-4">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+            Đổi Mật Khẩu
+        </button>
+        <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#changeSecondPasswordModal">
+            Đổi Mật Khẩu Cấp Hai
+        </button>
+    </div>
+    {% endif %}
+
     <!-- Image Section -->
     <div class="image-section">
         <h4 class="text-center mt-4">Hình Ảnh Khi Đăng Ký</h4>
@@ -153,6 +166,94 @@
                         <button type="submit" class="btn btn-primary">Lưu Thay Đổi</button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="change-password-form">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="changePasswordModalLabel">Đổi Mật Khẩu</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="current-password">Mật Khẩu Hiện Tại</label>
+                            <input type="password" id="current-password" class="form-control" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="new-password">Mật Khẩu Mới</label>
+                            <input type="password" id="new-password" class="form-control" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm-password">Xác Nhận Mật Khẩu Mới</label>
+                            <input type="password" id="confirm-password" class="form-control" required />
+                        </div>
+                        <div id="change-password-error" class="text-danger mt-2"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary">Lưu Thay Đổi</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Second Level Password Modal -->
+    <div class="modal fade" id="changeSecondPasswordModal" tabindex="-1" aria-labelledby="changeSecondPasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="change-second-password-form">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="changeSecondPasswordModalLabel">Đổi Mật Khẩu Cấp Hai</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="current-second-password">Mật Khẩu Cấp Hai Hiện Tại</label>
+                            <input type="password" id="current-second-password" class="form-control" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="new-second-password">Mật Khẩu Cấp Hai Mới</label>
+                            <input type="password" id="new-second-password" class="form-control" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm-second-password">Xác Nhận Mật Khẩu Cấp Hai Mới</label>
+                            <input type="password" id="confirm-second-password" class="form-control" required />
+                        </div>
+                        <div id="change-second-password-error" class="text-danger mt-2"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary">Lưu Thay Đổi</button>
+                    </div>
+                    <div class="text-end p-2">
+                        <a href="#" id="reset-second-password-link">Reset Second Password</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal fade" id="resetSecondPasswordConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Reset</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    Bạn có chắc chắn muốn đặt lại mật khẩu thứ hai không? Một liên kết đặt lại sẽ được gửi đến email của bạn.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="confirm-reset-second-password" class="btn btn-primary">Confirm</button>
+                </div>
             </div>
         </div>
     </div>

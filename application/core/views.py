@@ -13,9 +13,10 @@ from flask import (
     flash,
     redirect,
 )
+from werkzeug.security import generate_password_hash
 
 from application import db, send_email, app
-from application.email import generate_html_email
+from application.email import generate_html_email, generate_reset_second_password_email
 from application.models import (
     User,
     CheckIn,
@@ -777,6 +778,91 @@ def register_soldier_checkin_data():
 
     except Exception as e:
         return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
+
+
+import secrets
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
+
+# from flask import current_app, jsonify, url_for
+from flask_mail import Message
+
+
+@core.route("/send_reset_second_password_email", methods=["POST"])
+@login_required
+def send_reset_second_password_email():
+    user = current_user  # Get the logged-in user
+    if not user.email:
+        return (
+            jsonify(
+                {"success": False, "message": "User does not have a registered email."}
+            ),
+            400,
+        )
+
+    # Generate reset link
+    serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
+    token = serializer.dumps(user.id, salt="reset-second-password")
+    reset_url = url_for("core.reset_second_password", token=token, _external=True)
+
+    # Send email
+    subject = "Reset Your Second Password"
+    email_content = generate_reset_second_password_email(user.full_name, reset_url)
+    send_email(subject, user.email, email_content)
+
+    return jsonify(
+        {"success": True, "message": "Reset link has been sent to your email."}
+    )
+
+
+@core.route("/reset_second_password/<token>", methods=["GET", "POST"])
+@login_required
+def reset_second_password(token):
+    try:
+        # Decode the token
+        serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
+        user_id = serializer.loads(token, salt="reset-second-password", max_age=3600)
+        user = User.query.get_or_404(user_id)
+        csrf_token_value = generate_csrf()
+        if request.method == "POST":
+            # Validate and update the second password
+            new_password = request.form.get("new_password", "").strip()
+
+            # Validate password complexity
+            if len(new_password) < 8:
+                return (
+                    jsonify(
+                        {
+                            "success": False,
+                            "message": "Password must be at least 8 characters long.",
+                        }
+                    ),
+                    400,
+                )
+
+            # Save the new password
+            user.second_password = generate_password_hash(new_password)
+            db.session.commit()
+
+            return jsonify(
+                {"success": True, "message": "Second password has been updated."}
+            )
+
+        # Render the reset password form
+        return render_template(
+            "reset_second_password.html",
+            user=user,
+            token=token,
+            csrf_token_value=csrf_token_value,
+            loginId=current_user.id,
+        )
+
+    except SignatureExpired:
+        return (
+            jsonify({"success": False, "message": "The reset link has expired."}),
+            400,
+        )
+    except BadSignature:
+        return jsonify({"success": False, "message": "Invalid reset link."}), 400
 
 
 def validate_user_image(base64_images, user):

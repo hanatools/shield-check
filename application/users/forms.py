@@ -92,3 +92,15 @@ class RegisterRelativeForm(FlaskForm):
     rank = StringField("Cấp quản lý Quân nhân", validators=[Length(max=64)])
     unit = StringField("Đơn vị của Quân nhân", validators=[Length(max=128)])
     submit = SubmitField("Đăng ký")
+
+
+class ResetSecondPasswordForm(FlaskForm):
+    new_password = PasswordField("New Password", validators=[DataRequired()])
+    confirm_password = PasswordField(
+        "Confirm Password",
+        validators=[
+            DataRequired(),
+            EqualTo("new_password", message="Passwords must match."),
+        ],
+    )
+    submit = SubmitField("Submit")
