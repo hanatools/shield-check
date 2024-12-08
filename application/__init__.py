@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
@@ -79,6 +79,13 @@ def create_app():
         db.create_all()
 
     return app
+
+
+@app.route("/uploads/<path:filename>")
+def uploaded_file(filename):
+    upload_folder = app.config["UPLOAD_FOLDER_ABSOLUTE_PATH"]
+    print("Resolved UPLOAD_FOLDER:", upload_folder)
+    return send_from_directory(upload_folder, filename)
 
 
 ###########################

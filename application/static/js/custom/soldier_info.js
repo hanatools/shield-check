@@ -80,3 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
         new bootstrap.Tooltip(tooltipTriggerEl);
     });
 });
+
+function viewUser(userId) {
+    window.location.href = `/soldier_info_personal_user/${userId}`;
+}

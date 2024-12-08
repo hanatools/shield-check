@@ -1,5 +1,5 @@
 import uuid
-
+from flask_wtf.csrf import generate_csrf
 from flask import render_template, url_for, flash, redirect, request, Blueprint, jsonify
 from flask_login import login_user, current_user, logout_user, login_required
 from application import db, app
@@ -274,14 +274,6 @@ def submit_data():
     try:
         # Parse and validate the input data
         data = request.get_json()
-        # identity_card = data.get("identityCard", "").strip()
-        # full_name = data.get("fullName", "").strip()
-        # images = data.get("images", {})
-        # email = data.get("email", "").strip()
-        # militaryMilitaryUnitId = data.get("militaryMilitaryUnitId", "").strip()
-        # militaryManagerId = data.get("militaryManagerId", "").strip()
-        # note = data.get("note", "").strip()
-
         identity_card = (data.get("identityCard") or "").strip()
         full_name = (data.get("fullName") or "").strip()
         email = (data.get("email") or "").strip()
@@ -297,7 +289,7 @@ def submit_data():
         )
 
         # Validate required fields
-        if not identity_card or not full_name or not military_military_unit_id:
+        if not identity_card or not full_name:
             return jsonify({"error": "All fields are required"}), 400
 
         if not all(k in images for k in ["left", "right", "front"]):
@@ -349,26 +341,32 @@ def submit_data():
             target_user.note = note
 
         # Save images to disk
-        upload_folder = app.config.get("UPLOAD_FOLDER", "static/uploads")
+
+        upload_folder = app.config.get("UPLOAD_FOLDER")
         os.makedirs(upload_folder, exist_ok=True)
 
         image_paths = {}
         for key, base64_image in images.items():
-            file_path = os.path.join(upload_folder, f"{identity_card}_{key}.png")
+            file_name = f"{identity_card}_{key}.png"
+            file_path = os.path.join(upload_folder, file_name)
+            print({"file_path')": file_path})
             with open(file_path, "wb") as image_file:
                 image_file.write(base64.b64decode(base64_image.split(",")[1]))
-            image_paths[key] = file_path
+            image_paths[key] = file_name
 
         # Process front image for face encoding
         front_image_path = image_paths["front"]
         face_encoding_path = None
         try:
-            image = face_recognition.load_image_file(front_image_path)
+
+            image = face_recognition.load_image_file(
+                os.path.join(upload_folder, front_image_path)
+            )
             face_encodings = face_recognition.face_encodings(image)
 
             if len(face_encodings) > 0:
                 encoding = face_encodings[0]
-                encoding_folder = app.config.get("FACE_DATA", "static/face_data")
+                encoding_folder = app.config.get("FACE_DATA")
                 os.makedirs(encoding_folder, exist_ok=True)
                 face_encoding_path = os.path.join(
                     encoding_folder, f"{identity_card}.npy"
@@ -414,3 +412,105 @@ def submit_data():
 
     except Exception as e:
         return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
+
+
+@users.route("/soldier_info_personal_user/<user_id>", methods=["GET"])
+@login_required
+def soldier_info_personal_user(user_id):
+    csrf_token_value = generate_csrf()
+    user = User.query.get_or_404(user_id)
+    return render_template(
+        "soldier_info_personal_user.html", user=user, csrf_token_value=csrf_token_value
+    )
+
+
+@users.route("/update_user/<int:user_id>", methods=["POST"])
+@login_required
+def update_user(user_id):
+    data = request.get_json()
+    user = User.query.get_or_404(user_id)
+
+    # Validate required fields
+    full_name = (data.get("fullName") or "").strip()
+    email = (data.get("email") or "").strip()
+    military_military_unit_id = (data.get("militaryUnitId") or "").strip()
+    military_manager_id = (data.get("militaryManagerId") or "").strip()
+    note = (data.get("note") or "").strip()
+    role = (data.get("role") or "").strip()
+
+    if not full_name:
+        return (
+            jsonify({"success": False, "message": "Họ và tên không được để trống."}),
+            400,
+        )
+
+    # Check for duplicate email if provided
+    if email:
+        existing_email_user = User.query.filter(
+            User.email == email, User.id != user_id
+        ).first()
+        if existing_email_user:
+            return jsonify({"success": False, "message": "Email đã được sử dụng."}), 400
+
+    # Validate military unit if provided
+    if military_military_unit_id:
+        military_unit = MilitaryUnit.query.get(military_military_unit_id)
+        if not military_unit:
+            return (
+                jsonify({"success": False, "message": "ID đơn vị không hợp lệ."}),
+                400,
+            )
+
+    # Validate manager ID if provided
+    if military_manager_id:
+        manager = User.query.get(military_manager_id)
+        if not manager:
+            return (
+                jsonify({"success": False, "message": "ID quản lý không hợp lệ."}),
+                400,
+            )
+
+    # Update the user details
+    user.full_name = full_name
+    user.email = email
+    user.military_military_unit_id = military_military_unit_id
+    user.military_military_manager_id = military_manager_id
+    user.note = note
+    user.role = role
+
+    db.session.commit()
+
+    return jsonify(
+        {"success": True, "message": "Thông tin đã được cập nhật thành công."}
+    )
+
+
+@users.route("/get_user_details/<int:user_id>", methods=["GET"])
+@login_required
+def get_user_details(user_id):
+    user = User.query.get_or_404(user_id)
+    return jsonify(
+        {
+            "id": user.id,
+            "full_name": user.full_name,
+            "email": user.email,
+            "military_military_unit_id": user.military_military_unit_id,
+            "military_manager_id": user.military_military_manager_id,
+            "note": user.note,
+            "role": user.role,
+        }
+    )
+
+
+@users.route("/get_military_unit_by_id/<int:unit_id>", methods=["GET"])
+@login_required
+def get_military_unit_by_id(unit_id):
+    military_unit = MilitaryUnit.query.get_or_404(unit_id)
+    return jsonify({"id": military_unit.id, "name": military_unit.name})
+
+
+@users.route("/get_user_by_id/<int:user_id>", methods=["GET"])
+@login_required
+def get_user_by_id(user_id):
+    user = User.query.get_or_404(user_id)
+    return jsonify({"id": user.id, "full_name": user.full_name})
