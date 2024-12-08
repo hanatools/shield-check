@@ -18,31 +18,7 @@
             <form method="POST" id="register-form">
                 {{ form.hidden_tag() }}
                 <div class="mb-3">
-                    <label for="fullname" class="form-label">Họ và tên: <span class="text-danger">(*)</span> </label>
-                    <input
-                            type="text"
-                            class="form-control"
-                            id="fullname"
-                            name="fullname"
-                            placeholder="Nhập họ và tên"
-                            value="Nguyễn Văn A"
-                    />
-                    <small id="fullname-error" class="text-danger"></small>
-                </div>
-                <div class="mb-3">
-                    <label for="management_level" class="form-label">Cấp quản lý:<span class="text-danger">(*)</span> </label>
-                    <input
-                            type="text"
-                            class="form-control"
-                            id="management_level"
-                            name="management_level"
-                            placeholder="Nhập cấp quản lý"
-                            value="Cấp 1d"
-                    />
-                    <small id="management_level-error" class="text-danger"></small>
-                </div>
-                <div class="mb-3">
-                    <label for="identity_card" class="form-label">Số CCCD:  </label>
+                    <label for="identity_card" class="form-label">Số CCCD:  <span class="text-danger">(*)</span></label>
                     <input
                             type="text"
                             class="form-control"
@@ -53,16 +29,83 @@
                 </div>
 
                 <div class="mb-3">
-                    <label for="unit_name" class="form-label">Đơn vị:<span class="text-danger">(*)</span>  </label>
+                    <label for="fullname" class="form-label">Họ và tên:  </label>
+                    <input
+                            type="text"
+                            class="form-control"
+                            id="fullname"
+                            name="fullname"
+                            placeholder="Nhập họ và tên"
+                            value=""
+                            disabled
+                    />
+                    <small id="fullname-error" class="text-danger"></small>
+                </div>
+                <div class="mb-3">
+                    <label for="management_level" class="form-label">Chức danh quản lý: </label>
+                    <input
+                            type="text"
+                            class="form-control"
+                            id="management_level"
+                            name="management_level"
+                            placeholder="Nhập chức danh quản lý"
+                            value=""
+                            disabled
+                    />
+                    <small id="management_level-error" class="text-danger"></small>
+                </div>
+
+
+                <div class="mb-3">
+                    <label for="unit_name" class="form-label">Đơn vị: </label>
                     <input
                             type="text"
                             class="form-control"
                             id="unit_name"
                             name="unit_name"
                             placeholder="Nhập Đơn vị"
-                            value="Đơn vị 1"
+                            value=""
+                            disabled
                     />
                 </div>
+                <div class="mb-3">
+                    <label for="acceptor_level_1_id" class="form-label">Người duyệt cấp 1: </label>
+                    <select
+                            class="form-control"
+                            id="acceptor_level_1_id"
+                            name="acceptor_level_1_id"
+                            required
+                    >
+                        <option value="">Chọn người duyệt</option>
+
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="acceptor_level_2_id" class="form-label">Người duyệt cấp 2: </label>
+                    <select
+                            class="form-control"
+                            id="acceptor_level_2_id"
+                            name="acceptor_level_2_id"
+                            required
+                    >
+                        <option value="">Chọn người duyệt</option>
+
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="acceptor_level_3_id" class="form-label">Người duyệt cấp 3: </label>
+                    <select
+                            class="form-control"
+                            id="acceptor_level_3_id"
+                            name="acceptor_level_3_id"
+                            required
+                    >
+                        <option value="">Chọn người duyệt</option>
+                    </select>
+                </div>
+
                 <div class="mb-3">
                     <label for="file-scan-step1" class="form-label">File scan:</label>
                     <input
@@ -152,13 +195,15 @@
                 <!-- Form Details -->
                 <div style="flex: 2">
                     <div class="form-group">
-                        <label for="fullname-step3">Họ và tên:</label>
-                        <input type="text" class="form-control" id="fullname-step3" readonly />
-                    </div>
-                    <div class="form-group">
                         <label for="identity-card-step3">Số CCCD:</label>
                         <input type="text" class="form-control" id="identity-card-step3" readonly />
                     </div>
+
+                    <div class="form-group">
+                        <label for="fullname-step3">Họ và tên:</label>
+                        <input type="text" class="form-control" id="fullname-step3" readonly />
+                    </div>
+
                     <div class="form-group">
                         <label for="management-level-step3">Cấp quản lý:</label>
                         <input type="text" class="form-control" id="management-level-step3" readonly />
@@ -167,6 +212,37 @@
                         <label for="unit-step3">Đơn vị:</label>
                         <input type="text" class="form-control" id="unit-step3" readonly />
                     </div>
+                    <div class="form-group">
+                        <label for="acceptor-level-1">Người duyệt cấp 1:</label>
+                        <input
+                                type="text"
+                                class="form-control"
+                                id="acceptor-level-1"
+                                readonly
+                                value=""
+                        />
+                    </div>
+                    <div class="form-group">
+                        <label for="acceptor-level-2">Người duyệt cấp 2:</label>
+                        <input
+                                type="text"
+                                class="form-control"
+                                id="acceptor-level-2"
+                                readonly
+                                value=""
+                        />
+                    </div>
+                    <div class="form-group">
+                        <label for="acceptor-level-3">Người duyệt cấp 3:</label>
+                        <input
+                                type="text"
+                                class="form-control"
+                                id="acceptor-level-3"
+                                readonly
+                                value=""
+                        />
+                    </div>
+
                     <div class="form-group">
                         <label for="file-scan-step3">File scan:</label>
                         <input type="text" class="form-control" id="file-scan-step3" readonly />

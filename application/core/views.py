@@ -668,21 +668,140 @@ def delete_military_unit(unit_id):
         )
 
 
+# @core.route("/register_soldier_checkin_data", methods=["POST"])
+# @login_required
+# def register_soldier_checkin_data():
+#     try:
+#         # Extract user details from the request
+#         data = request.json
+#         identity_card = data.get("identity_card", "").strip()
+#         acceptor_level_1_id = data.get("acceptor_level_1_id", "").strip()
+#         acceptor_level_2_id = data.get("acceptor_level_2_id", "").strip()
+#         acceptor_level_3_id = data.get("acceptor_level_3_id", "").strip()
+#         file_scan = data.get("file_scan", "")
+#         images = data.get("images", {})
+#
+#         # Validate required fields
+#         if not all([acceptor_level_1_id, identity_card, acceptor_level_2_id, acceptor_level_3_id]):
+#             return jsonify({"error": "All fields are required"}), 400
+#
+#         if not all(k in images for k in ["left", "right", "front"]):
+#             return jsonify({"error": "Missing one or more required images"}), 400
+#
+#         # Check if the user exists by identity card
+#         user = User.query.filter_by(identity_card=identity_card).first()
+#         if not user:
+#             return (
+#                 jsonify(
+#                     {"error": f"User with identity card {identity_card} does not exist"}
+#                 ),
+#                 404,
+#             )
+#
+#             # Validate user image and identity card
+#         is_valid, validation_message = validate_user_image(images, user)
+#         print(f"Validation message: {validation_message}")
+#         if not is_valid:
+#             return jsonify({"error": validation_message}), 400
+#
+#         # Prepare and send approval email
+#         token = str(uuid.uuid4())
+#         approval_url = f"{app.config.get('WEB_HOST_URL')}/approve/{user.id}/check-out/{token}"  # Example approval URL
+#         # Generate email content
+#         subject = "ĐƠN XIN PHÉP RA NGOÀI"
+#         created_datetime = datetime.utcnow()
+#         formatted_date = created_datetime.strftime("%d/%m/%Y %H:%M:%S")
+#         print(f"Created Datetime: {created_datetime}")
+#         body_html = generate_html_email(
+#             user.full_name, user.unit_name, formatted_date, approval_url
+#         )
+#         result = send_email(subject, app.config.get("MAIL_DEFAULT_RECEIVER"), body_html)
+#         # logging.info(result["message"])
+#
+#         # Save images to disk
+#         check_in_folder = os.path.join("static", "check-in")
+#         os.makedirs(check_in_folder, exist_ok=True)
+#
+#         image_paths = {}
+#         for key, base64_image in images.items():
+#             file_path = os.path.join(
+#                 check_in_folder, f"check_in_{key}_{uuid.uuid4().hex}.png"
+#             )
+#             with open(file_path, "wb") as image_file:
+#                 image_file.write(base64.b64decode(base64_image.split(",")[1]))
+#             image_paths[key] = file_path
+#
+#         # Save file scan if provided
+#         file_scan_path = None
+#         if file_scan:
+#             file_scan_path = os.path.join(
+#                 check_in_folder, f"check_in_file_scan_{uuid.uuid4().hex}.pdf"
+#             )
+#             with open(file_scan_path, "wb") as file:
+#                 file.write(base64.b64decode(file_scan.split(",")[1]))
+#
+#         # Create a new CheckIn record
+#         check_in_record = SponsorCheckIn(
+#             user_id=user.id,
+#             full_name=user.full_name,
+#             identity_card=identity_card,
+#             military_manager_full_name=user.military_manager.name,
+#             military_manager_id=user.military_manager_id.id,
+#             military_unit_id=user.military_unit.id,
+#             military_unit_name=user.military_unit.name,
+#             file_scan_path=file_scan_path,
+#             left_image_path=image_paths.get("left"),
+#             right_image_path=image_paths.get("right"),
+#             front_image_path=image_paths.get("front"),
+#             token=token,
+#             acceptor_level_1_id=acceptor_level_1_id,
+#             acceptor_level_2_id=acceptor_level_2_id,
+#             acceptor_level_3_id=acceptor_level_3_id,
+#             created_by_id=current_user.id
+#         )
+#
+#         # Save to the database
+#         db.session.add(check_in_record)
+#         db.session.commit()
+#
+#         # Return success response with details
+#         return (
+#             jsonify(
+#                 {
+#                     "message": "Check-in data saved successfully!",
+#                     "check_in": {
+#                         "id": check_in_record.id,
+#                         "full_name": check_in_record.full_name,
+#                         "identity_card": check_in_record.identity_card,
+#                         "management_level": check_in_record.management_level,
+#                         "unit_name": check_in_record.unit_name,
+#                         "status": check_in_record.status,
+#                         "token": check_in_record.token,
+#                         "created_time": check_in_record.created_time.isoformat(),
+#                     },
+#                 }
+#             ),
+#             200,
+#         )
+#
+#     except Exception as e:
+#         return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
+
 @core.route("/register_soldier_checkin_data", methods=["POST"])
 @login_required
 def register_soldier_checkin_data():
     try:
         # Extract user details from the request
         data = request.json
-        full_name = data.get("full_name", "").strip()
         identity_card = data.get("identity_card", "").strip()
-        management_level = data.get("management_level", "").strip()
-        unit_name = data.get("unit_name", "").strip()
+        acceptor_level_1_id = data.get("acceptor_level_1_id", "").strip()
+        acceptor_level_2_id = data.get("acceptor_level_2_id", "").strip()
+        acceptor_level_3_id = data.get("acceptor_level_3_id", "").strip()
         file_scan = data.get("file_scan", "")
         images = data.get("images", {})
 
         # Validate required fields
-        if not all([full_name, identity_card, management_level, unit_name]):
+        if not all([acceptor_level_1_id, identity_card, acceptor_level_2_id, acceptor_level_3_id]):
             return jsonify({"error": "All fields are required"}), 400
 
         if not all(k in images for k in ["left", "right", "front"]):
@@ -698,25 +817,44 @@ def register_soldier_checkin_data():
                 404,
             )
 
-            # Validate user image and identity card
+        # Validate all acceptors
+        acceptor_level_1 = User.query.get(acceptor_level_1_id)
+        acceptor_level_2 = User.query.get(acceptor_level_2_id)
+        acceptor_level_3 = User.query.get(acceptor_level_3_id)
+
+        if not all([acceptor_level_1, acceptor_level_2, acceptor_level_3]):
+            missing_acceptors = []
+            if not acceptor_level_1:
+                missing_acceptors.append(f"Acceptor Level 1 (ID: {acceptor_level_1_id})")
+            if not acceptor_level_2:
+                missing_acceptors.append(f"Acceptor Level 2 (ID: {acceptor_level_2_id})")
+            if not acceptor_level_3:
+                missing_acceptors.append(f"Acceptor Level 3 (ID: {acceptor_level_3_id})")
+            return jsonify({"error": f"The following acceptors are missing: {', '.join(missing_acceptors)}"}), 400
+
+        # Handle None values for military manager and unit
+        military_manager_full_name = user.military_manager.full_name if user.military_manager else "N/A"
+        military_manager_id = user.military_manager.id if user.military_manager else None
+        military_unit_id = user.military_unit.id if user.military_unit else None
+        military_unit_name = user.military_unit.name if user.military_unit else "N/A"
+
+        # Validate user image and identity card
         is_valid, validation_message = validate_user_image(images, user)
-        print(f"Validation message: {validation_message}")
         if not is_valid:
             return jsonify({"error": validation_message}), 400
 
-        # Prepare and send approval email
+        # Send approval email to Acceptor Level 1
         token = str(uuid.uuid4())
         approval_url = f"{app.config.get('WEB_HOST_URL')}/approve/{user.id}/check-out/{token}"  # Example approval URL
-        # Generate email content
-        subject = "ĐƠN XIN PHÉP RA NGOÀI"
         created_datetime = datetime.utcnow()
         formatted_date = created_datetime.strftime("%d/%m/%Y %H:%M:%S")
-        print(f"Created Datetime: {created_datetime}")
+
+        # Generate email content
+        subject = "Approval Request for Check-in"
         body_html = generate_html_email(
-            user.full_name, user.unit_name, formatted_date, approval_url
+            user.full_name, military_unit_name, formatted_date, approval_url
         )
-        result = send_email(subject, app.config.get("MAIL_DEFAULT_RECEIVER"), body_html)
-        # logging.info(result["message"])
+        send_email(subject, acceptor_level_1.email, body_html)
 
         # Save images to disk
         check_in_folder = os.path.join("static", "check-in")
@@ -743,16 +881,22 @@ def register_soldier_checkin_data():
         # Create a new CheckIn record
         check_in_record = SponsorCheckIn(
             user_id=user.id,
-            full_name=full_name,
+            full_name=user.full_name,
             identity_card=identity_card,
-            management_level=management_level,
-            unit_name=unit_name,
+            military_manager_full_name=military_manager_full_name,
+            military_manager_id=military_manager_id,
+            military_unit_id=military_unit_id,
+            military_unit_name=military_unit_name,
             file_scan_path=file_scan_path,
             left_image_path=image_paths.get("left"),
             right_image_path=image_paths.get("right"),
             front_image_path=image_paths.get("front"),
             token=token,
-            created_time=created_datetime,
+            acceptor_level_1_id=acceptor_level_1_id,
+            acceptor_level_2_id=acceptor_level_2_id,
+            acceptor_level_3_id=acceptor_level_3_id,
+            created_by_id=current_user.id,
+            acceptor_level_1_status="created"
         )
 
         # Save to the database
@@ -768,8 +912,8 @@ def register_soldier_checkin_data():
                         "id": check_in_record.id,
                         "full_name": check_in_record.full_name,
                         "identity_card": check_in_record.identity_card,
-                        "management_level": check_in_record.management_level,
-                        "unit_name": check_in_record.unit_name,
+                        "military_manager_full_name": check_in_record.military_manager_full_name,
+                        "military_unit_name": check_in_record.military_unit_name,
                         "status": check_in_record.status,
                         "token": check_in_record.token,
                         "created_time": check_in_record.created_time.isoformat(),

@@ -149,6 +149,10 @@ class SponsorCheckIn(db.Model):
     check_in_time = db.Column(db.DateTime, nullable=True)
     check_out_time = db.Column(db.DateTime, nullable=True)
     note = db.Column(db.Text, nullable=True)
+    created_by_id = db.Column(
+        db.Integer, db.ForeignKey("users.id", name="fk_user_created_by"), nullable=True
+    )
+    update_time = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
     user_id = db.Column(
@@ -163,6 +167,9 @@ class SponsorCheckIn(db.Model):
     military_unit = db.relationship(
         "MilitaryUnit", foreign_keys=[military_unit_id], backref="unit_sponsor_check_ins"
     )
+    acceptor_level_1_status = db.Column(db.String(50), default=None, nullable=True)
+    acceptor_level_2_status = db.Column(db.String(50), default=None, nullable=True)
+    acceptor_level_3_status = db.Column(db.String(50), default=None, nullable=True)
 
     def __init__(self, full_name, identity_card, **kwargs):
         self.full_name = full_name

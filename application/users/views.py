@@ -647,79 +647,6 @@ def forget_password():
 
     # Render reset password form for GET
     return render_template("forget_password.html", csrf_token=csrf_token)
-# @users.route("/reset_password/<token>", methods=["GET", "POST"])
-# def reset_password(token):
-#     try:
-#         # Decode the token
-#         serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
-#         user_id = serializer.loads(token, salt="reset-password", max_age=300)
-#         user = User.query.get_or_404(user_id)
-#
-#         # Check if token is valid
-#         if user.reset_token is None or user.reset_token != token:
-#             return render_template(
-#                 "reset_error.html",
-#                 error_message="Invalid or already used reset token.",
-#             )
-#
-#         if request.method == "POST":
-#             data = request.get_json()
-#             new_password = data.get("new_password", "").strip()
-#             confirm_password = data.get("confirm_password", "").strip()
-#
-#             # Validate passwords
-#             if len(new_password) < 8:
-#                 return render_template(
-#                     "reset_password.html",
-#                     error_message="Password must be at least 8 characters long.",
-#                     token=token,
-#                     csrf_token=generate_csrf(),
-#                 )
-#
-#             if not any(char.isupper() for char in new_password) or \
-#                     not any(char.islower() for char in new_password) or \
-#                     not any(char.isdigit() for char in new_password) or \
-#                     not any(char in "@$!%*?&" for char in new_password):
-#                 return render_template(
-#                     "reset_password.html",
-#                     error_message="Password must include uppercase, lowercase, number, and special character.",
-#                     token=token,
-#                     csrf_token=generate_csrf(),
-#                 )
-#
-#             if new_password != confirm_password:
-#                 return render_template(
-#                     "reset_password.html",
-#                     error_message="Passwords do not match.",
-#                     token=token,
-#                     csrf_token=generate_csrf(),
-#                 )
-#
-#             # Update user's password
-#             user.password = generate_password_hash(new_password)
-#             user.reset_token = None  # Invalidate the token
-#             db.session.commit()
-#
-#             return render_template(
-#                 "reset_password_success.html",
-#                 success_message="Your password has been reset successfully.",
-#             )
-#
-#         # Render reset password form
-#         csrf_token_value = generate_csrf()
-#         return render_template("reset_password.html", token=token, csrf_token=csrf_token_value)
-#
-#     except SignatureExpired:
-#         return render_template(
-#             "reset_error.html",
-#             error_message="Liên kết đặt lại đã hết hạn.",
-#         )
-#     except BadSignature:
-#         return render_template(
-#             "reset_error.html",
-#             error_message="Invalid reset link.",
-#         )
-
 
 @users.route("/reset_password/<token>", methods=["GET", "POST"])
 def reset_password(token):
@@ -782,3 +709,28 @@ def reset_password(token):
             "reset_error.html",
             error_message="Invalid reset link.",
         )
+
+@users.route("/get_managers", methods=["GET"])
+@login_required
+def get_managers():
+    managers = User.query.filter_by(is_manager=True).all()
+    return jsonify(
+        [
+            {"id": manager.id, "full_name": manager.full_name, "identity_card": manager.identity_card}
+            for manager in managers
+        ]
+    )
+
+@users.route("/get_user_by_identity/<identity_card>", methods=["GET"])
+@login_required
+def get_user_by_identity(identity_card):
+    user = User.query.filter_by(identity_card=identity_card).first()
+    if user:
+        return jsonify({
+            "identity_card": user.identity_card,
+            "full_name": user.full_name,
+            "management_level": user.military_manager_full_name,
+            "unit_name": user.military_unit.name if user.military_unit else None
+        }), 200
+    else:
+        return jsonify({"error": "User not found"}), 404

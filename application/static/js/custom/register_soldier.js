@@ -19,6 +19,9 @@ document.addEventListener("DOMContentLoaded", () => {
         step3: document.getElementById("step-3"),
         fileScanStep1: document.getElementById("file-scan-step1"),
         fileScanError: document.getElementById("file-scan-error"),
+        acceptor1: document.getElementById("acceptor_level_1_id"),
+        acceptor2: document.getElementById("acceptor_level_2_id"),
+        acceptor3: document.getElementById("acceptor_level_3_id"),
     };
 
     let faceCameraStream = null;
@@ -65,41 +68,41 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /** Validates user data and fetches details from the server. */
-    function validateUser() {
-        const { fullName, managementLevel, unitName, identityCard, errorMessage, nextStepButton } = elements;
-        const csrfToken = document.querySelector("input[name='csrf_token']").value;
-
-        errorMessage.textContent = "";
-        identityCard.value = "";
-        nextStepButton.disabled = true;
-
-        if (fullName.value.trim() && managementLevel.value.trim() && unitName.value.trim()) {
-            fetch("/validate_identity_card", {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken },
-                body: JSON.stringify({
-                    full_name: fullName.value.trim(),
-                    management_level: managementLevel.value.trim(),
-                    unit_name: unitName.value.trim(),
-                }),
-            })
-                .then((response) => response.json())
-                .then((data) => {
-                    if (data.user) {
-                        userData = data.user; // Store user data
-                        identityCard.value = data.user.identity_card;
-                        nextStepButton.disabled = false;
-                    } else {
-                        errorMessage.textContent = "User not found.";
-                        userData = {};
-                    }
-                })
-                .catch((error) => {
-                    console.error("Error validating user:", error);
-                    errorMessage.textContent = "An error occurred. Please try again later.";
-                });
-        }
-    }
+    // function validateUser() {
+    //     const { identityCard, errorMessage, nextStepButton } = elements;
+    //     const csrfToken = document.querySelector("input[name='csrf_token']").value;
+    //
+    //     errorMessage.textContent = "";
+    //     identityCard.value = "";
+    //     nextStepButton.disabled = true;
+    //
+    //     if (fullName.value.trim() && managementLevel.value.trim() && unitName.value.trim()) {
+    //         fetch("/validate_identity_card", {
+    //             method: "POST",
+    //             headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken },
+    //             body: JSON.stringify({
+    //                 full_name: fullName.value.trim(),
+    //                 management_level: managementLevel.value.trim(),
+    //                 unit_name: unitName.value.trim(),
+    //             }),
+    //         })
+    //             .then((response) => response.json())
+    //             .then((data) => {
+    //                 if (data.user) {
+    //                     userData = data.user; // Store user data
+    //                     identityCard.value = data.user.identity_card;
+    //                     nextStepButton.disabled = false;
+    //                 } else {
+    //                     errorMessage.textContent = "User not found.";
+    //                     userData = {};
+    //                 }
+    //             })
+    //             .catch((error) => {
+    //                 console.error("Error validating user:", error);
+    //                 errorMessage.textContent = "An error occurred. Please try again later.";
+    //             });
+    //     }
+    // }
 
     /** Captures a photo and updates the placeholder. */
     function capturePhoto() {
@@ -167,6 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("identity-card-step3").value = userData.identity_card || "";
         document.getElementById("management-level-step3").value = userData.management_level || "";
         document.getElementById("unit-step3").value = userData.unit_name || "";
+        document.getElementById("identity-card-step3").value = userData.identity_card || "";
 
         const fileInput = document.getElementById("file-scan-step1");
         const fileScanField = document.getElementById("file-scan-step3");
@@ -183,17 +187,89 @@ document.addEventListener("DOMContentLoaded", () => {
                 previewElement.style.display = "block";
             }
         });
+
+        document.getElementById("acceptor-level-1").value =
+            document.getElementById("acceptor_level_1_id").options[
+                document.getElementById("acceptor_level_1_id").selectedIndex
+                ].text;
+
+        document.getElementById("acceptor-level-2").value =
+            document.getElementById("acceptor_level_2_id").options[
+                document.getElementById("acceptor_level_2_id").selectedIndex
+                ].text;
+
+        document.getElementById("acceptor-level-3").value =
+            document.getElementById("acceptor_level_3_id").options[
+                document.getElementById("acceptor_level_3_id").selectedIndex
+                ].text;
+
+
     }
+
+    // Function to validate required fields and enable the "Next" button
+    function validateForm() {
+        const isValid =
+            elements.identityCard.value.trim().length === 12 &&
+            elements.acceptor1.value &&
+            elements.acceptor2.value &&
+            elements.acceptor3.value;
+        elements.nextStepButton.disabled = !isValid;
+    }
+
+    // Event listener to fetch user data when identity card is 12 characters
+    elements.identityCard.addEventListener("input", () => {
+        const identityCardValue = elements.identityCard.value.trim();
+        if (identityCardValue.length === 12) {
+            fetch(`/get_user_by_identity/${identityCardValue}`)
+                .then((response) => {
+                    if (!response.ok) throw new Error("User not found");
+                    return response.json();
+                })
+                .then((data) => {
+                    userData = data;
+                    // Populate the form fields with user data
+                    elements.fullName.value = data.full_name || "";
+                    elements.managementLevel.value = data.management_level || "";
+                    elements.unitName.value = data.unit_name || "";
+                    elements.errorMessage.textContent = ""; // Clear error message
+                })
+                .catch((error) => {
+                    console.error("Error fetching user:", error);
+                    userData = {};
+                    elements.fullName.value = "";
+                    elements.managementLevel.value = "";
+                    elements.unitName.value = "";
+                    elements.errorMessage.textContent = "User not found or an error occurred.";
+                })
+                .finally(() => {
+                    validateForm(); // Ensure "Next" button state is updated
+                });
+        } else {
+            // Clear fields if input is less than 12 characters
+            elements.fullName.value = "";
+            elements.managementLevel.value = "";
+            elements.unitName.value = "";
+            elements.errorMessage.textContent = "";
+        }
+    });
+
+    // Event listeners for acceptor dropdowns to validate the form
+    [elements.acceptor1, elements.acceptor2, elements.acceptor3].forEach((dropdown) => {
+        dropdown.addEventListener("change", validateForm);
+    });
+
+    // Validate form on load (in case of pre-filled values)
+    // validateForm();
 
     function handleFinish() {
         const finishButton = document.getElementById("finish-step");
         const backButton = document.getElementById("back-to-step-2");
         const errorMessage = document.getElementById("result-error-message"); // Add an error display element if not present
         const payload = {
-            full_name: userData.full_name,
             identity_card: userData.identity_card,
-            management_level: userData.management_level,
-            unit_name: userData.unit_name,
+            acceptor_level_1_id: document.getElementById("acceptor_level_1_id").value,
+            acceptor_level_2_id: document.getElementById("acceptor_level_2_id").value,
+            acceptor_level_3_id:document.getElementById("acceptor_level_3_id").value,
             file_scan: userData.fileScan,
             images: capturedImages,
         };
@@ -255,9 +331,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Event listeners
-    elements.fullName.addEventListener("change", validateUser);
-    elements.managementLevel.addEventListener("change", validateUser);
-    elements.unitName.addEventListener("change", validateUser);
+    // elements.fullName.addEventListener("change", validateUser);
+    // elements.managementLevel.addEventListener("change", validateUser);
+    // elements.unitName.addEventListener("change", validateUser);
+    // elements.nextStepButton.addEventListener("change", validateUser);
     elements.nextStepButton.addEventListener("click", () => toggleSteps(elements.step1, elements.step2, "start"));
     elements.backStepButton.addEventListener("click", () => toggleSteps(elements.step2, elements.step1, "stop"));
     elements.backToStep2Button.addEventListener("click", () => toggleSteps(elements.step3, elements.step2, "start"));
@@ -274,4 +351,48 @@ document.addEventListener("DOMContentLoaded", () => {
         new bootstrap.Tooltip(tooltipTriggerEl);
     });
 
+
+
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    // Fetch managers on page load
+    fetch("/get_managers")
+        .then((response) => response.json())
+        .then((data) => {
+            const level1Select = document.getElementById("acceptor_level_1_id");
+            const level2Select = document.getElementById("acceptor_level_2_id");
+            const level3Select = document.getElementById("acceptor_level_3_id");
+
+            // Populate dropdowns with managers
+            populateDropdown(level1Select, data);
+            populateDropdown(level2Select, data);
+            populateDropdown(level3Select, data);
+
+            // Ensure unique selections across levels
+            handleUniqueSelections(level1Select, level2Select, level3Select);
+        })
+        .catch((error) => console.error("Error fetching managers:", error));
+});
+
+function populateDropdown(selectElement, data) {
+    data.forEach((manager) => {
+        const option = document.createElement("option");
+        option.value = manager.id;
+        option.textContent = `${manager.full_name} (${manager.identity_card})`;
+        selectElement.appendChild(option);
+    });
+}
+
+function handleUniqueSelections(...selectElements) {
+    selectElements.forEach((currentSelect) => {
+        currentSelect.addEventListener("change", () => {
+            const selectedValues = selectElements.map((select) => select.value);
+            selectElements.forEach((select) => {
+                Array.from(select.options).forEach((option) => {
+                    option.disabled = selectedValues.includes(option.value) && select !== currentSelect;
+                });
+            });
+        });
+    });
+}
