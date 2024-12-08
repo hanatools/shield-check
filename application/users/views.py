@@ -2,7 +2,7 @@ import uuid
 from flask_wtf.csrf import generate_csrf
 from flask import render_template, url_for, flash, redirect, request, Blueprint, jsonify
 from flask_login import login_user, current_user, logout_user, login_required
-from itsdangerous import URLSafeTimedSerializer
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 
 from application import db, app, send_email
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -623,7 +623,7 @@ def forget_password():
             # Send reset link
 
 
-            reset_url = url_for("users.forget_password", token=token, _external=True)
+            reset_url = url_for("users.reset_password", token=token, _external=True)
             subject = "Reset Your Password"
             email_content = generate_reset_password_email(user.full_name, reset_url)
             send_email(subject, user.email, email_content)
@@ -636,3 +636,138 @@ def forget_password():
 
     # Render reset password form for GET
     return render_template("forget_password.html", csrf_token=csrf_token)
+# @users.route("/reset_password/<token>", methods=["GET", "POST"])
+# def reset_password(token):
+#     try:
+#         # Decode the token
+#         serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
+#         user_id = serializer.loads(token, salt="reset-password", max_age=300)
+#         user = User.query.get_or_404(user_id)
+#
+#         # Check if token is valid
+#         if user.reset_token is None or user.reset_token != token:
+#             return render_template(
+#                 "reset_error.html",
+#                 error_message="Invalid or already used reset token.",
+#             )
+#
+#         if request.method == "POST":
+#             data = request.get_json()
+#             new_password = data.get("new_password", "").strip()
+#             confirm_password = data.get("confirm_password", "").strip()
+#
+#             # Validate passwords
+#             if len(new_password) < 8:
+#                 return render_template(
+#                     "reset_password.html",
+#                     error_message="Password must be at least 8 characters long.",
+#                     token=token,
+#                     csrf_token=generate_csrf(),
+#                 )
+#
+#             if not any(char.isupper() for char in new_password) or \
+#                     not any(char.islower() for char in new_password) or \
+#                     not any(char.isdigit() for char in new_password) or \
+#                     not any(char in "@$!%*?&" for char in new_password):
+#                 return render_template(
+#                     "reset_password.html",
+#                     error_message="Password must include uppercase, lowercase, number, and special character.",
+#                     token=token,
+#                     csrf_token=generate_csrf(),
+#                 )
+#
+#             if new_password != confirm_password:
+#                 return render_template(
+#                     "reset_password.html",
+#                     error_message="Passwords do not match.",
+#                     token=token,
+#                     csrf_token=generate_csrf(),
+#                 )
+#
+#             # Update user's password
+#             user.password = generate_password_hash(new_password)
+#             user.reset_token = None  # Invalidate the token
+#             db.session.commit()
+#
+#             return render_template(
+#                 "reset_password_success.html",
+#                 success_message="Your password has been reset successfully.",
+#             )
+#
+#         # Render reset password form
+#         csrf_token_value = generate_csrf()
+#         return render_template("reset_password.html", token=token, csrf_token=csrf_token_value)
+#
+#     except SignatureExpired:
+#         return render_template(
+#             "reset_error.html",
+#             error_message="Liên kết đặt lại đã hết hạn.",
+#         )
+#     except BadSignature:
+#         return render_template(
+#             "reset_error.html",
+#             error_message="Invalid reset link.",
+#         )
+
+
+@users.route("/reset_password/<token>", methods=["GET", "POST"])
+def reset_password(token):
+    try:
+        # Decode the token
+        serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
+        user_id = serializer.loads(token, salt="reset-password", max_age=300)
+        user = User.query.get_or_404(user_id)
+
+        # Check if token is valid
+        if user.reset_token is None or user.reset_token != token:
+            if request.is_json:
+                return jsonify({"success": False, "message": "Invalid or already used reset token."}), 400
+            return render_template(
+                "reset_error.html",
+                error_message="Invalid or already used reset token.",
+            )
+
+        if request.method == "POST":
+            if request.is_json:
+                data = request.get_json()
+                new_password = data.get("new_password", "").strip()
+                confirm_password = data.get("confirm_password", "").strip()
+
+                # Validate passwords
+                if len(new_password) < 8:
+                    return jsonify({"success": False, "message": "Password must be at least 8 characters long."}), 400
+
+                if not any(char.isupper() for char in new_password) or \
+                        not any(char.islower() for char in new_password) or \
+                        not any(char.isdigit() for char in new_password) or \
+                        not any(char in "@$!%*?&" for char in new_password):
+                    return jsonify({"success": False, "message": "Password must include uppercase, lowercase, number, and special character."}), 400
+
+                if new_password != confirm_password:
+                    return jsonify({"success": False, "message": "Passwords do not match."}), 400
+
+                # Update user's password
+                user.password = generate_password_hash(new_password)
+                user.reset_token = None  # Invalidate the token
+                db.session.commit()
+
+                return jsonify({"success": True, "message": "Your password has been reset successfully."})
+
+        # Render reset password form
+        csrf_token_value = generate_csrf()
+        return render_template("reset_password.html", token=token, csrf_token=csrf_token_value)
+
+    except SignatureExpired:
+        if request.is_json:
+            return jsonify({"success": False, "message": "The reset link has expired."}), 400
+        return render_template(
+            "reset_error.html",
+            error_message="The reset link has expired.",
+        )
+    except BadSignature:
+        if request.is_json:
+            return jsonify({"success": False, "message": "Invalid reset link."}), 400
+        return render_template(
+            "reset_error.html",
+            error_message="Invalid reset link.",
+        )

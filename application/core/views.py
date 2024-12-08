@@ -877,7 +877,7 @@ def reset_second_password(token):
         return render_template(
             "reset_error.html",
             csrf_token_value=csrf_token_value,
-            error_message="The reset link has expired.",
+            error_message="Liên kết đặt lại đã hết hạn.",
             action_link=url_for("core.request_reset_second_password"),
             action_text="Request a new reset link",
         )
@@ -894,12 +894,12 @@ def reset_second_password(token):
     except SignatureExpired:
         return render_template(
             "reset_error.html",
-            error_message="The reset link has expired. Please request a new reset link."
+            error_message="Liên kết đặt lại đã hết hạn. Vui lòng yêu cầu liên kết đặt lại mới."
         )
     except BadSignature:
         return render_template(
             "reset_error.html",
-            error_message="The reset link is invalid. Please request a new reset link."
+            error_message="Liên kết đặt lại không hợp lệ. Vui lòng yêu cầu liên kết đặt lại mới."
         )
 
 
