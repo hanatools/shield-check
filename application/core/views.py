@@ -1574,6 +1574,7 @@ def generate_excel_template():
 
 @core.route("/import_manager")
 @login_required
+@second_level_password_required
 def import_manager():
     csrf_token_value = generate_csrf()
     return render_template("import_manager.html", username=current_user.username, csrf_token_value=csrf_token_value)
