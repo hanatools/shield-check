@@ -1,0 +1,28 @@
+{% extends "member_base.html" %}
+
+{% block stylecss %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/custom/import_manager.css') }}">
+{% endblock %}
+
+{% block title %}
+<title>Nhập thông tin lô</title>
+{% endblock %}
+
+{% block content %}
+<div class="content">
+
+    <!-- Card Section -->
+    <div class="card">
+        <div class="placeholder-box">
+            Hãy chọn file Excel để tải lên
+            <button class="template-btn ">Tải mẫu</button>
+        </div>
+        <button class="upload-btn">Truyền file excel</button>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block stylejs %}
+<script src="{{ url_for('static', filename='js/custom/import_manager.js') }}"></script>
+{% endblock %}

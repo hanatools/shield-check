@@ -1517,3 +1517,9 @@ def verify_second_password():
         return redirect(next_url)
 
     return render_template("verify_password.html", csrf_token_value=csrf_token_value)
+
+
+@core.route("/import_manager")
+@login_required
+def import_manager():
+    return render_template("import_manager.html", username=current_user.username)
