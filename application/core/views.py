@@ -134,43 +134,40 @@ def scan_identity():
 @login_required
 def get_latest_check_in(identity_card):
     print(f"Identity card: {identity_card}")
+
+    # Check in SponsorCheckIn first
     check_in = (
         SponsorCheckIn.query.filter_by(identity_card=identity_card, status="accepted")
         .order_by(SponsorCheckIn.created_time.desc())
         .first()
     )
 
-    if not check_in:
-        return (
-            jsonify({"error": "Không tìm thấy thông tin check-in đã được phê duyệt"}),
-            404,
-        )
-
-    # Prepare acceptor-level status
-    acceptor_statuses = [
-        {
-            "level": 1,
-            "name": check_in.acceptor_level_1_full_name or "N/A",
-            "status": check_in.acceptor_level_1_status,
-            "label": STATUS_TRANSLATIONS.get(check_in.acceptor_level_1_status),
-        },
-        {
-            "level": 2,
-            "name": check_in.acceptor_level_2_full_name or "N/A",
-            "status": check_in.acceptor_level_2_status,
-            "label": STATUS_TRANSLATIONS.get(check_in.acceptor_level_2_status),
-        },
-        {
-            "level": 3,
-            "name": check_in.acceptor_level_3_full_name or "N/A",
-            "status": check_in.acceptor_level_3_status,
-            "label": STATUS_TRANSLATIONS.get(check_in.acceptor_level_3_status),
-        },
-    ]
-
-    return (
-        jsonify(
+    if check_in:
+        # Prepare acceptor-level status for SponsorCheckIn
+        acceptor_statuses = [
             {
+                "level": 1,
+                "name": check_in.acceptor_level_1_full_name or "N/A",
+                "status": check_in.acceptor_level_1_status,
+                "label": STATUS_TRANSLATIONS.get(check_in.acceptor_level_1_status),
+            },
+            {
+                "level": 2,
+                "name": check_in.acceptor_level_2_full_name or "N/A",
+                "status": check_in.acceptor_level_2_status,
+                "label": STATUS_TRANSLATIONS.get(check_in.acceptor_level_2_status),
+            },
+            {
+                "level": 3,
+                "name": check_in.acceptor_level_3_full_name or "N/A",
+                "status": check_in.acceptor_level_3_status,
+                "label": STATUS_TRANSLATIONS.get(check_in.acceptor_level_3_status),
+            },
+        ]
+
+        return jsonify(
+            {
+                "type": "sponsor",
                 "id": check_in.id,
                 "full_name": check_in.full_name,
                 "identity_card": check_in.identity_card,
@@ -192,8 +189,42 @@ def get_latest_check_in(identity_card):
                 "status": check_in.status,
                 "acceptor_statuses": acceptor_statuses,
             }
-        ),
-        200,
+        )
+
+    # If no SponsorCheckIn is found, check RelativeCheckIn
+    relative_check_in = (
+        RelativeCheckIn.query.filter_by(identity_card=identity_card, status="accepted")
+        .order_by(RelativeCheckIn.created_time.desc())
+        .first()
+    )
+
+    if relative_check_in:
+        return jsonify(
+            {
+                "type": "relative",
+                "id": relative_check_in.id,
+                "full_name": relative_check_in.full_name,
+                "identity_card": relative_check_in.identity_card,
+                "relationship": relative_check_in.relationship or "N/A",
+                "unit_name": relative_check_in.unit_name or "N/A",
+                "created_time": (
+                    relative_check_in.created_time.isoformat()
+                    if relative_check_in.created_time
+                    else None
+                ),
+                "check_out_time": (
+                    relative_check_in.check_out_time.isoformat()
+                    if relative_check_in.check_out_time
+                    else None
+                ),
+                "status": relative_check_in.status,
+            }
+        )
+
+    # If neither SponsorCheckIn nor RelativeCheckIn is found
+    return (
+        jsonify({"error": "Không tìm thấy thông tin check-in đã được phê duyệt"}),
+        404,
     )
 
 
@@ -267,6 +298,7 @@ def register_relative():
             sponsor_military_manager_full_name=sponsor_military_manager_full_name,
             note=note,
             created_by=current_user.id,
+            status="accepted"
         )
         db.session.add(new_relative)
 
@@ -1389,6 +1421,64 @@ def validate_face_scan():
     except Exception as e:
         return jsonify({"error": f"Lỗi xảy ra: {str(e)}"}), 500
 
+@core.route("/api/confirm-relative-check-in/<identity_card>", methods=["POST"])
+def confirm_relative_check_in(identity_card):
+    try:
+        # Fetch relative check-in record
+        relative_check_in = (
+            RelativeCheckIn.query.filter_by(identity_card=identity_card, status="accepted")
+            .order_by(RelativeCheckIn.created_time.desc())
+            .first()
+        )
+
+        if not relative_check_in:
+            return jsonify({"error": "Không tìm thấy phiếu kiểm tra được phê duyệt."}), 404
+
+        # Update database: check_in_time or check_out_time
+        current_time = datetime.utcnow()
+        if not relative_check_in.check_in_time:
+            relative_check_in.check_in_time = current_time
+            message = "Đã quét thời gian vào thành công!"
+        elif not relative_check_in.check_out_time:
+            relative_check_in.check_out_time = current_time
+            relative_check_in.status = "completed"
+            message = "Đã quét thời gian ra thành công!"
+        else:
+            return jsonify({"error": "Người thân này đã hoàn thành check-in và check-out."}), 400
+
+        # Commit the changes
+        db.session.commit()
+
+        # Respond with updated check-in record details
+        return (
+            jsonify(
+                {
+                    "message": message,
+                    "relative_check_in": {
+                        "id": relative_check_in.id,
+                        "full_name": relative_check_in.full_name,
+                        "identity_card": relative_check_in.identity_card,
+                        "relationship": relative_check_in.relationship,
+                        "unit_name": relative_check_in.unit_name or "N/A",
+                        "status": relative_check_in.status,
+                        "check_in_time": (
+                            relative_check_in.check_in_time.isoformat()
+                            if relative_check_in.check_in_time
+                            else None
+                        ),
+                        "check_out_time": (
+                            relative_check_in.check_out_time.isoformat()
+                            if relative_check_in.check_out_time
+                            else None
+                        ),
+                    },
+                }
+            ),
+            200,
+        )
+
+    except Exception as e:
+        return jsonify({"error": f"Lỗi xảy ra: {str(e)}"}), 500
 
 @core.route("/get_military_units", methods=["GET"])
 @login_required

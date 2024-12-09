@@ -229,7 +229,6 @@ class RelativeCheckIn(db.Model):
     created_by = db.Column(
         db.Integer, db.ForeignKey("users.id", name="fk_relative_check_in_created_by"), nullable=True
     )
-    note = db.Column(db.Text, nullable=True)
 
     # sponsor
     sponsor_full_name = db.Column(db.String(255), nullable=True)

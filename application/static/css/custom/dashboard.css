@@ -45,17 +45,17 @@
     box-shadow: 0 0 5px rgba(30, 64, 175, 0.5);
 }
 
-.btn-primary {
-    background-color: #10b981; /* Green button */
-    border: none;
-    border-radius: 5px;
-    padding: 10px 20px;
-    font-size: 16px;
-    font-weight: bold;
-    text-transform: uppercase;
-    width: 100%;
-    transition: all 0.3s ease;
-}
+/*.btn-primary {*/
+/*    background-color: #10b981; !* Green button *!*/
+/*    border: none;*/
+/*    border-radius: 5px;*/
+/*    padding: 10px 20px;*/
+/*    font-size: 16px;*/
+/*    font-weight: bold;*/
+/*    text-transform: uppercase;*/
+/*    width: 100%;*/
+/*    transition: all 0.3s ease;*/
+/*}*/
 
 .btn-primary:hover {
     background-color: #059669; /* Darker green on hover */

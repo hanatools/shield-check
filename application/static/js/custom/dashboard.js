@@ -139,18 +139,105 @@ function sendToServer(identityCardValue) {
     fetch(`/api/check-in/${identityCardValue}`, { method: "GET" })
         .then((response) => response.json())
         .then((record) => {
-            closeScanModal()
+            closeScanModal();
             if (record.error) {
                 showErrorModal(record.error);
-            } else {
-                populateUserDetails(record);
+            } else if (record.type === "sponsor") {
+                populateSponsorDetails(record); // Handle SponsorCheckIn
+            } else if (record.type === "relative") {
+                showRelativeConfirmModal(record); // Handle RelativeCheckIn
             }
-
         })
         .catch((error) => {
             console.error("Error sending identity card value to server:", error);
-            closeScanModal()
+            closeScanModal();
         });
+}
+
+// Populate details for SponsorCheckIn
+function populateSponsorDetails(record) {
+    populateUserDetails(record);
+}
+
+function showRelativeConfirmModal(record) {
+    document.getElementById("relativeConfirmFullName").textContent = record.full_name || "N/A";
+    document.getElementById("relativeConfirmIdentityCard").textContent = record.identity_card || "N/A";
+    document.getElementById("relativeConfirmRelationship").textContent = record.relationship || "N/A";
+    document.getElementById("relativeConfirmUnitName").textContent = record.unit_name || "N/A";
+    document.getElementById("relativeConfirmCreatedTime").textContent = formatDateTime(record.created_time);
+
+    const modalElement = document.getElementById("relativeConfirmModal");
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const relativeConfirmButton = document.getElementById("relativeConfirmButton");
+
+    // Add click event listener for the confirmation button
+    relativeConfirmButton.addEventListener("click", () => {
+        // Get the identity card number from the modal
+        const identityCard = document.getElementById("relativeConfirmIdentityCard").textContent.trim();
+
+        if (!identityCard) {
+            alert("Không tìm thấy Số CCCD. Vui lòng thử lại.");
+            return;
+        }
+
+        // Send the request to confirm the relative's check-in
+        confirmRelativeCheckIn(identityCard);
+    });
+});
+
+
+
+function confirmRelativeCheckIn(identityCard) {
+    // Get CSRF token
+    const csrfTokenInput = document.querySelector("input[name='csrf_token']");
+    if (!csrfTokenInput) {
+        console.error("CSRF token is missing.");
+        alert("Không tìm thấy token bảo mật. Vui lòng tải lại trang.");
+        return;
+    }
+
+    const csrfToken = csrfTokenInput.value;
+
+    fetch(`/api/confirm-relative-check-in/${identityCard}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken,
+        },
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            if (data.error) {
+                alert(`Lỗi: ${data.error}`);
+            } else {
+                showSuccessModal(data.message || "Check-in thành công!");
+            }
+        })
+        .catch((error) => {
+            console.error("Error confirming relative check-in:", error);
+            alert("Có lỗi xảy ra. Vui lòng thử lại sau.");
+        });
+}
+
+function showSuccessModal(message) {
+    const successModal = document.getElementById("successModal");
+    const successMessageElement = document.getElementById("successMessage");
+
+    // Update the modal message
+    successMessageElement.textContent = message;
+
+    // Initialize and show the modal
+    const modal = new bootstrap.Modal(successModal);
+    modal.show();
+
+    // Add an event listener to reload the page when the modal is closed
+    successModal.addEventListener("hidden.bs.modal", () => {
+        window.location.reload();
+    });
 }
 
 function populateUserDetails(record) {
