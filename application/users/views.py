@@ -1,12 +1,13 @@
 import uuid
 from flask_wtf.csrf import generate_csrf
-from flask import render_template, url_for, flash, redirect, request, Blueprint, jsonify
+from flask import render_template, url_for, flash, redirect, request, Blueprint, jsonify, session
 from flask_login import login_user, current_user, logout_user, login_required
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 
 from application import db, app, send_email
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from application.decorator import second_level_password_required
 from application.email import generate_reset_password_email
 from application.models import User, MilitaryUnit
 from application.users.forms import (
@@ -84,6 +85,7 @@ def login():
 
 @users.route("/logout")
 def logout():
+    session.pop("second_level_verified", None)
     logout_user()
     return redirect(url_for("users.login"))
 
@@ -123,6 +125,7 @@ def member_list():
 
 @users.route("/soldier_info")
 @login_required
+@second_level_password_required
 def soldier_info():
     search_query = request.args.get("search", "")
     page = request.args.get("page", 1, type=int)

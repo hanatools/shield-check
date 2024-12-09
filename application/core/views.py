@@ -11,11 +11,12 @@ from flask import (
     Response,
     url_for,
     flash,
-    redirect,
+    redirect, session,
 )
 from werkzeug.security import generate_password_hash
 
 from application import db, send_email, app
+from application.decorator import second_level_password_required
 from application.email import generate_html_email, generate_reset_second_password_email
 from application.models import (
     User,
@@ -347,6 +348,7 @@ def get_relatives_for_sponsor(sponsor_id):
 
 @core.route("/reports", methods=["GET", "POST"])
 @login_required
+@second_level_password_required
 def reports():
     from_date = request.args.get("from_date")
     to_date = request.args.get("to_date")
@@ -1112,8 +1114,10 @@ def get_hierarchy():
     return jsonify(hierarchy)
 
 from sqlalchemy.orm import joinedload
+
 @core.route("/relative_reports", methods=["GET", "POST"])
 @login_required
+@second_level_password_required
 def relative_reports():
     # Base query
     # Retrieve filter inputs from the request
@@ -1495,3 +1499,21 @@ def get_users_by_unit(unit_id):
     users_data = [{"id": user.id, "full_name": user.full_name} for user in users]
     return jsonify(users_data)
 
+@core.route("/verify_second_password", methods=["GET", "POST"])
+def verify_second_password():
+    csrf_token_value = generate_csrf()
+    if request.method == "POST":
+        second_password = request.form.get("second_password")
+
+        if not second_password:
+            return render_template("verify_password.html", error="Vui lòng nhập mật khẩu cấp hai.", csrf_token_value=csrf_token_value)
+
+        if not current_user.check_password(second_password):
+            return render_template("verify_password.html", error="Mật khẩu cấp hai không đúng.", csrf_token_value=csrf_token_value)
+
+        # Password verified, set session and redirect to the original destination
+        session["second_level_verified"] = True
+        next_url = session.pop("next_url", url_for("core.daskboard"))
+        return redirect(next_url)
+
+    return render_template("verify_password.html", csrf_token_value=csrf_token_value)
