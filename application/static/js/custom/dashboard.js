@@ -153,82 +153,117 @@ function sendToServer(identityCardValue) {
         });
 }
 
-// Populate user details in the UI
 function populateUserDetails(record) {
     console.log("Record: ", record);
+
+    // Populate general details
     document.getElementById("fullname").value = record.full_name;
     document.getElementById("identity-card-number").value = record.identity_card;
     document.getElementById("unit").value = record.unit_name;
     document.getElementById("manager").value = record.management_level;
     document.getElementById("check-in-record-id-hidden").value = record.id;
     document.getElementById("created_time").value = formatDateTime(record.created_time);
-    // document.getElementById("status").value = record.status;
     document.getElementById("check_out_time").value = formatDateTime(record.check_out_time);
     document.getElementById("accepted_datetime").value = formatDateTime(record.accepted_datetime);
 
+    // Populate status badge
+    const statusContainer = document.getElementById("status");
+    statusContainer.innerHTML = getStatusBadgeHTML(record.status);
+
+    // Populate acceptor statuses dynamically
+    const infoResultContainer = document.getElementById("info-result");
+    infoResultContainer.innerHTML = `
+        <h5>Trạng thái duyệt:</h5>
+        <ul class="list-group">
+            ${record.acceptor_statuses
+        .map(
+            (status) => `
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>Cấp ${status.level}: ${status.name}</span>
+                    <span class="badge ${
+                getStatusBadgeClass(status.status)
+            }">${status.label}</span>
+                </li>
+            `
+        )
+        .join("")}
+        </ul>
+    `;
+
+    // Show face scan button if applicable
     const faceScanButton = document.getElementById("face-scan-button");
     if (faceScanButton) {
         faceScanButton.classList.remove("d-none");
     }
 
+    // Hide QR scan button if applicable
     const openScanModalBtn = document.getElementById("openScanModalBtn");
     if (openScanModalBtn) {
         openScanModalBtn.classList.add("d-none");
     }
-
-    const statusContainer = document.getElementById("status");
-    statusContainer.innerHTML = getStatusBadgeHTML(record.status);
-
-
-
 }
 
+// Get appropriate badge class for the status
+function getStatusBadgeClass(status) {
+    switch (status) {
+        case "created":
+            return "bg-warning text-dark";
+        case "accepted":
+            return "bg-success";
+        case "reject":
+            return "bg-danger";
+        case "cancel":
+            return "bg-secondary";
+        case "expired":
+            return "bg-primary";
+        case "completed":
+            return "bg-info";
+        default:
+            return "bg-light text-dark";
+    }
+}
+
+// Generate a status badge HTML
 function getStatusBadgeHTML(status) {
-    let badgeClass = "";
+    let badgeClass = getStatusBadgeClass(status);
     let badgeText = "";
 
     switch (status) {
         case "created":
-            badgeClass = "bg-warning text-dark";
             badgeText = "Đã tạo";
             break;
         case "accepted":
-            badgeClass = "bg-success";
             badgeText = "Đã duyệt";
             break;
         case "reject":
-            badgeClass = "bg-danger";
-            badgeText = "Lỗi";
+            badgeText = "Từ chối";
             break;
         case "cancel":
-            badgeClass = "bg-secondary";
             badgeText = "Đã hủy";
             break;
         case "expired":
-            badgeClass = "bg-primary";
             badgeText = "Hết hạn";
             break;
         case "completed":
-            badgeClass = "bg-info";
             badgeText = "Hoàn thành";
             break;
         default:
-            badgeClass = "bg-light text-dark";
-            badgeText = "Thông báo";
+            badgeText = "Không xác định";
     }
 
     return `<span class="badge ${badgeClass}">${badgeText}</span>`;
 }
 
+// Format the date and time
 function formatDateTime(dateTimeString) {
+    if (!dateTimeString) return "N/A";
+
     const date = new Date(dateTimeString);
 
-    // Format day, month, year
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
     const year = date.getFullYear();
 
-    // Format hours, minutes, seconds
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     const seconds = String(date.getSeconds()).padStart(2, '0');

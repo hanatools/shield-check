@@ -88,6 +88,48 @@ def scan_identity():
         return jsonify({"error": str(e)}), 500
 
 
+# @core.route("/api/check-in/<identity_card>", methods=["GET"])
+# @login_required
+# def get_latest_check_in(identity_card):
+#     print(f"Identity card: {identity_card}")
+#     check_in = (
+#         SponsorCheckIn.query.filter_by(identity_card=identity_card, status="accepted")
+#         .order_by(SponsorCheckIn.created_time.desc())
+#         .first()
+#     )
+#
+#     if not check_in:
+#         return (
+#             jsonify({"error": "Không tìm thấy thông tin check-in đã được phê duyệt"}),
+#             404,
+#         )
+#
+#     return (
+#         jsonify(
+#             {
+#                 "id": check_in.id,
+#                 "full_name": check_in.full_name,
+#                 "identity_card": check_in.identity_card,
+#                 "unit_name": check_in.unit_name,
+#                 "management_level": check_in.management_level,
+#                 "created_time": (
+#                     check_in.created_time.isoformat() if check_in.created_time else None
+#                 ),
+#                 "check_out_time": (
+#                     check_in.check_out_time.isoformat()
+#                     if check_in.check_out_time
+#                     else None
+#                 ),
+#                 "accepted_datetime": (
+#                     check_in.accepted_datetime.isoformat()
+#                     if check_in.accepted_datetime
+#                     else None
+#                 ),
+#                 "status": check_in.status,
+#             }
+#         ),
+#         200,
+#     )
 @core.route("/api/check-in/<identity_card>", methods=["GET"])
 @login_required
 def get_latest_check_in(identity_card):
@@ -104,14 +146,36 @@ def get_latest_check_in(identity_card):
             404,
         )
 
+    # Prepare acceptor-level status
+    acceptor_statuses = [
+        {
+            "level": 1,
+            "name": check_in.acceptor_level_1_full_name or "N/A",
+            "status": check_in.acceptor_level_1_status,
+            "label": STATUS_TRANSLATIONS.get(check_in.acceptor_level_1_status),
+        },
+        {
+            "level": 2,
+            "name": check_in.acceptor_level_2_full_name or "N/A",
+            "status": check_in.acceptor_level_2_status,
+            "label": STATUS_TRANSLATIONS.get(check_in.acceptor_level_2_status),
+        },
+        {
+            "level": 3,
+            "name": check_in.acceptor_level_3_full_name or "N/A",
+            "status": check_in.acceptor_level_3_status,
+            "label": STATUS_TRANSLATIONS.get(check_in.acceptor_level_3_status),
+        },
+    ]
+
     return (
         jsonify(
             {
                 "id": check_in.id,
                 "full_name": check_in.full_name,
                 "identity_card": check_in.identity_card,
-                "unit_name": check_in.unit_name,
-                "management_level": check_in.management_level,
+                "unit_name": check_in.military_unit_name or "N/A",
+                "management_level": check_in.military_manager_full_name or "N/A",
                 "created_time": (
                     check_in.created_time.isoformat() if check_in.created_time else None
                 ),
@@ -126,6 +190,7 @@ def get_latest_check_in(identity_card):
                     else None
                 ),
                 "status": check_in.status,
+                "acceptor_statuses": acceptor_statuses,
             }
         ),
         200,
@@ -741,9 +806,9 @@ def register_soldier_checkin_data():
         # send_email(subject, acceptor_level_1.email, body_html)
         # Prepare the approvers list for the email
         approvers = [
-            {"name": acceptor_level_1.full_name, "status": "Đang chờ duyệt"},
-            {"name": acceptor_level_2.full_name, "status": "Chưa gửi"},
-            {"name": acceptor_level_3.full_name, "status": "Chưa gửi"},
+            {"name": acceptor_level_1.full_name, "status": "Chờ duyệt"},
+            {"name": acceptor_level_2.full_name, "status": "Chờ duyệt"},
+            {"name": acceptor_level_3.full_name, "status": "Chờ duyệt"},
         ]
 
         # Send approval email to Acceptor Level 1
@@ -1123,7 +1188,7 @@ def relative_reports():
 #         )
 
 STATUS_TRANSLATIONS = {
-    "created": "Đang chờ duyệt",
+    "created": "Chờ duyệt",
     "accepted": "Đã duyệt",
     "reject": "Từ chối",
     "cancel": "Đã hủy",
@@ -1166,11 +1231,11 @@ def approve_check_out(user_id, token, acceptor_level):
         # Prepare the approvers list with translated statuses
         approvers = [
             {"name": User.query.get(check_in_record.acceptor_level_1_id).full_name,
-             "status": STATUS_TRANSLATIONS.get(check_in_record.acceptor_level_1_status, "Chưa gửi")},
+             "status": STATUS_TRANSLATIONS.get(check_in_record.acceptor_level_1_status, "Chờ duyệt")},
             {"name": User.query.get(check_in_record.acceptor_level_2_id).full_name,
-             "status": STATUS_TRANSLATIONS.get(check_in_record.acceptor_level_2_status, "Chưa gửi")},
+             "status": STATUS_TRANSLATIONS.get(check_in_record.acceptor_level_2_status, "Chờ duyệt")},
             {"name": User.query.get(check_in_record.acceptor_level_3_id).full_name,
-             "status": STATUS_TRANSLATIONS.get(check_in_record.acceptor_level_3_status, "Chưa gửi")},
+             "status": STATUS_TRANSLATIONS.get(check_in_record.acceptor_level_3_status, "Chờ duyệt")},
         ]
 
         # Determine if this is the last approver

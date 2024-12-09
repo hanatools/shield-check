@@ -5,7 +5,7 @@ ShieldCheckApp
 ````agsl
 python -m venv app_venv
 .\app_venv\Scripts\activate (Windows)
-source ./app_venv/bin/activate (Max/Linux)
+v(Max/Linux)
 deactivate
 rm -rf app_venv
 brew install libffi
