@@ -11,7 +11,7 @@ from flask import (
     Response,
     url_for,
     flash,
-    redirect, session,
+    redirect, session, current_app,
 )
 from werkzeug.security import generate_password_hash
 
@@ -1519,7 +1519,61 @@ def verify_second_password():
     return render_template("verify_password.html", csrf_token_value=csrf_token_value)
 
 
+from flask import send_file, request
+import io
+import pandas as pd
+
+@core.route("/generate_excel_template", methods=["POST"])
+@login_required
+def generate_excel_template():
+    try:
+        output = io.BytesIO()
+
+        # Create an Excel file using pandas and XlsxWriter
+        with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
+            # First sheet: Main data
+            df_main = pd.DataFrame(
+                {
+                    "STT": [1, 2, 3],
+                    "CCCD": ["123456789012", "123456789013", "123456789014"],
+                    "Họ Và Tên": ["Nguyễn Anh Tú", "Phan Thị Thư", "Lê Thị Ái"],
+                    "Email": ["username1@gmail.com", "username2@gmail.com", "username3@gmail.com"],
+                    "Cấp Bậc": ["", "", ""],
+                }
+            )
+            df_main.to_excel(writer, index=False, sheet_name="Main")
+
+            # Adjust column widths for Main sheet
+            workbook = writer.book
+            worksheet_main = writer.sheets["Main"]
+            worksheet_main.set_column("A:A", 10)  # STT
+            worksheet_main.set_column("B:B", 20)  # CCCD
+            worksheet_main.set_column("C:C", 30)  # Họ Và Tên
+            worksheet_main.set_column("D:D", 30)  # Email
+            worksheet_main.set_column("E:E", 20)  # Cấp Bậc
+
+            # Second sheet: Options
+            df_options = pd.DataFrame({"Cấp Bậc": ["Tiểu đội trưởng", "Trung đội trưởng", "Đại đội trưởng", "Tiểu đoàn trưởng", "Trung đoàn trưởng", "Đại đoàn trưởng", "Sư đoàn trưởng"]})
+            df_options.to_excel(writer, index=False, sheet_name="Options")
+
+            # Adjust column widths for Options sheet
+            worksheet_options = writer.sheets["Options"]
+            worksheet_options.set_column("A:A", 25)  # Cấp Bậc
+
+        # Reset buffer and save Excel content
+        output.seek(0)
+        return send_file(
+            output,
+            as_attachment=True,
+            download_name="template.xlsx",
+            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+    except Exception as e:
+        current_app.logger.error(f"Error generating Excel template: {e}")
+        return jsonify({"error": "Error generating Excel template"}), 500
+
 @core.route("/import_manager")
 @login_required
 def import_manager():
-    return render_template("import_manager.html", username=current_user.username)
+    csrf_token_value = generate_csrf()
+    return render_template("import_manager.html", username=current_user.username, csrf_token_value=csrf_token_value)

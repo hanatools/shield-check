@@ -10,7 +10,7 @@
 
 {% block content %}
 <div class="content">
-
+    <input type="hidden" name="csrf_token" value="{{ csrf_token_value }}">
     <!-- Card Section -->
     <div class="card">
         <div class="placeholder-box">
