@@ -137,6 +137,7 @@
 #     </html>
 #     """
 
+
 def generate_html_email(user_full_name, unit_name, leave_date, verify_url, approvers):
     """
     Generate a detailed HTML email for the approval process with approvers' status.
@@ -282,6 +283,7 @@ def generate_html_email(user_full_name, unit_name, leave_date, verify_url, appro
     </html>
     """
 
+
 def generate_reset_second_password_email(user_full_name, reset_url):
     """
     Generate a beautiful HTML email for resetting the second password.
@@ -380,6 +382,7 @@ def generate_reset_second_password_email(user_full_name, reset_url):
       </body>
     </html>
     """
+
 
 def generate_reset_password_email(user_full_name, reset_url):
     """

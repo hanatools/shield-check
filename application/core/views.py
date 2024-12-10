@@ -11,7 +11,9 @@ from flask import (
     Response,
     url_for,
     flash,
-    redirect, session, current_app,
+    redirect,
+    session,
+    current_app,
 )
 from werkzeug.security import generate_password_hash
 
@@ -243,6 +245,7 @@ def input_personal():
 def batch_input():
     return render_template("batch_input.html", username=current_user.username)
 
+
 @core.route("/register_relative", methods=["GET", "POST"])
 @login_required
 def register_relative():
@@ -254,7 +257,9 @@ def register_relative():
         identity_card = request.form.get("identity_card", "").strip()
         relationship = request.form.get("relationship", "").strip()
         sponsor_identity_card = request.form.get("sponsor_identity_card", "").strip()
-        sponsor_military_unit_id = request.form.get("sponsor_military_unit_id", "").strip()
+        sponsor_military_unit_id = request.form.get(
+            "sponsor_military_unit_id", ""
+        ).strip()
         note = request.form.get("note", "").strip()
 
         # Validate inputs
@@ -268,7 +273,9 @@ def register_relative():
         # Check if sponsor exists (should always be true since it's the logged-in user)
         sponsor = User.query.filter_by(identity_card=sponsor_identity_card).first()
         if not sponsor:
-            flash("Nhà tài trợ không tồn tại. Vui lòng liên hệ bộ phận hỗ trợ.", "danger")
+            flash(
+                "Nhà tài trợ không tồn tại. Vui lòng liên hệ bộ phận hỗ trợ.", "danger"
+            )
             return redirect(url_for("register_relative"))
 
         # Initialize sponsor-related fields
@@ -278,9 +285,13 @@ def register_relative():
 
         # If sponsor_military_unit_id is provided, find the military manager and set the details
         if sponsor_military_unit_id:
-            military_unit = MilitaryUnit.query.filter_by(id=sponsor_military_unit_id).first()
+            military_unit = MilitaryUnit.query.filter_by(
+                id=sponsor_military_unit_id
+            ).first()
             if military_unit:
-                military_manager = User.query.filter_by(military_unit_id=military_unit.id, is_manager=True).first()
+                military_manager = User.query.filter_by(
+                    military_unit_id=military_unit.id, is_manager=True
+                ).first()
                 if military_manager:
                     sponsor_military_manager_id = military_manager.id
                     sponsor_military_manager_full_name = military_manager.full_name
@@ -299,7 +310,7 @@ def register_relative():
             sponsor_military_manager_full_name=sponsor_military_manager_full_name,
             note=note,
             created_by=current_user.id,
-            status="accepted"
+            status="accepted",
         )
         db.session.add(new_relative)
 
@@ -313,6 +324,7 @@ def register_relative():
     return render_template(
         "register_relative.html", username=current_user.username, form=form
     )
+
 
 def add_relative(full_name, identity_card, sponsor_id, relationship, creator_id):
     # Check if sponsor exists
@@ -407,7 +419,10 @@ def reports():
         )
 
     return render_template(
-        "reports.html", username=current_user.username, report_data=report_data, STATUS_TRANSLATIONS=STATUS_TRANSLATIONS
+        "reports.html",
+        username=current_user.username,
+        report_data=report_data,
+        STATUS_TRANSLATIONS=STATUS_TRANSLATIONS,
     )
 
 
@@ -784,7 +799,14 @@ def register_soldier_checkin_data():
         images = data.get("images", {})
 
         # Validate required fields
-        if not all([acceptor_level_1_id, identity_card, acceptor_level_2_id, acceptor_level_3_id]):
+        if not all(
+            [
+                acceptor_level_1_id,
+                identity_card,
+                acceptor_level_2_id,
+                acceptor_level_3_id,
+            ]
+        ):
             return jsonify({"error": "All fields are required"}), 400
 
         if not all(k in images for k in ["left", "right", "front"]):
@@ -808,16 +830,33 @@ def register_soldier_checkin_data():
         if not all([acceptor_level_1, acceptor_level_2, acceptor_level_3]):
             missing_acceptors = []
             if not acceptor_level_1:
-                missing_acceptors.append(f"Acceptor Level 1 (ID: {acceptor_level_1_id})")
+                missing_acceptors.append(
+                    f"Acceptor Level 1 (ID: {acceptor_level_1_id})"
+                )
             if not acceptor_level_2:
-                missing_acceptors.append(f"Acceptor Level 2 (ID: {acceptor_level_2_id})")
+                missing_acceptors.append(
+                    f"Acceptor Level 2 (ID: {acceptor_level_2_id})"
+                )
             if not acceptor_level_3:
-                missing_acceptors.append(f"Acceptor Level 3 (ID: {acceptor_level_3_id})")
-            return jsonify({"error": f"The following acceptors are missing: {', '.join(missing_acceptors)}"}), 400
+                missing_acceptors.append(
+                    f"Acceptor Level 3 (ID: {acceptor_level_3_id})"
+                )
+            return (
+                jsonify(
+                    {
+                        "error": f"The following acceptors are missing: {', '.join(missing_acceptors)}"
+                    }
+                ),
+                400,
+            )
 
         # Handle None values for military manager and unit
-        military_manager_full_name = user.military_manager.full_name if user.military_manager else "N/A"
-        military_manager_id = user.military_manager.id if user.military_manager else None
+        military_manager_full_name = (
+            user.military_manager.full_name if user.military_manager else "N/A"
+        )
+        military_manager_id = (
+            user.military_manager.id if user.military_manager else None
+        )
         military_unit_id = user.military_unit.id if user.military_unit else None
         military_unit_name = user.military_unit.name if user.military_unit else "N/A"
 
@@ -828,7 +867,7 @@ def register_soldier_checkin_data():
 
         # Send approval email to Acceptor Level 1
         token = str(uuid.uuid4())
-        acceptor_level=1
+        acceptor_level = 1
         # approval_url = f"{app.config.get('WEB_HOST_URL')}/approve/{user.id}/check-out/{token}/{acceptor_level}"
         # formatted_date = datetime.utcnow().strftime("%d/%m/%Y %H:%M:%S")
         #
@@ -846,13 +885,18 @@ def register_soldier_checkin_data():
         ]
 
         # Send approval email to Acceptor Level 1
-        approval_url = f"{app.config.get('WEB_HOST_URL')}/approve/{user.id}/check-out/{token}/1"
+        approval_url = (
+            f"{app.config.get('WEB_HOST_URL')}/approve/{user.id}/check-out/{token}/1"
+        )
         subject = "Yêu cầu phê duyệt để ra ngoài"
         body_html = generate_html_email(
-            user.full_name, military_unit_name, datetime.utcnow().strftime("%d/%m/%Y %H:%M:%S"), approval_url, approvers
+            user.full_name,
+            military_unit_name,
+            datetime.utcnow().strftime("%d/%m/%Y %H:%M:%S"),
+            approval_url,
+            approvers,
         )
         send_email(subject, acceptor_level_1.email, body_html)
-
 
         # Save images to disk
         check_in_folder = os.path.join("static", "check-in")
@@ -894,7 +938,7 @@ def register_soldier_checkin_data():
             acceptor_level_2_id=acceptor_level_2_id,
             acceptor_level_3_id=acceptor_level_3_id,
             created_by_id=current_user.id,
-            acceptor_level_1_status="created"
+            acceptor_level_1_status="created",
         )
 
         # Save to the database
@@ -928,6 +972,7 @@ def register_soldier_checkin_data():
 import secrets
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 
+
 @core.route("/send_reset_second_password_email", methods=["POST"])
 @login_required
 def send_reset_second_password_email():
@@ -957,7 +1002,10 @@ def send_reset_second_password_email():
         {"success": True, "message": "Reset link has been sent to your email."}
     )
 
+
 import re
+
+
 @core.route("/reset_second_password/<token>", methods=["GET", "POST"])
 @login_required
 def reset_second_password(token):
@@ -981,16 +1029,19 @@ def reset_second_password(token):
 
             # Validate password complexity
             if len(new_password) < 8 or not re.match(
-                    r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$",
-                    new_password,
+                r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$",
+                new_password,
             ):
-                return jsonify(
-                    {
-                        "success": False,
-                        "message": "Password must be at least 8 characters long, "
-                                   "and include uppercase, lowercase, numbers, and special characters.",
-                    }
-                ), 400
+                return (
+                    jsonify(
+                        {
+                            "success": False,
+                            "message": "Password must be at least 8 characters long, "
+                            "and include uppercase, lowercase, numbers, and special characters.",
+                        }
+                    ),
+                    400,
+                )
 
             # Update the user's second password and invalidate the token
             user.second_level_password = generate_password_hash(new_password)
@@ -998,7 +1049,9 @@ def reset_second_password(token):
             db.session.commit()
 
             # JSON response for success
-            return jsonify({"success": True, "message": "Đã đặt lại mật khẩu thành công."})
+            return jsonify(
+                {"success": True, "message": "Đã đặt lại mật khẩu thành công."}
+            )
 
         # Render the reset password form
         return render_template(
@@ -1031,12 +1084,12 @@ def reset_second_password(token):
     except SignatureExpired:
         return render_template(
             "reset_error.html",
-            error_message="Liên kết đặt lại đã hết hạn. Vui lòng yêu cầu liên kết đặt lại mới."
+            error_message="Liên kết đặt lại đã hết hạn. Vui lòng yêu cầu liên kết đặt lại mới.",
         )
     except BadSignature:
         return render_template(
             "reset_error.html",
-            error_message="Liên kết đặt lại không hợp lệ. Vui lòng yêu cầu liên kết đặt lại mới."
+            error_message="Liên kết đặt lại không hợp lệ. Vui lòng yêu cầu liên kết đặt lại mới.",
         )
 
 
@@ -1113,7 +1166,9 @@ def get_hierarchy():
 
     return jsonify(hierarchy)
 
+
 from sqlalchemy.orm import joinedload
+
 
 @core.route("/relative_reports", methods=["GET", "POST"])
 @login_required
@@ -1136,7 +1191,6 @@ def relative_reports():
     if to_date:
         query = query.filter(RelativeCheckIn.created_time <= to_date)
 
-
     # Fetch all records for the report
     check_ins = query.order_by(RelativeCheckIn.created_time.desc()).all()
 
@@ -1146,10 +1200,14 @@ def relative_reports():
     report_data = []
     for record in check_ins:
         # Fetch related soldier user by identity card
-        soldier_user = User.query.filter_by(identity_card=record.sponsor_identity_card).first()
+        soldier_user = User.query.filter_by(
+            identity_card=record.sponsor_identity_card
+        ).first()
 
         if record.check_in_time and record.check_out_time:
-            duration = abs((record.check_out_time - record.check_in_time).total_seconds())
+            duration = abs(
+                (record.check_out_time - record.check_in_time).total_seconds()
+            )
             duration_str = f"{int(duration // 3600)}:{int((duration % 3600) // 60)}:{int(duration % 60)}"
         else:
             duration_str = "N/A"
@@ -1161,10 +1219,20 @@ def relative_reports():
                 "full_name": record.full_name or "N/A",
                 "status": record.status or "",
                 "identity_card": record.identity_card or "N/A",
-                "soldier_identity_card": soldier_user.identity_card if soldier_user else "N/A",
+                "soldier_identity_card": (
+                    soldier_user.identity_card if soldier_user else "N/A"
+                ),
                 "soldier_name": soldier_user.full_name if soldier_user else "N/A",
-                "management_level": soldier_user.military_manager_full_name if soldier_user and soldier_user.military_manager_full_name else "N/A",
-                "unit_name": soldier_user.military_unit.name if soldier_user and soldier_user.military_unit else "N/A",
+                "management_level": (
+                    soldier_user.military_manager_full_name
+                    if soldier_user and soldier_user.military_manager_full_name
+                    else "N/A"
+                ),
+                "unit_name": (
+                    soldier_user.military_unit.name
+                    if soldier_user and soldier_user.military_unit
+                    else "N/A"
+                ),
                 "check_in_time": (
                     record.check_in_time.strftime("%H:%M:%S %d/%m/%Y")
                     if record.check_in_time
@@ -1176,7 +1244,11 @@ def relative_reports():
                     else "N/A"
                 ),
                 "duration": duration_str,
-                "created_time": record.created_time.strftime("%H:%M:%S %d/%m/%Y") if record.created_time else "N/A",
+                "created_time": (
+                    record.created_time.strftime("%H:%M:%S %d/%m/%Y")
+                    if record.created_time
+                    else "N/A"
+                ),
             }
         )
 
@@ -1185,6 +1257,7 @@ def relative_reports():
         username=current_user.username,
         report_data=report_data,
     )
+
 
 # @core.route("/approve/<int:user_id>/check-out/<string:token>", methods=["GET"])
 # def approve_check_out(user_id, token):
@@ -1230,13 +1303,20 @@ STATUS_TRANSLATIONS = {
     "cancel": "Đã hủy",
     "expired": "Hết hạn",
     "completed": "Hoàn thành",
-    "info": "Thông báo"
+    "info": "Thông báo",
 }
-@core.route("/approve/<int:user_id>/check-out/<string:token>/<int:acceptor_level>", methods=["GET"])
+
+
+@core.route(
+    "/approve/<int:user_id>/check-out/<string:token>/<int:acceptor_level>",
+    methods=["GET"],
+)
 def approve_check_out(user_id, token, acceptor_level):
     try:
         # Retrieve the check-in record
-        check_in_record = SponsorCheckIn.query.filter_by(user_id=user_id, token=token).first()
+        check_in_record = SponsorCheckIn.query.filter_by(
+            user_id=user_id, token=token
+        ).first()
 
         if not check_in_record:
             return render_template(
@@ -1250,7 +1330,9 @@ def approve_check_out(user_id, token, acceptor_level):
         current_approver_status = getattr(check_in_record, approver_status_attr, None)
 
         # Translate the current approver's status
-        current_status_vi = STATUS_TRANSLATIONS.get(current_approver_status, "Không xác định")
+        current_status_vi = STATUS_TRANSLATIONS.get(
+            current_approver_status, "Không xác định"
+        )
 
         # Check if this approver already approved
         if current_approver_status == "accepted":
@@ -1266,12 +1348,24 @@ def approve_check_out(user_id, token, acceptor_level):
 
         # Prepare the approvers list with translated statuses
         approvers = [
-            {"name": User.query.get(check_in_record.acceptor_level_1_id).full_name,
-             "status": STATUS_TRANSLATIONS.get(check_in_record.acceptor_level_1_status, "Chờ duyệt")},
-            {"name": User.query.get(check_in_record.acceptor_level_2_id).full_name,
-             "status": STATUS_TRANSLATIONS.get(check_in_record.acceptor_level_2_status, "Chờ duyệt")},
-            {"name": User.query.get(check_in_record.acceptor_level_3_id).full_name,
-             "status": STATUS_TRANSLATIONS.get(check_in_record.acceptor_level_3_status, "Chờ duyệt")},
+            {
+                "name": User.query.get(check_in_record.acceptor_level_1_id).full_name,
+                "status": STATUS_TRANSLATIONS.get(
+                    check_in_record.acceptor_level_1_status, "Chờ duyệt"
+                ),
+            },
+            {
+                "name": User.query.get(check_in_record.acceptor_level_2_id).full_name,
+                "status": STATUS_TRANSLATIONS.get(
+                    check_in_record.acceptor_level_2_status, "Chờ duyệt"
+                ),
+            },
+            {
+                "name": User.query.get(check_in_record.acceptor_level_3_id).full_name,
+                "status": STATUS_TRANSLATIONS.get(
+                    check_in_record.acceptor_level_3_status, "Chờ duyệt"
+                ),
+            },
         ]
 
         # Determine if this is the last approver
@@ -1295,7 +1389,9 @@ def approve_check_out(user_id, token, acceptor_level):
             next_approver = User.query.get(next_approver_id)
             if next_approver and next_approver.email:
                 # Update the next approver's status to "created"
-                next_approver_status_attr = f"acceptor_level_{next_acceptor_level}_status"
+                next_approver_status_attr = (
+                    f"acceptor_level_{next_acceptor_level}_status"
+                )
                 setattr(check_in_record, next_approver_status_attr, "created")
 
                 # Prepare and send email to the next approver
@@ -1306,7 +1402,7 @@ def approve_check_out(user_id, token, acceptor_level):
                     check_in_record.military_unit_name or "N/A",
                     datetime.utcnow().strftime("%d/%m/%Y %H:%M:%S"),
                     approval_url,
-                    approvers  # Include current translated statuses for all approvers
+                    approvers,  # Include current translated statuses for all approvers
                 )
                 send_email(subject, next_approver.email, body_html)
 
@@ -1323,6 +1419,8 @@ def approve_check_out(user_id, token, acceptor_level):
         return render_template(
             "approval_status.html", status="error", message=f"Có lỗi xảy ra: {str(e)}"
         )
+
+
 @core.route("/validate-face-scan", methods=["POST"])
 def validate_face_scan():
     try:
@@ -1425,18 +1523,24 @@ def validate_face_scan():
     except Exception as e:
         return jsonify({"error": f"Lỗi xảy ra: {str(e)}"}), 500
 
+
 @core.route("/api/confirm-relative-check-in/<identity_card>", methods=["POST"])
 def confirm_relative_check_in(identity_card):
     try:
         # Fetch relative check-in record
         relative_check_in = (
-            RelativeCheckIn.query.filter_by(identity_card=identity_card, status="accepted")
+            RelativeCheckIn.query.filter_by(
+                identity_card=identity_card, status="accepted"
+            )
             .order_by(RelativeCheckIn.created_time.desc())
             .first()
         )
 
         if not relative_check_in:
-            return jsonify({"error": "Không tìm thấy phiếu kiểm tra được phê duyệt."}), 404
+            return (
+                jsonify({"error": "Không tìm thấy phiếu kiểm tra được phê duyệt."}),
+                404,
+            )
 
         # Update database: check_in_time or check_out_time
         current_time = datetime.utcnow()
@@ -1448,7 +1552,12 @@ def confirm_relative_check_in(identity_card):
             relative_check_in.status = "completed"
             message = "Đã quét thời gian ra thành công!"
         else:
-            return jsonify({"error": "Người thân này đã hoàn thành check-in và check-out."}), 400
+            return (
+                jsonify(
+                    {"error": "Người thân này đã hoàn thành check-in và check-out."}
+                ),
+                400,
+            )
 
         # Commit the changes
         db.session.commit()
@@ -1484,6 +1593,7 @@ def confirm_relative_check_in(identity_card):
     except Exception as e:
         return jsonify({"error": f"Lỗi xảy ra: {str(e)}"}), 500
 
+
 @core.route("/get_military_units", methods=["GET"])
 @login_required
 def get_military_units():
@@ -1499,6 +1609,7 @@ def get_users_by_unit(unit_id):
     users_data = [{"id": user.id, "full_name": user.full_name} for user in users]
     return jsonify(users_data)
 
+
 @core.route("/verify_second_password", methods=["GET", "POST"])
 def verify_second_password():
     csrf_token_value = generate_csrf()
@@ -1506,10 +1617,18 @@ def verify_second_password():
         second_password = request.form.get("second_password")
 
         if not second_password:
-            return render_template("verify_password.html", error="Vui lòng nhập mật khẩu cấp hai.", csrf_token_value=csrf_token_value)
+            return render_template(
+                "verify_password.html",
+                error="Vui lòng nhập mật khẩu cấp hai.",
+                csrf_token_value=csrf_token_value,
+            )
 
         if not current_user.check_password(second_password):
-            return render_template("verify_password.html", error="Mật khẩu cấp hai không đúng.", csrf_token_value=csrf_token_value)
+            return render_template(
+                "verify_password.html",
+                error="Mật khẩu cấp hai không đúng.",
+                csrf_token_value=csrf_token_value,
+            )
 
         # Password verified, set session and redirect to the original destination
         session["second_level_verified"] = True
@@ -1523,12 +1642,15 @@ from flask import send_file, request
 import io
 import pandas as pd
 
-@core.route("/generate_excel_template", methods=["POST"])
+
+@core.route("/generate_excel_template", methods=["GET"])
 @login_required
 def generate_excel_template():
     try:
         output = io.BytesIO()
-
+        # Query the MilitaryUnit table for unit names
+        military_units = MilitaryUnit.query.with_entities(MilitaryUnit.name).all()
+        unit_names = sorted([unit.name for unit in military_units])
         # Create an Excel file using pandas and XlsxWriter
         with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
             # First sheet: Main data
@@ -1537,8 +1659,15 @@ def generate_excel_template():
                     "STT": [1, 2, 3],
                     "CCCD": ["123456789012", "123456789013", "123456789014"],
                     "Họ Và Tên": ["Nguyễn Anh Tú", "Phan Thị Thư", "Lê Thị Ái"],
-                    "Email": ["username1@gmail.com", "username2@gmail.com", "username3@gmail.com"],
-                    "Cấp Bậc": ["", "", ""],
+                    "Email": [
+                        "username1@gmail.com",
+                        "username2@gmail.com",
+                        "username3@gmail.com",
+                    ],
+                    "Tên Đăng Nhập": ["123456789012", "123456789013", "123456789014"],
+                    "Mật Khẩu": ["123456", "123456", "123456"],
+                    "Mật Khẩu Cấp Cấp2": ["12345678", "12345678", "12345678"],
+                    "Cấp Bậc": ["Lựa chọn", "Lựa chọn", "Lựa chọn"],
                 }
             )
             df_main.to_excel(writer, index=False, sheet_name="Main")
@@ -1550,15 +1679,32 @@ def generate_excel_template():
             worksheet_main.set_column("B:B", 20)  # CCCD
             worksheet_main.set_column("C:C", 30)  # Họ Và Tên
             worksheet_main.set_column("D:D", 30)  # Email
-            worksheet_main.set_column("E:E", 20)  # Cấp Bậc
+            worksheet_main.set_column("E:E", 20)  # Tên Đăng Nhập
+            worksheet_main.set_column("F:F", 20)  # Mật Khẩu
+            worksheet_main.set_column("G:G", 25)  # Mật Khẩu Cấp Cấp2
+            worksheet_main.set_column("H:H", 25)  # Cấp Bậc
 
             # Second sheet: Options
-            df_options = pd.DataFrame({"Cấp Bậc": ["Tiểu đội trưởng", "Trung đội trưởng", "Đại đội trưởng", "Tiểu đoàn trưởng", "Trung đoàn trưởng", "Đại đoàn trưởng", "Sư đoàn trưởng"]})
+            df_options = pd.DataFrame({"Cấp Bậc": unit_names})
             df_options.to_excel(writer, index=False, sheet_name="Options")
 
             # Adjust column widths for Options sheet
             worksheet_options = writer.sheets["Options"]
             worksheet_options.set_column("A:A", 25)  # Cấp Bậc
+
+            # Define the range in the Options sheet for the dropdown
+            dropdown_range = f"Options!$A$2:$A${len(unit_names) + 1}"
+
+            # Add data validation to the 'Cấp Bậc' column in Main sheet
+            worksheet_main.data_validation(
+                "H2:H1048576",  # Range for the Cấp Bậc column
+                {
+                    "validate": "list",
+                    "source": dropdown_range,  # Reference to the dropdown range
+                    "error_type": "stop",
+                    "error_message": "Vui lòng chọn cấp bậc hợp lệ từ danh sách.",
+                },
+            )
 
         # Reset buffer and save Excel content
         output.seek(0)
@@ -1572,9 +1718,14 @@ def generate_excel_template():
         current_app.logger.error(f"Error generating Excel template: {e}")
         return jsonify({"error": "Error generating Excel template"}), 500
 
+
 @core.route("/import_manager")
 @login_required
 @second_level_password_required
 def import_manager():
     csrf_token_value = generate_csrf()
-    return render_template("import_manager.html", username=current_user.username, csrf_token_value=csrf_token_value)
+    return render_template(
+        "import_manager.html",
+        username=current_user.username,
+        csrf_token_value=csrf_token_value,
+    )
