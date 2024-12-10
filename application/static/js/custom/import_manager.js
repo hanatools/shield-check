@@ -175,7 +175,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("next-btn").addEventListener("click", () => {
         const payload = { users: importedData };  // Wrap the data in an object with "users" key
-        fetch("/api/import-users", {
+        fetch("/api/import-manager-users", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -191,29 +191,6 @@ document.addEventListener("DOMContentLoaded", () => {
             })
             .catch((error) => console.error("Error:", error));
     });
-    // function renderResultTable(data) {
-    //     const resultTableBody = document.getElementById("result-table-body");
-    //     resultTableBody.innerHTML = ""; // Clear existing rows
-    //
-    //     data.forEach((row, index) => {
-    //         const tr = document.createElement("tr");
-    //         tr.innerHTML = `
-    //         <td>${row.index || index + 1}</td>
-    //         <td>${row.identityCardNumber || ""}</td>
-    //         <td>${row.fullName || ""}</td>
-    //         <td>${row.email || ""}</td>
-    //         <td>${row.username || ""}</td>
-    //         <td>${row.rank || ""}</td>
-    //         <td>
-    //             ${row.success
-    //             ? '<span class="success">Thành công</span>'
-    //             : '<span class="failure">Thất bại</span>'}
-    //         </td>
-    //         <td>${row.note || ""}</td>
-    //     `;
-    //         resultTableBody.appendChild(tr);
-    //     });
-    // }
     function renderResultTable(data) {
         const resultTableBody = document.getElementById("result-table-body");
         resultTableBody.innerHTML = ""; // Clear existing rows

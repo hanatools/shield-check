@@ -239,11 +239,15 @@ def input_personal():
         "input_personal.html", username=current_user.username, form=form
     )
 
-
 @core.route("/batch_input")
 @login_required
 def batch_input():
-    return render_template("batch_input.html", username=current_user.username)
+    csrf_token_value = generate_csrf()
+    return render_template(
+        "batch_input.html",
+        username=current_user.username,
+        csrf_token_value=csrf_token_value,
+    )
 
 
 @core.route("/register_relative", methods=["GET", "POST"])

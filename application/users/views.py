@@ -825,68 +825,129 @@ def get_user_by_identity(identity_card):
     else:
         return jsonify({"error": "User not found"}), 404
 
-
-#
-# @users.route("/api/import-users", methods=["POST"])
-# @login_required
-# def import_users():
-#     try:
-#         # Ensure the payload contains a 'users' key
-#         payload = request.json
-#         if not payload or not isinstance(payload, dict) or "users" not in payload:
-#             return jsonify({"error": "Invalid data format"}), 400
-#
-#         data = payload["users"]  # Extract the users list
-#         if not isinstance(data, list):  # Validate the 'users' key is a list
-#             return jsonify({"error": "Invalid data format"}), 400
-#
-#         results = []
-#
-#         for user in data:
-#             cccd = user.get("CCCD", "").strip()  # Ensure the keys match the payload
-#             if len(cccd) != 12:
-#                 results.append({
-#                     "cccd": cccd,
-#                     "fullName": user.get("Họ Và Tên"),
-#                     "status": "failure",
-#                     "note": "CCCD không đủ 12 ký tự"
-#                 })
-#                 continue
-#
-#             existing_user = User.query.filter_by(identity_card=cccd).first()
-#             if existing_user:
-#                 results.append({
-#                     "cccd": cccd,
-#                     "fullName": user.get("Họ Và Tên"),
-#                     "status": "failure",
-#                     "note": "Người dùng đã tồn tại"
-#                 })
-#                 continue
-#
-#             new_user = User(
-#                 identity_card=cccd,
-#                 full_name=user.get("Họ Và Tên"),
-#                 email=user.get("Email"),
-#                 military_unit_name=user.get("Cấp Bậc"),
-#                 created_by_id=current_user.id,
-#             )
-#             db.session.add(new_user)
-#             results.append({
-#                 "cccd": cccd,
-#                 "fullName": user.get("Họ Và Tên"),
-#                 "status": "success",
-#                 "note": ""
-#             })
-#
-#         db.session.commit()
-#         return jsonify(results), 200
-#
-#     except Exception as e:
-#         app.logger.error(f"Error importing users: {e}")
-#         return jsonify({"error": "Internal server error"}), 500
-@users.route("/api/import-users", methods=["POST"])
+@users.route("/api/import-manager-users", methods=["POST"])
 @login_required
-def import_users():
+def import_manager_users():
+    try:
+        # Ensure the payload contains a 'users' key
+        payload = request.json
+        if not payload or not isinstance(payload, dict) or "users" not in payload:
+            return jsonify({"error": "Invalid data format"}), 400
+
+        data = payload["users"]  # Extract the users list
+        if not isinstance(data, list):  # Validate the 'users' key is a list
+            return jsonify({"error": "Invalid data format"}), 400
+
+        results = []
+
+        # Fetch all military units into a dictionary for mapping
+        military_units = {unit.name.strip(): unit for unit in MilitaryUnit.query.all()}
+
+        for index, user in enumerate(data, start=1):
+            print(f"Processing user  {user}")
+            user_index = str(user.get("index", "")).strip()
+            cccd = user.get("identityCardNumber", "").strip()
+            full_name = user.get("fullName", "").strip()
+            email = user.get("email", "").strip()
+            username = user.get("username", "").strip()
+            password = user.get("password", "").strip()
+            second_password = user.get("secondPassword", "").strip()
+            rank = user.get("rank", "").strip()
+
+            if len(cccd) != 12:
+                results.append(
+                    {
+                        "index": user_index,
+                        "identityCardNumber": cccd,
+                        "fullName": full_name,
+                        "email": email,
+                        "username": username,
+                        "password": password,
+                        "secondPassword": second_password,
+                        "rank": rank,
+                        "success": False,
+                        "note": "CCCD không đủ 12 ký tự",
+                    }
+                )
+                continue
+
+            existing_user = User.query.filter_by(identity_card=cccd).first()
+            if existing_user:
+                results.append(
+                    {
+                        "index": user_index,
+                        "identityCardNumber": cccd,
+                        "fullName": full_name,
+                        "email": email,
+                        "username": username,
+                        "password": password,
+                        "secondPassword": second_password,
+                        "rank": rank,
+                        "success": False,
+                        "note": "Người dùng đã tồn tại",
+                    }
+                )
+                continue
+
+            # Map "Cấp Bậc" to a MilitaryUnit
+            military_unit = military_units.get(rank)
+            if not military_unit:
+                results.append(
+                    {
+                        "index": user_index,
+                        "identityCardNumber": cccd,
+                        "fullName": full_name,
+                        "email": email,
+                        "username": username,
+                        "password": password,
+                        "secondPassword": second_password,
+                        "rank": rank,
+                        "success": False,
+                        "note": f"Rank '{rank}' không tồn tại trong hệ thống",
+                    }
+                )
+                continue
+
+            # Create a new user
+            new_user = User(
+                identity_card=cccd,
+                username=cccd,
+                password=cccd,
+                second_level_password=cccd,
+                full_name=user.get("Họ và Tên"),
+                email=user.get("Email"),
+                military_unit_id=military_unit.id,
+                military_unit_name=military_unit.name,
+                created_by_id=current_user.id,
+                is_manager=True,
+            )
+            db.session.add(new_user)
+            results.append(
+                {
+                    "index": user_index,
+                    "identityCardNumber": cccd,
+                    "fullName": full_name,
+                    "email": email,
+                    "username": username,
+                    "password": password,
+                    "secondPassword": second_password,
+                    "rank": rank,
+                    "success": True,
+                    "note": "Người dùng được thêm thành công",
+                }
+            )
+
+        db.session.commit()
+        return jsonify(results), 200
+
+    except Exception as e:
+        app.logger.error(f"Error importing users: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+
+@users.route("/api/import-normal-users", methods=["POST"])
+@login_required
+def import_normal_users():
     try:
         # Ensure the payload contains a 'users' key
         payload = request.json

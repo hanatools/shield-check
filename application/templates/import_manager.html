@@ -10,20 +10,11 @@
 
 {% block content %}
 <div class="content">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token_value }}">
-<!--    &lt;!&ndash; Card Section &ndash;&gt;-->
-<!--    <div class="card">-->
-<!--        <div class="placeholder-box">-->
-<!--            Hãy chọn file Excel để tải lên-->
-<!--            <button class="template-btn ">Tải mẫu</button>-->
-<!--        </div>-->
-<!--        <button class="upload-btn">Truyền file excel</button>-->
-<!--    </div>-->
-
+    <input type="hidden" name="csrf_token" value="{{ csrf_token_value }}">\
     <!-- Step 1: Upload Section -->
     <div class="step active" id="step-1">
         <div class="upload-container">
-            <h2>Nhập Thông Tin Lô</h2>
+            <h2>Nhập Thông tin Quản lý</h2>
             <div class="placeholder-box" id="file-drop-zone">
                 <button class="template-btn btn-sm">Tải mẫu</button>
                 <p>Kéo thả file Excel vào đây hoặc</p>
