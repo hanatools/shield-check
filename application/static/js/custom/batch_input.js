@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 let importedData = [];
-
+let processedImages = {};
 // Function to reset Step 2
 function resetStep2() {
     const previewTable = document.getElementById("preview-table");
@@ -98,7 +98,7 @@ document.addEventListener("DOMContentLoaded", () => {
     dropZone.addEventListener("click", () => fileInput.click());
     // fileInput.addEventListener("change", (e) => handleFile(e.target.files[0]));
     fileInput.addEventListener("change", (e) => {
-        handleFile(e.target.files[0]);
+        handleFile(e.target.files[0]); // read 1 file excel
         resetFileInput(); // Reset the file input after handling the file
     });
     function resetFileInput() {
@@ -116,10 +116,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const sheet = workbook.Sheets[workbook.SheetNames[0]]; // Use the first sheet
             const raw_data = XLSX.utils.sheet_to_json(sheet, { defval: "" }); // Use `defval` to handle empty cells
             importedData = preprocessData(raw_data);
-            console.log(importedData);
-            console.log("start go to step 2")
             renderPreviewTable(importedData);
-            goToStep(2); // Transition to step 2
+            goToStep(2);
         };
         reader.readAsArrayBuffer(file);
     }
@@ -168,13 +166,85 @@ document.addEventListener("DOMContentLoaded", () => {
             <td><input type="text" value="${row.password || ""}" data-key="password" /></td>
             <td><input type="text" value="${row.secondPassword || ""}" data-key="secondPassword" /></td>
             <td><input type="text" value="${row.rank || ""}" data-key="rank" /></td>
+            <td>
+            <img src="" class="d-none" id="${row.identityCardNumber}_left" alt="" style="width: 50px; height: 50px; margin-top: 5px;" />
+</td>
+            <td>
+            <img src="" class="d-none" id="${row.identityCardNumber}_right" alt="" style="width: 50px; height: 50px; margin-top: 5px;" />
+</td>
+            <td>
+            <img src="" class="d-none" id="${row.identityCardNumber}_front" alt="" style="width: 50px; height: 50px; margin-top: 5px;" />
+</td>
+
         `;
             previewTableBody.appendChild(tr);
         });
+
+
+    }
+// Map images from folder to table
+    document.getElementById("folder-upload-btn").addEventListener("click", () => {
+        const folderInput = document.createElement("input");
+        folderInput.type = "file";
+        // folderInput.webkitdirectory = true; // Allow folder selection
+        folderInput.multiple = true; // Allow multiple files
+        // processedImages = {}
+
+        folderInput.addEventListener("change", (event) => {
+            const files = event.target.files;
+            const fileArray = Array.from(files);
+
+            fileArray.forEach((file) => {
+                const fileName = file.name;
+                console.log("fileName", fileName);
+
+                // Match file names with format IDENTITYCARD_NUMBER_left/right/front
+                const match = fileName.match(/^(\d{12})_(left|right|front)\.(png|jpg|jpeg)$/i);
+
+                if (match) {
+                    const [_, identityCardNumber, side] = match;
+
+                    const reader = new FileReader();
+                    reader.onload = (readerEvent) => {
+                        const base64Image = readerEvent.target.result;
+                        updatePreviewImages(identityCardNumber, side, base64Image);
+                        console.log(processedImages)
+
+                    };
+                    reader.readAsDataURL(file); // Convert file to base64
+                }
+            });
+        });
+
+        folderInput.click();
+    });
+
+    function updatePreviewImages(identityCardNumber, side, base64Image) {
+        const imgElement = document.getElementById(`${identityCardNumber}_${side}`);
+        if (imgElement) {
+            imgElement.src = base64Image;
+            imgElement.classList.remove("d-none");
+            if (!processedImages[identityCardNumber]) {
+                processedImages[identityCardNumber] = {};
+            }
+            processedImages[`${identityCardNumber}`][`${side}`] = base64Image
+        }
     }
 
     document.getElementById("next-btn").addEventListener("click", () => {
-        const payload = { users: importedData };  // Wrap the data in an object with "users" key
+
+        const nextBtn = document.getElementById("next-btn");
+
+        // Show loading state
+        nextBtn.disabled = true; // Disable the button to prevent multiple clicks
+        const originalText = nextBtn.innerHTML; // Save the original text
+        nextBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+
+
+
+
+        const payload = { users: importedData, images: processedImages };
+
         fetch("/api/import-normal-users", {
             method: "POST",
             headers: {
@@ -189,11 +259,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 renderResultTable(result);
                 goToStep(3);
             })
-            .catch((error) => console.error("Error:", error));
+            .catch((error) => console.error("Error:", error))
+    .finally(() => {
+            // Restore button state
+            nextBtn.disabled = false; // Enable the button
+            nextBtn.innerHTML = originalText; // Restore the original text
+        });
     });
+
     function renderResultTable(data) {
         const resultTableBody = document.getElementById("result-table-body");
-        resultTableBody.innerHTML = ""; // Clear existing rows
+        resultTableBody.innerHTML = "";
 
         data.forEach((row, index) => {
             const tr = document.createElement("tr");

@@ -1,4 +1,7 @@
 import uuid
+from typing import io
+from PIL import Image
+
 from flask_wtf.csrf import generate_csrf
 from flask import (
     render_template,
@@ -371,6 +374,7 @@ def submit_data():
         # Save images to disk
 
         upload_folder = app.config.get("UPLOAD_FOLDER")
+        print(f"upload_folder: {upload_folder}")
         os.makedirs(upload_folder, exist_ok=True)
 
         image_paths = {}
@@ -391,7 +395,7 @@ def submit_data():
                 os.path.join(upload_folder, front_image_path)
             )
             face_encodings = face_recognition.face_encodings(image)
-
+            print(f"1")
             if len(face_encodings) > 0:
                 encoding = face_encodings[0]
                 encoding_folder = app.config.get("FACE_DATA")
@@ -404,7 +408,7 @@ def submit_data():
                 return jsonify({"error": "No face detected in the front image"}), 400
         except Exception as e:
             return jsonify({"error": f"Failed to process front image: {str(e)}"}), 500
-
+        print(f"2")
         # Update user data
         target_user.identity_card = identity_card
         target_user.full_name = full_name
@@ -944,7 +948,10 @@ def import_manager_users():
         app.logger.error(f"Error importing users: {e}")
         return jsonify({"error": "Internal server error"}), 500
 
-
+# from PIL import Image
+import io
+# import base64
+from PIL import Image as PILImage
 @users.route("/api/import-normal-users", methods=["POST"])
 @login_required
 def import_normal_users():
@@ -962,9 +969,33 @@ def import_normal_users():
 
         # Fetch all military units into a dictionary for mapping
         military_units = {unit.name.strip(): unit for unit in MilitaryUnit.query.all()}
+        images = payload.get("images", {})
+
+
+
+
+
+        def resize_image(base64_image, max_size=720):
+            """Resize image to a maximum dimension of max_size, maintaining aspect ratio."""
+            try:
+                # Decode the base64 image
+                image_data = base64.b64decode(base64_image.split(",")[1])
+                image = Image.open(io.BytesIO(image_data))  # Ensure io.BytesIO is used
+
+                # Resize if necessary
+                if max(image.size) > max_size:
+                    image.thumbnail((max_size, max_size), Image.ANTIALIAS)
+
+                # Convert back to base64
+                buffer = io.BytesIO()  # Ensure io.BytesIO is used
+                image.save(buffer, format="PNG")
+                resized_base64 = f"data:image/png;base64,{base64.b64encode(buffer.getvalue()).decode('utf-8')}"
+                return resized_base64
+            except Exception as e:
+                raise ValueError(f"Image processing failed: {str(e)}")
 
         for index, user in enumerate(data, start=1):
-            print(f"Processing user  {user}")
+
             user_index = str(user.get("index", "")).strip()
             cccd = user.get("identityCardNumber", "").strip()
             full_name = user.get("fullName", "").strip()
@@ -973,6 +1004,8 @@ def import_normal_users():
             password = user.get("password", "").strip()
             second_password = user.get("secondPassword", "").strip()
             rank = user.get("rank", "").strip()
+            user_images = images.get(cccd, {})
+
 
             if len(cccd) != 12:
                 results.append(
@@ -992,7 +1025,8 @@ def import_normal_users():
                 continue
 
             existing_user = User.query.filter_by(identity_card=cccd).first()
-            if existing_user:
+            print(f"existing_user: {existing_user}")
+            if existing_user is not None:
                 results.append(
                     {
                         "index": user_index,
@@ -1028,18 +1062,166 @@ def import_normal_users():
                 )
                 continue
 
+            # Process images for face recognition
+            # Check required images are present
+            if not all(k in user_images for k in ["left", "right", "front"]):
+                missing_images = [k for k in ["left", "right", "front"] if k not in user_images]
+                app.logger.debug(f"Missing Images for {cccd}: {missing_images}")
+                results.append(
+                    {
+                        "index": user_index,
+                        "identityCardNumber": cccd,
+                        "fullName": full_name,
+                        "email": email,
+                        "username": username,
+                        "password": password,
+                        "secondPassword": second_password,
+                        "rank": rank,
+                        "success": False,
+                        "note": "Thiếu ảnh cần thiết cho nhận diện khuôn mặt",
+                    }
+                )
+                continue
+
+            image_paths = {}
+            upload_folder = app.config.get("UPLOAD_FOLDER")
+            for key, base64_image in user_images.items():
+                try:
+                    resized_image = resize_image(base64_image)
+                    file_name = f"{cccd}_{key}.png"
+                    file_path = os.path.join(upload_folder, file_name)
+                    with open(file_path, "wb") as image_file:
+                        image_file.write(base64.b64decode(resized_image.split(",")[1]))
+                    image_paths[key] = file_name
+                except Exception as e:
+                    app.logger.error(f"Error processing {key} image for {cccd}: {e}")
+                    results.append(
+                        {
+                            "index": user_index,
+                            "identityCardNumber": cccd,
+                            "fullName": full_name,
+                            "email": email,
+                            "username": username,
+                            "password": password,
+                            "secondPassword": second_password,
+                            "rank": rank,
+                            "success": False,
+                            "note": f"Error processing {key} image: {str(e)}",
+                        }
+                    )
+                    continue
+
+            if not all(k in image_paths for k in ["left", "right", "front"]):
+                app.logger.error(f"Missing processed images for {cccd}: {image_paths.keys()}")
+                results.append(
+                    {
+                        "index": user_index,
+                        "identityCardNumber": cccd,
+                        "fullName": full_name,
+                        "email": email,
+                        "username": username,
+                        "password": password,
+                        "secondPassword": second_password,
+                        "rank": rank,
+                        "success": False,
+                        "note": "Processing failed for one or more images",
+                    }
+                )
+                continue
+
+            upload_folder = app.config.get("UPLOAD_FOLDER")
+            os.makedirs(upload_folder, exist_ok=True)
+
+            image_paths = {}
+            for key, base64_image in user_images.items():
+                try:
+                    resized_image = resize_image(base64_image)
+                    file_name = f"{cccd}_{key}.png"
+                    file_path = os.path.join(upload_folder, file_name)
+                    with open(file_path, "wb") as image_file:
+                        image_file.write(base64.b64decode(resized_image.split(",")[1]))
+                    image_paths[key] = file_name
+                except ValueError as e:
+                    results.append(
+                        {
+                            "index": user_index,
+                            "identityCardNumber": cccd,
+                            "fullName": full_name,
+                            "email": email,
+                            "username": username,
+                            "password": password,
+                            "secondPassword": second_password,
+                            "rank": rank,
+                            "success": False,
+                            "note": str(e),
+                        }
+                    )
+                    continue
+
+            # Extract face encodings from the front image
+            front_image_path = image_paths["front"]
+            face_encoding_path = None
+            try:
+                image = face_recognition.load_image_file(
+                    os.path.join(upload_folder, front_image_path)
+                )
+                face_encodings = face_recognition.face_encodings(image)
+                if len(face_encodings) > 0:
+                    encoding = face_encodings[0]
+                    encoding_folder = app.config.get("FACE_DATA")
+                    os.makedirs(encoding_folder, exist_ok=True)
+                    face_encoding_path = os.path.join(
+                        encoding_folder, f"{cccd}.npy"
+                    )
+                    np.save(face_encoding_path, encoding)
+                else:
+                    results.append(
+                        {
+                            "index": user_index,
+                            "identityCardNumber": cccd,
+                            "fullName": full_name,
+                            "email": email,
+                            "username": username,
+                            "password": password,
+                            "secondPassword": second_password,
+                            "rank": rank,
+                            "success": False,
+                            "note": "Không phát hiện khuôn mặt trong ảnh chính diện",
+                        }
+                    )
+                    continue
+            except Exception as e:
+                results.append(
+                    {
+                        "index": user_index,
+                        "identityCardNumber": cccd,
+                        "fullName": full_name,
+                        "email": email,
+                        "username": username,
+                        "password": password,
+                        "secondPassword": second_password,
+                        "rank": rank,
+                        "success": False,
+                        "note": f"Lỗi xử lý ảnh chính diện: {str(e)}",
+                    }
+                )
+                continue
+
             # Create a new user
             new_user = User(
                 identity_card=cccd,
-                username=cccd,
-                password=cccd,
-                second_level_password=cccd,
-                full_name=user.get("Họ và Tên"),
-                email=user.get("Email"),
+                username=username,
+                password=password,
+                second_level_password=second_password,
+                full_name=full_name,
+                email=email,
                 military_unit_id=military_unit.id,
                 military_unit_name=military_unit.name,
                 created_by_id=current_user.id,
-                is_manager=True,
+                left_image_path=image_paths["left"],
+                right_image_path=image_paths["right"],
+                front_image_path=image_paths["front"],
+                encoding_path=face_encoding_path,
             )
             db.session.add(new_user)
             results.append(
@@ -1053,7 +1235,7 @@ def import_normal_users():
                     "secondPassword": second_password,
                     "rank": rank,
                     "success": True,
-                    "note": "Người dùng được thêm thành công",
+                    "note": "Người dùng được thêm và huấn luyện thành công",
                 }
             )
 

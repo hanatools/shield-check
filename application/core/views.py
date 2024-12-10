@@ -872,16 +872,6 @@ def register_soldier_checkin_data():
         # Send approval email to Acceptor Level 1
         token = str(uuid.uuid4())
         acceptor_level = 1
-        # approval_url = f"{app.config.get('WEB_HOST_URL')}/approve/{user.id}/check-out/{token}/{acceptor_level}"
-        # formatted_date = datetime.utcnow().strftime("%d/%m/%Y %H:%M:%S")
-        #
-        # # Generate email content
-        # subject = "Approval Request for Check-in"
-        # body_html = generate_html_email(
-        #     user.full_name, military_unit_name, formatted_date, approval_url
-        # )
-        # send_email(subject, acceptor_level_1.email, body_html)
-        # Prepare the approvers list for the email
         approvers = [
             {"name": acceptor_level_1.full_name, "status": "Chờ duyệt"},
             {"name": acceptor_level_2.full_name, "status": "Chờ duyệt"},

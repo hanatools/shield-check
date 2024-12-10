@@ -296,3 +296,8 @@
     background-color: #f8d7da; /* Light red background for failed rows */
     color: #842029; /* Dark red text for better contrast */
 }
+
+.folder-upload-container {
+    text-align: right;
+    margin-bottom: 10px;
+}
