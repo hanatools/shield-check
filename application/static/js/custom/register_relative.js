@@ -15,43 +15,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const submitButton = document.querySelector("button[type='submit']");
 
 
-
-    // const sponsorIdInput = document.getElementById("sponsorId");
-    // const relativeIdInput = document.getElementById("relativeId");
-    // const relativeNameInput = document.getElementById("relativeName");
-    // const relationshipInput = document.getElementById("relationship");
-    // const submitButton = document.querySelector("button[type='submit']");
-
-
-    // sponsorIdInput.addEventListener("change", function () {
-    //     const sponsorId = sponsorIdInput.value.trim();
-    //
-    //     if (!sponsorId) {
-    //         sponsorNameInput.value = "";
-    //         rankInput.value = "";
-    //         alert("Please enter a valid Sponsor ID.");
-    //         return;
-    //     }
-    //
-    //     fetch(`/get_sponsor_details/${sponsorId}`)
-    //         .then((response) => {
-    //             if (response.ok) {
-    //                 return response.json();
-    //             } else {
-    //                 throw new Error("User not found");
-    //             }
-    //         })
-    //         .then((data) => {
-    //             sponsorNameInput.value = data.full_name || "";
-    //             rankInput.value = data.management_level || "";
-    //         })
-    //         .catch((error) => {
-    //             sponsorNameInput.value = "";
-    //             rankInput.value = "";
-    //             alert("User not exist.");
-    //         });
-    // });
-
     // Track which fields have been interacted with
     const touchedFields = new Set();
 

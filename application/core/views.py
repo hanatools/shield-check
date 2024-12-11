@@ -1595,6 +1595,13 @@ def get_military_units():
     units_data = [{"id": unit.id, "name": unit.name} for unit in units]
     return jsonify(units_data)
 
+@core.route("/get_military_manager", methods=["GET"])
+@login_required
+def get_military_manager():
+    managers = User.query.filter_by(is_manager=True).all()
+    managers_data = [{"id": manager.id, "name": manager.full_name} for manager in managers]
+    return jsonify(managers_data)
+
 
 @core.route("/get_users_by_unit/<int:unit_id>", methods=["GET"])
 @login_required

@@ -571,7 +571,7 @@ $(document).ready(function() {
     const managementLevelSelect = document.getElementById("military-manager-id");
 
     // Fetch Military Units
-    fetch("/get_military_units")
+    fetch("/get_military_manager")
         .then((response) => response.json())
         .then((units) => {
             units.forEach((unit) => {
