@@ -1,81 +1,60 @@
-document.addEventListener("DOMContentLoaded", () => {
-    // Attach event listener to the "template-btn" button
-    const templateBtn = document.querySelector(".template-btn");
 
-    templateBtn.addEventListener("click", () => {
-        event.stopPropagation();
-        fetch("/generate_excel_template", {
+document.addEventListener("DOMContentLoaded", async () => {
+    let importedData = [];
+    let militaryUnits = [];
+    let processedImages = {};
+
+    await fetchMilitaryUnits();
+    function fetchMilitaryUnits() {
+        return fetch("/get_military_units")
+            .then((response) => response.json())
+            .then((units) => {
+                militaryUnits = units; // Cache the result
+            })
+            .catch((error) => console.error("Error fetching military units:", error));
+    }
+
+    const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+
+    // Attach event listener for template button
+    const templateBtn = document.querySelector(".template-btn");
+    templateBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        fetch("/generate_excel_template_import_normal_user", {
             method: "GET",
             headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": document.querySelector("input[name='csrf_token']").value, // Ensure you include CSRF token if needed
+                "X-CSRFToken": csrfToken,
             },
         })
             .then((response) => {
-                console.log("Response:", response);
-                if (!response.ok) {
-                    throw new Error("Failed to generate the template");
-                }
-                return response.blob(); // Convert the response to a Blob
+                if (!response.ok) throw new Error("Failed to generate the template");
+                return response.blob();
             })
             .then((blob) => {
-                // Create a URL for the blob and trigger the download
-                const url = window.URL.createObjectURL(blob);
+                const url = URL.createObjectURL(blob);
                 const a = document.createElement("a");
-                a.style.display = "none";
                 a.href = url;
-                a.download = "template_import_manager.xlsx"; // Set the downloaded file name
+                a.download = "template_import_normal_soldier.xlsx";
                 document.body.appendChild(a);
                 a.click();
-                window.URL.revokeObjectURL(url); // Clean up the URL object
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
             })
             .catch((error) => {
                 console.error("Error generating the template:", error);
                 alert("Đã xảy ra lỗi khi tải mẫu Excel.");
             });
     });
-});
-let importedData = [];
-let processedImages = {};
-// Function to reset Step 2
-function resetStep2() {
-    const previewTable = document.getElementById("preview-table");
-    const previewHeader = document.getElementById("preview-header");
 
-    // Clear the table content
-    previewTable.innerHTML = "";
+    function goToStep(stepNumber) {
+        document.querySelectorAll(".step").forEach((step, index) => {
+            step.classList.toggle("active", index + 1 === stepNumber);
+        });
+    }
+    window.goToStep = goToStep;
 
-    // Reset the header or additional UI elements
-    previewHeader.innerHTML = "Xem Trước Dữ Liệu";
-
-    // Clear the imported data
-    importedData = [];
-}
-
-function goToStep(stepNumber) {
-    const steps = document.querySelectorAll(".step");
-    steps.forEach((step, index) => {
-        if (index + 1 === stepNumber) {
-
-            step.classList.add("active"); // Add active class for the target step
-            if (step.id === "step-2") {
-                step.classList.add("full-width"); // Add full-width for Step 2
-            } else {
-                step.classList.remove("full-width"); // Reset for other steps
-            }
-        } else {
-            step.classList.remove("active");
-        }
-    });
-}
-
-document.addEventListener("DOMContentLoaded", () => {
     const fileInput = document.getElementById("file-input");
     const dropZone = document.getElementById("file-drop-zone");
-    const previewTable = document.getElementById("preview-table");
-    const resultTable = document.getElementById("result-table").querySelector("tbody");
-
-
 
     // Drag-and-drop functionality
     dropZone.addEventListener("dragover", (e) => {
@@ -91,104 +70,147 @@ document.addEventListener("DOMContentLoaded", () => {
         e.preventDefault();
         dropZone.classList.remove("hover");
         const file = e.dataTransfer.files[0];
-        handleFile(file);
-        resetFileInput();
+        if (file) handleFile(file);
     });
 
     dropZone.addEventListener("click", () => fileInput.click());
-    // fileInput.addEventListener("change", (e) => handleFile(e.target.files[0]));
+
     fileInput.addEventListener("change", (e) => {
-        handleFile(e.target.files[0]); // read 1 file excel
-        resetFileInput(); // Reset the file input after handling the file
+        const file = e.target.files[0];
+        if (file) handleFile(file);
+        fileInput.value = ""; // Reset input for re-selection
     });
-    function resetFileInput() {
-        fileInput.value = ""; // Reset file input so it can detect the same file again
-    }
+
     function handleFile(file) {
-        if (!file || !file.name.endsWith(".xlsx")) {
+        if (!file.name.endsWith(".xlsx")) {
             alert("Vui lòng chọn tệp Excel hợp lệ.");
             return;
         }
+
         const reader = new FileReader();
         reader.onload = (e) => {
             const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: "array" });
-            const sheet = workbook.Sheets[workbook.SheetNames[0]]; // Use the first sheet
-            const raw_data = XLSX.utils.sheet_to_json(sheet, { defval: "" }); // Use `defval` to handle empty cells
-            importedData = preprocessData(raw_data);
+            const workbook = XLSX.read(data, {type: "array"});
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const rawData = XLSX.utils.sheet_to_json(sheet, {defval: ""});
+            importedData = preprocessData(rawData);
             renderPreviewTable(importedData);
             goToStep(2);
         };
         reader.readAsArrayBuffer(file);
     }
 
-
     function preprocessData(data) {
-        // Mapping of Vietnamese column names to English keys
         const columnMapping = {
             "STT": "index",
             "CCCD": "identityCardNumber",
             "Họ Và Tên": "fullName",
-            "Email": "email",
-            "Tên Đăng Nhập": "username",
-            "Mật Khẩu": "password",
-            "Mật Khẩu Cấp Cấp2": "secondPassword",
-            "Cấp Bậc": "rank",
+            "Đơn vị": "unit",
         };
 
-        // Map the data to match the backend expected structure
         return data.map((row) => {
             const convertedRow = {};
-            Object.keys(row).forEach((key) => {
-                const mappedKey = columnMapping[key]; // Get the English key
-                if (mappedKey) {
-                    convertedRow[mappedKey] = row[key]; // Assign the value to the new key
-                }
-            });
+            for (const key in row) {
+                const mappedKey = columnMapping[key];
+                if (mappedKey) convertedRow[mappedKey] = row[key];
+            }
             return convertedRow;
         });
     }
-
 
     function renderPreviewTable(data) {
         const previewTableBody = document.getElementById("preview-table-body");
         previewTableBody.innerHTML = "";
 
-        // Render the processed data into the preview table
-        importedData.forEach((row, index) => {
+        data.forEach((row, index) => {
+            const identityCardNumber = row.identityCardNumber || "";
             const tr = document.createElement("tr");
             tr.innerHTML = `
-            <td class="text-center" data-key="index" >${index + 1}</td>
-            <td><input type="text" value="${row.identityCardNumber || ""}" data-key="identityCardNumber" /></td>
-            <td><input type="text" value="${row.fullName || ""}" data-key="fullName" /></td>
-            <td><input type="text" value="${row.email || ""}" data-key="email" /></td>
-            <td><input type="text" value="${row.username || ""}" data-key="username" /></td>
-            <td><input type="text" value="${row.password || ""}" data-key="password" /></td>
-            <td><input type="text" value="${row.secondPassword || ""}" data-key="secondPassword" /></td>
-            <td><input type="text" value="${row.rank || ""}" data-key="rank" /></td>
+            <td class="text-center" data-key="index">${index + 1}</td>
             <td>
-            <img src="" class="d-none" id="${row.identityCardNumber}_left" alt="" style="width: 50px; height: 50px; margin-top: 5px;" />
-</td>
+                <input 
+                    type="text" 
+                    value="${identityCardNumber}" 
+                    data-key="identityCardNumber" 
+                    data-old-id="${identityCardNumber}" 
+                    onchange="updateImageIds(this)"
+                >
+            </td>
+            <td><input type="text" value="${row.fullName || ""}" data-key="fullName"></td>
+            <td>${renderRankDropdown(row.unit || "")}</td>
             <td>
-            <img src="" class="d-none" id="${row.identityCardNumber}_right" alt="" style="width: 50px; height: 50px; margin-top: 5px;" />
-</td>
+                <img 
+                    src="" 
+                    class="d-none" 
+                    id="${identityCardNumber}_left" 
+                    alt="" 
+                    style="width: 50px; height: 50px; margin-top: 5px;" 
+                />
+            </td>
             <td>
-            <img src="" class="d-none" id="${row.identityCardNumber}_front" alt="" style="width: 50px; height: 50px; margin-top: 5px;" />
-</td>
-
+                <img 
+                    src="" 
+                    class="d-none" 
+                    id="${identityCardNumber}_right" 
+                    alt="" 
+                    style="width: 50px; height: 50px; margin-top: 5px;" 
+                />
+            </td>
+            <td>
+                <img 
+                    src="" 
+                    class="d-none" 
+                    id="${identityCardNumber}_front" 
+                    alt="" 
+                    style="width: 50px; height: 50px; margin-top: 5px;" 
+                />
+            </td>
         `;
             previewTableBody.appendChild(tr);
         });
-
-
     }
-// Map images from folder to table
+
+    function updateImageIds(inputElement) {
+        const oldId = inputElement.getAttribute("data-old-id") || ""; // Get the previous ID
+        const newId = inputElement.value.trim(); // Get the updated value
+
+        if (newId.length === 12) {
+            // Update image IDs
+            ["left", "right", "front"].forEach((side) => {
+                const imgElement = document.getElementById(`${oldId}_${side}`);
+                if (imgElement) {
+                    imgElement.id = `${newId}_${side}`; // Set the new ID
+                }
+            });
+
+            // Update the old ID in the data-key attribute
+            inputElement.setAttribute("data-old-id", newId);
+        } else {
+            alert("CCCD phải có độ dài là 12 ký tự.");
+            inputElement.value = oldId; // Revert to the old value
+        }
+    }
+window.updateImageIds = updateImageIds
+// Function to render dropdown for unit with military units
+    function renderRankDropdown(selectedValue) {
+        // Add an empty option as the first item
+        const options = `<option value="">Chọn Đơn vị</option>` +
+            militaryUnits
+                .map(
+                    (unit) =>
+                        `<option value="${unit.id}" ${
+                            unit.name === selectedValue ? "selected" : ""
+                        }>${unit.name}</option>`
+                )
+                .join("");
+
+        return `<select class="form-control form-select " data-key="unit" >${options}</select>`;
+    }
+
     document.getElementById("folder-upload-btn").addEventListener("click", () => {
         const folderInput = document.createElement("input");
         folderInput.type = "file";
-        // folderInput.webkitdirectory = true; // Allow folder selection
-        folderInput.multiple = true; // Allow multiple files
-        // processedImages = {}
+        folderInput.multiple = true;
 
         folderInput.addEventListener("change", (event) => {
             const files = event.target.files;
@@ -198,7 +220,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 const fileName = file.name;
                 console.log("fileName", fileName);
 
-                // Match file names with format IDENTITYCARD_NUMBER_left/right/front
                 const match = fileName.match(/^(\d{12})_(left|right|front)\.(png|jpg|jpeg)$/i);
 
                 if (match) {
@@ -208,7 +229,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     reader.onload = (readerEvent) => {
                         const base64Image = readerEvent.target.result;
                         updatePreviewImages(identityCardNumber, side, base64Image);
-                        console.log(processedImages)
 
                     };
                     reader.readAsDataURL(file); // Convert file to base64
@@ -219,7 +239,7 @@ document.addEventListener("DOMContentLoaded", () => {
         folderInput.click();
     });
 
-    function updatePreviewImages(identityCardNumber, side, base64Image) {
+        function updatePreviewImages(identityCardNumber, side, base64Image) {
         const imgElement = document.getElementById(`${identityCardNumber}_${side}`);
         if (imgElement) {
             imgElement.src = base64Image;
@@ -231,20 +251,41 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    document.getElementById("next-btn").addEventListener("click", () => {
 
+
+    document.getElementById("next-btn").addEventListener("click", () => {
         const nextBtn = document.getElementById("next-btn");
 
-        // Show loading state
-        nextBtn.disabled = true; // Disable the button to prevent multiple clicks
-        const originalText = nextBtn.innerHTML; // Save the original text
+        // Disable the button and show loading indicator
+        nextBtn.disabled = true;
+        const originalText = nextBtn.innerHTML;
         nextBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
 
+        // Extract the latest data from the table
+        const users = [];
+        const tableRows = document.querySelectorAll("#preview-table-body tr");
 
+        tableRows.forEach((row) => {
+            const user = {};
+            const inputs = row.querySelectorAll("input, select");
 
+            inputs.forEach((input) => {
+                const key = input.getAttribute("data-key");
+                if (key) {
+                    user[key] = input.value.trim(); // Get the latest value from the input
+                }
+            });
 
-        const payload = { users: importedData, images: processedImages };
+            if (user.identityCardNumber && user.fullName) {
+                // Include only rows with required fields filled
+                users.push(user);
+            }
+        });
 
+        // Prepare the payload with the latest user data and images
+        const payload = { users, images: processedImages };
+
+        // Send the request to the API
         fetch("/api/import-normal-users", {
             method: "POST",
             headers: {
@@ -256,33 +297,38 @@ document.addEventListener("DOMContentLoaded", () => {
             .then((response) => response.json())
             .then((result) => {
                 console.log("Result:", result);
-                renderResultTable(result);
-                goToStep(3);
+                renderResultTable(result); // Render results in the table
+                goToStep(3); // Move to the next step
             })
             .catch((error) => console.error("Error:", error))
-    .finally(() => {
-            // Restore button state
-            nextBtn.disabled = false; // Enable the button
-            nextBtn.innerHTML = originalText; // Restore the original text
-        });
+            .finally(() => {
+                // Restore button state
+                nextBtn.disabled = false; // Enable the button
+                nextBtn.innerHTML = originalText; // Restore the original text
+            });
     });
 
     function renderResultTable(data) {
         const resultTableBody = document.getElementById("result-table-body");
         resultTableBody.innerHTML = "";
+        const militaryUnitMap = militaryUnits.reduce((map, unit) => {
+            map[unit.id] = unit.name;
+            return map;
+        }, {});
+
 
         data.forEach((row, index) => {
             const tr = document.createElement("tr");
             if (!row.success) {
                 tr.classList.add("failure-row"); // Add class for failed rows
             }
+            const unitName = militaryUnitMap[row.unit] || "";
+
             tr.innerHTML = `
             <td>${row.index || index + 1}</td>
             <td>${row.identityCardNumber || ""}</td>
             <td>${row.fullName || ""}</td>
-            <td>${row.email || ""}</td>
-            <td>${row.username || ""}</td>
-            <td>${row.rank || ""}</td>
+            <td>${unitName}</td>
             <td>
                 ${row.success
                 ? '<span class="success">Thành công</span>'
@@ -294,13 +340,10 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    function goToStep(stepNumber) {
-        document.querySelectorAll(".step").forEach((step, index) => {
-            step.classList.toggle("active", index + 1 === stepNumber);
-        });
-    }
-});
+    const finishBtn = document.getElementById("finish-btn");
+    finishBtn.addEventListener("click", () => {
+        location.reload();
+    });
 
-document.getElementById("finish-btn").addEventListener("click", () => {
-    location.reload(); // Reload the current page
-});
+
+})

@@ -5,21 +5,29 @@ function validateEditForm() {
     const emailInput = document.getElementById("edit-email");
     const unitInput = document.getElementById("edit-military-unit-id");
     const managerInput = document.getElementById("edit-military-manager-id");
+    const editIdentityCardInput = document.getElementById("edit-identity-card");
 
     const fullNameError = document.getElementById("edit-full-name-error");
     const emailError = document.getElementById("edit-email-error");
     const unitError = document.getElementById("edit-military-unit-error");
     const managerError = document.getElementById("edit-military-manager-error");
+    const editIdentityCardError = document.getElementById("edit-identity-card-error");
 
     // Clear all previous error messages
     fullNameError.textContent = "";
     emailError.textContent = "";
     unitError.textContent = "";
     managerError.textContent = "";
+    editIdentityCardError.textContent = "";
 
     // Validate full name
     if (!fullNameInput.value.trim()) {
         fullNameError.textContent = "Họ và tên không được để trống.";
+        isValid = false;
+    }
+
+    if (!editIdentityCardInput.value.trim()) {
+        editIdentityCardInput.textContent = "CCCD không được để trống.";
         isValid = false;
     }
 
@@ -64,6 +72,7 @@ function openEditModal(userId) {
             document.getElementById("edit-full-name").value = user.full_name;
             document.getElementById("edit-email").value = user.email || "";
             document.getElementById("edit-note").value = user.note || "";
+            document.getElementById("edit-identity-card").value = user.identity_card || "";
 
             editRoleSelect.value = user.role || "USER_ROLE";
             // Load Military Units
@@ -75,7 +84,9 @@ function openEditModal(userId) {
                         option.value = unit.id;
                         option.textContent = unit.name;
                         // Set selected value for military unit
-                        if (`${unit.id}` === user.military_unit_id) {
+                        console.log("user.military_unit_id", user.military_unit_id)
+                        console.log("unit.id", unit.id)
+                        if (`${unit.id}` === `${user.military_unit_id}`) {
                             option.selected = true;
                         }
                         unitNameSelect.appendChild(option);
@@ -92,7 +103,7 @@ function openEditModal(userId) {
                                     option.textContent = manager.full_name;
 
                                     // Set selected value for management level
-                                    if (`${manager.id}` === user.military_manager_id) {
+                                    if (`${manager.id}` === `${user.military_manager_id}`) {
                                         option.selected = true;
                                     }
                                     managementLevelSelect.appendChild(option);
@@ -156,6 +167,7 @@ document.getElementById("edit-user-form").addEventListener("submit", function (e
 
     const updatedUserInfo = {
         fullName: document.getElementById("edit-full-name").value.trim(),
+        identityCard: document.getElementById("edit-identity-card").value.trim(),
         email: document.getElementById("edit-email").value.trim(),
         militaryUnitId: document.getElementById("edit-military-unit-id").value.trim(),
         militaryManagerId: document.getElementById("edit-military-manager-id").value.trim(),
@@ -174,7 +186,17 @@ document.getElementById("edit-user-form").addEventListener("submit", function (e
         },
         body: JSON.stringify(updatedUserInfo),
     })
-        .then((response) => response.json())
+        .then((response) => {
+            if (!response.ok) {
+                if (response.status === 403) {
+                    window.location.href = "/unauthorized";
+                } else {
+                    throw new Error(`Unexpected error: ${response.status}`);
+                }
+            }
+            return response.json();
+
+        })
         .then((data) => {
             if (data.success) {
                 alert("Thông tin đã được cập nhật!");

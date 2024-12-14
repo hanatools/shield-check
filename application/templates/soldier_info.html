@@ -10,6 +10,7 @@
 
 {% block content %}
 <div class="content">
+    <h2 class="text-center text-primary fw-bold">Thông tin Quân nhân</h2>
     <!-- Search Box -->
     <div class="search-box">
 
@@ -35,7 +36,7 @@
                 <th class="text-center">Cấp Quản Lý</th>
                 <th class="text-center">Đơn Vị</th>
                 <th class="text-center">Email</th>
-                <th class="text-center">Ghi chú</th>
+                <th class="text-center">Vai trò</th>
                 <th class="text-center">Ngày Tạo</th>
             </tr>
             </thead>
@@ -52,23 +53,25 @@
                     >
                         <i class="bi bi-eye"></i>
                     </button>
-                    <button
-                            class="btn btn-warning btn-sm"
-                            data-bs-toggle="tooltip"
-                            title="Sửa"
-                            onclick="editUser({{ user.id }})"
-                    >
-                        <i class="bi bi-pencil"></i>
-                    </button>
                 </td>
                 <td>{{ user.full_name }}</td>
-                <td class="text-center">{{ user.identity_card }}</td>
+                <td class="text-center">{{ user.identity_card|mask_cccd }}</td>
                 <td>{{ user.military_manager.full_name if user.military_manager else 'N/A' }}</td>
                 <td>{{ user.military_unit.name if user.military_unit else 'N/A' }}</td>
-                <td>{{ user.email }}</td>
-                <td>{{ user.note }}</td>
+                <td>{{ user.email|mask_email }}</td>
                 <td class="text-center">
-                    {{ user.created_date.strftime("%d/%m/%Y") if user.created_date else 'N/A' }}
+                    {% if user.role == "SYSTEM_ADMIN_ROLE" %}
+                    Quản Trị Viên Hệ Thống
+                    {% elif user.role == "ADMIN_ROLE" %}
+                    Quản Lý
+                    {% elif user.role == "USER_ROLE" %}
+                    Quân Nhân
+                    {% else %}
+                    Chưa xác định
+                    {% endif %}
+                </td>
+                <td class="text-center">
+                    {{ user.created_time.strftime("%d/%m/%Y") if user.created_time else 'N/A' }}
                 </td>
             </tr>
             {% endfor %}

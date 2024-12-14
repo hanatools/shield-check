@@ -1,27 +1,20 @@
 import uuid
 from typing import io
 from PIL import Image
+import io
 
 from flask_wtf.csrf import generate_csrf
 from flask import (
-    render_template,
-    url_for,
-    flash,
-    redirect,
-    request,
     Blueprint,
-    jsonify,
     session,
 )
 from flask_login import login_user, current_user, logout_user, login_required
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 
-from application import db, app, send_email
-from werkzeug.security import generate_password_hash, check_password_hash
-
-from application.decorator import second_level_password_required
+from application import app, send_email
+from application.decorator import roles_required
 from application.email import generate_reset_password_email
-from application.models import User, MilitaryUnit
+from application.models import MilitaryUnit
 from application.users.forms import (
     RegistrationForm,
     LoginForm,
@@ -74,6 +67,14 @@ def login():
                 # Log in the user
                 try:
                     login_user(user)
+                    if user.role not in ["SYSTEM_ADMIN_ROLE", "ADMIN_ROLE"]:
+                        logout_user()
+                        flash(
+                            "Bạn không có quyền truy cập. Vui lòng liên hệ quản trị viên.",
+                            "danger",
+                        )
+                        return redirect(url_for("core.unauthorized"))
+
                     next_page = request.args.get("next")
                     if not next_page or not next_page.startswith("/"):
                         next_page = url_for("core.daskboard")
@@ -137,7 +138,6 @@ def member_list():
 
 @users.route("/soldier_info")
 @login_required
-@second_level_password_required
 def soldier_info():
     search_query = request.args.get("search", "")
     page = request.args.get("page", 1, type=int)
@@ -162,6 +162,16 @@ def soldier_info():
     )
 
 
+def mask_identity_card(identity_card):
+    """
+    Masks the identity card number, showing only the last 4 digits.
+    Example: "123456789012" -> "********9012"
+    """
+    if identity_card and len(identity_card) >= 4:
+        return "*" * (len(identity_card) - 4) + identity_card[-4:]
+    return identity_card or "N/A"
+
+
 @users.route("/search_members", methods=["GET"])
 @login_required
 def search_members():
@@ -177,8 +187,20 @@ def search_members():
         {
             "id": user.id,
             "full_name": user.full_name,
-            "identity_card": user.identity_card,
-            "email": user.email,
+            "identity_card": mask_identity_card(user.identity_card),
+            "email": mask_email(user.email),
+            "management_level": (
+                user.military_manager.full_name if user.military_manager else "N/A"
+            ),
+            "military_manager_id": (
+                user.military_manager.id if user.military_manager else "N/A"
+            ),
+            "unit_name": user.military_unit.name if user.military_unit else "N/A",
+            "unit_id": user.military_unit.id if user.military_unit else "N/A",
+            "note": user.note or "N/A",
+            "created_time": (
+                user.created_time.strftime("%d/%m/%Y") if user.created_time else "N/A"
+            ),
         }
         for user in users
     ]
@@ -456,25 +478,154 @@ def soldier_info_personal_user(user_id):
     )
 
 
+# @users.route("/update_user/<int:user_id>", methods=["POST"])
+# @login_required
+# def update_user(user_id):
+#     data = request.get_json()
+#     user = User.query.get_or_404(user_id)
+#
+#     # Validate required fields
+#     full_name = (data.get("fullName") or "").strip()
+#     identity_card = (data.get("identityCard") or "").strip()
+#     email = (data.get("email") or "").strip()
+#     military_unit_id = (data.get("militaryUnitId") or "").strip()
+#     military_manager_id = (data.get("militaryManagerId") or "").strip()
+#     note = (data.get("note") or "").strip()
+#     role = (data.get("role") or "").strip()
+#
+#     if not full_name:
+#         return (
+#             jsonify({"success": False, "message": "Họ và tên không được để trống."}),
+#             400,
+#         )
+#     if not identity_card:
+#         return (
+#             jsonify({"success": False, "message": "CCCD không được để trống."}),
+#             400,
+#         )
+#     if " " in identity_card:
+#         return (
+#             jsonify({"success": False, "message": "CCCD không được chứa khoảng trắng."}),
+#             400,
+#         )
+#     if len(identity_card) != 12:
+#         return (
+#             jsonify({"success": False, "message": "CCCD phải có đúng 12 ký tự."}),
+#             400,
+#         )
+#
+# # Check for duplicate identity card if changed
+#     if identity_card != user.identity_card:
+#         existing_identity_user = User.query.filter(
+#             User.identity_card == identity_card, User.id != user_id
+#         ).first()
+#         if existing_identity_user:
+#             return (
+#                 jsonify(
+#                     {
+#                         "success": False,
+#                         "message": "CCCD đã được sử dụng bởi người dùng khác.",
+#                     }
+#                 ),
+#                 400,
+#             )
+#
+#     # Check for duplicate email if provided
+#     if email:
+#         existing_email_user = User.query.filter(
+#             User.email == email, User.id != user_id
+#         ).first()
+#         if existing_email_user:
+#             return jsonify({"success": False, "message": "Email đã được sử dụng."}), 400
+#
+#     # Validate military unit if provided
+#     if military_unit_id:
+#         military_unit = MilitaryUnit.query.get(military_unit_id)
+#         if not military_unit:
+#             return (
+#                 jsonify({"success": False, "message": "ID đơn vị không hợp lệ."}),
+#                 400,
+#             )
+#
+#     # Validate manager ID if provided
+#     if military_manager_id:
+#         manager = User.query.get(military_manager_id)
+#         if not manager:
+#             return (
+#                 jsonify({"success": False, "message": "ID quản lý không hợp lệ."}),
+#                 400,
+#             )
+#
+#     # Update the user details
+#     user.full_name = full_name
+#     user.email = email
+#     user.military_unit_id = military_unit_id
+#     user.military_manager_id = military_manager_id
+#     user.note = note
+#     user.role = role
+#
+#     db.session.commit()
+#
+#     return jsonify(
+#         {"success": True, "message": "Thông tin đã được cập nhật thành công."}
+#     )
 @users.route("/update_user/<int:user_id>", methods=["POST"])
 @login_required
+@roles_required("SYSTEM_ADMIN_ROLE", "ADMIN_ROLE")
 def update_user(user_id):
     data = request.get_json()
     user = User.query.get_or_404(user_id)
 
     # Validate required fields
     full_name = (data.get("fullName") or "").strip()
+    identity_card = (data.get("identityCard") or "").strip()
     email = (data.get("email") or "").strip()
     military_unit_id = (data.get("militaryUnitId") or "").strip()
     military_manager_id = (data.get("militaryManagerId") or "").strip()
     note = (data.get("note") or "").strip()
     role = (data.get("role") or "").strip()
 
+    # Validate full name
     if not full_name:
         return (
             jsonify({"success": False, "message": "Họ và tên không được để trống."}),
             400,
         )
+
+    # Validate identity card
+    if not identity_card:
+        return (
+            jsonify({"success": False, "message": "CCCD không được để trống."}),
+            400,
+        )
+    if " " in identity_card:
+        return (
+            jsonify(
+                {"success": False, "message": "CCCD không được chứa khoảng trắng."}
+            ),
+            400,
+        )
+    if len(identity_card) != 12:
+        return (
+            jsonify({"success": False, "message": "CCCD phải có đúng 12 ký tự."}),
+            400,
+        )
+
+    # Check for duplicate identity card if changed
+    if identity_card != user.identity_card:
+        existing_identity_user = User.query.filter(
+            User.identity_card == identity_card, User.id != user_id
+        ).first()
+        if existing_identity_user:
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": "CCCD đã được sử dụng bởi người dùng khác.",
+                    }
+                ),
+                400,
+            )
 
     # Check for duplicate email if provided
     if email:
@@ -504,6 +655,7 @@ def update_user(user_id):
 
     # Update the user details
     user.full_name = full_name
+    user.identity_card = identity_card  # Update identity card
     user.email = email
     user.military_unit_id = military_unit_id
     user.military_manager_id = military_manager_id
@@ -517,6 +669,14 @@ def update_user(user_id):
     )
 
 
+def mask_email(email):
+    if not email or "@" not in email:
+        return None
+    local_part, domain = email.split("@", 1)
+    masked_local = local_part[:4] + "*" * (len(local_part) - 4)
+    return f"{masked_local}@{domain}"
+
+
 @users.route("/get_user_details/<int:user_id>", methods=["GET"])
 @login_required
 def get_user_details(user_id):
@@ -525,11 +685,24 @@ def get_user_details(user_id):
         {
             "id": user.id,
             "full_name": user.full_name,
-            "email": user.email,
-            "military_unit_id": user.military_unit_id,
-            "military_manager_id": user.military_manager_id,
             "note": user.note,
             "role": user.role,
+            "identity_card": mask_identity_card(user.identity_card),
+            "email": mask_email(user.email),
+            "management_level": (
+                user.military_manager.full_name if user.military_manager else "N/A"
+            ),
+            "military_manager_id": (
+                user.military_manager.id if user.military_manager else "N/A"
+            ),
+            "military_unit_name": (
+                user.military_unit.name if user.military_unit else "N/A"
+            ),
+            "military_unit_id": user.military_unit.id if user.military_unit else "N/A",
+            # "note": user.note or "N/A",
+            "created_time": (
+                user.created_time.strftime("%d/%m/%Y") if user.created_time else "N/A"
+            ),
         }
     )
 
@@ -829,8 +1002,10 @@ def get_user_by_identity(identity_card):
     else:
         return jsonify({"error": "User not found"}), 404
 
+
 @users.route("/api/import-manager-users", methods=["POST"])
 @login_required
+@roles_required("SYSTEM_ADMIN_ROLE", "ADMIN_ROLE")
 def import_manager_users():
     try:
         # Ensure the payload contains a 'users' key
@@ -844,11 +1019,16 @@ def import_manager_users():
 
         results = []
 
-        # Fetch all military units into a dictionary for mapping
-        military_units = {unit.name.strip(): unit for unit in MilitaryUnit.query.all()}
+        # Fetch all military units into a dictionary for mapping by ID
+        military_units = {unit.id: unit for unit in MilitaryUnit.query.all()}
+
+        # Fetch all existing identity cards for validation
+        existing_identity_cards = {
+            user.identity_card: user.id for user in User.query.all()
+        }
 
         for index, user in enumerate(data, start=1):
-            print(f"Processing user  {user}")
+            print(f"Processing user {user}")
             user_index = str(user.get("index", "")).strip()
             cccd = user.get("identityCardNumber", "").strip()
             full_name = user.get("fullName", "").strip()
@@ -856,8 +1036,9 @@ def import_manager_users():
             username = user.get("username", "").strip()
             password = user.get("password", "").strip()
             second_password = user.get("secondPassword", "").strip()
-            rank = user.get("rank", "").strip()
+            unit_id = user.get("unit", "").strip()
 
+            # Validate CCCD length and uniqueness
             if len(cccd) != 12:
                 results.append(
                     {
@@ -868,15 +1049,14 @@ def import_manager_users():
                         "username": username,
                         "password": password,
                         "secondPassword": second_password,
-                        "rank": rank,
+                        "unit": unit_id,
                         "success": False,
                         "note": "CCCD không đủ 12 ký tự",
                     }
                 )
                 continue
 
-            existing_user = User.query.filter_by(identity_card=cccd).first()
-            if existing_user:
+            if cccd in existing_identity_cards:
                 results.append(
                     {
                         "index": user_index,
@@ -886,16 +1066,15 @@ def import_manager_users():
                         "username": username,
                         "password": password,
                         "secondPassword": second_password,
-                        "rank": rank,
+                        "unit": unit_id,
                         "success": False,
-                        "note": "Người dùng đã tồn tại",
+                        "note": "CCCD đã tồn tại trong hệ thống",
                     }
                 )
                 continue
 
-            # Map "Cấp Bậc" to a MilitaryUnit
-            military_unit = military_units.get(rank)
-            if not military_unit:
+            # Check if the email is already in use
+            if email and User.query.filter(User.email == email).first():
                 results.append(
                     {
                         "index": user_index,
@@ -905,25 +1084,66 @@ def import_manager_users():
                         "username": username,
                         "password": password,
                         "secondPassword": second_password,
-                        "rank": rank,
+                        "unit": unit_id,
                         "success": False,
-                        "note": f"Rank '{rank}' không tồn tại trong hệ thống",
+                        "note": "Email đã được sử dụng",
                     }
                 )
                 continue
+
+            # Check if the username is already in use
+            if username and User.query.filter(User.username == username).first():
+                results.append(
+                    {
+                        "index": user_index,
+                        "identityCardNumber": cccd,
+                        "fullName": full_name,
+                        "email": email,
+                        "username": username,
+                        "password": password,
+                        "secondPassword": second_password,
+                        "unit": unit_id,
+                        "success": False,
+                        "note": "Tên đăng nhập đã được sử dụng",
+                    }
+                )
+                continue
+
+            # Validate military unit
+            if unit_id and (
+                not unit_id.isdigit() or int(unit_id) not in military_units
+            ):
+                results.append(
+                    {
+                        "index": user_index,
+                        "identityCardNumber": cccd,
+                        "fullName": full_name,
+                        "email": email,
+                        "username": username,
+                        "password": password,
+                        "secondPassword": second_password,
+                        "unit": unit_id,
+                        "success": False,
+                        "note": f"Mã đơn vị '{unit_id}' không tồn tại trong hệ thống",
+                    }
+                )
+                continue
+
+            military_unit = military_units.get(int(unit_id)) if unit_id else None
 
             # Create a new user
             new_user = User(
                 identity_card=cccd,
-                username=cccd,
-                password=cccd,
-                second_level_password=cccd,
-                full_name=user.get("Họ và Tên"),
-                email=user.get("Email"),
-                military_unit_id=military_unit.id,
-                military_unit_name=military_unit.name,
+                username=username,
+                password=password,
+                second_level_password=second_password,
+                full_name=full_name,
+                email=email,
+                military_unit_id=military_unit.id if military_unit else None,
+                military_unit_name=military_unit.name if military_unit else None,
                 created_by_id=current_user.id,
                 is_manager=True,
+                role="ADMIN_ROLE",
             )
             db.session.add(new_user)
             results.append(
@@ -935,7 +1155,7 @@ def import_manager_users():
                     "username": username,
                     "password": password,
                     "secondPassword": second_password,
-                    "rank": rank,
+                    "unit": unit_id,
                     "success": True,
                     "note": "Người dùng được thêm thành công",
                 }
@@ -948,12 +1168,17 @@ def import_manager_users():
         app.logger.error(f"Error importing users: {e}")
         return jsonify({"error": "Internal server error"}), 500
 
-# from PIL import Image
-import io
-# import base64
-from PIL import Image as PILImage
+    except Exception as e:
+        app.logger.error(f"Error importing users: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+
+import uuid
+
+
 @users.route("/api/import-normal-users", methods=["POST"])
 @login_required
+@roles_required("SYSTEM_ADMIN_ROLE", "ADMIN_ROLE")
 def import_normal_users():
     try:
         # Ensure the payload contains a 'users' key
@@ -968,12 +1193,8 @@ def import_normal_users():
         results = []
 
         # Fetch all military units into a dictionary for mapping
-        military_units = {unit.name.strip(): unit for unit in MilitaryUnit.query.all()}
+        military_units = {unit.id: unit for unit in MilitaryUnit.query.all()}
         images = payload.get("images", {})
-
-
-
-
 
         def resize_image(base64_image, max_size=720):
             """Resize image to a maximum dimension of max_size, maintaining aspect ratio."""
@@ -995,144 +1216,79 @@ def import_normal_users():
                 raise ValueError(f"Image processing failed: {str(e)}")
 
         for index, user in enumerate(data, start=1):
-
             user_index = str(user.get("index", "")).strip()
             cccd = user.get("identityCardNumber", "").strip()
             full_name = user.get("fullName", "").strip()
-            email = user.get("email", "").strip()
-            username = user.get("username", "").strip()
-            password = user.get("password", "").strip()
-            second_password = user.get("secondPassword", "").strip()
-            rank = user.get("rank", "").strip()
+            unit_id = user.get("unit", "").strip()
             user_images = images.get(cccd, {})
 
-
+            # Validate CCCD length
             if len(cccd) != 12:
                 results.append(
                     {
                         "index": user_index,
                         "identityCardNumber": cccd,
                         "fullName": full_name,
-                        "email": email,
-                        "username": username,
-                        "password": password,
-                        "secondPassword": second_password,
-                        "rank": rank,
+                        "unit": unit_id,
                         "success": False,
                         "note": "CCCD không đủ 12 ký tự",
                     }
                 )
                 continue
 
+            # Check for existing user
             existing_user = User.query.filter_by(identity_card=cccd).first()
-            print(f"existing_user: {existing_user}")
-            if existing_user is not None:
+            if existing_user:
                 results.append(
                     {
                         "index": user_index,
                         "identityCardNumber": cccd,
                         "fullName": full_name,
-                        "email": email,
-                        "username": username,
-                        "password": password,
-                        "secondPassword": second_password,
-                        "rank": rank,
+                        "unit": unit_id,
                         "success": False,
                         "note": "Người dùng đã tồn tại",
                     }
                 )
                 continue
 
-            # Map "Cấp Bậc" to a MilitaryUnit
-            military_unit = military_units.get(rank)
-            if not military_unit:
+            # Validate military unit
+            military_unit = (
+                military_units.get(int(unit_id)) if unit_id.isdigit() else None
+            )
+            if unit_id and not military_unit:
                 results.append(
                     {
                         "index": user_index,
                         "identityCardNumber": cccd,
                         "fullName": full_name,
-                        "email": email,
-                        "username": username,
-                        "password": password,
-                        "secondPassword": second_password,
-                        "rank": rank,
+                        "unit": unit_id,
                         "success": False,
-                        "note": f"Rank '{rank}' không tồn tại trong hệ thống",
+                        "note": f"Đơn vị '{unit_id}' không tồn tại trong hệ thống",
                     }
                 )
                 continue
 
             # Process images for face recognition
-            # Check required images are present
             if not all(k in user_images for k in ["left", "right", "front"]):
-                missing_images = [k for k in ["left", "right", "front"] if k not in user_images]
-                app.logger.debug(f"Missing Images for {cccd}: {missing_images}")
+                missing_images = [
+                    k for k in ["left", "right", "front"] if k not in user_images
+                ]
                 results.append(
                     {
                         "index": user_index,
                         "identityCardNumber": cccd,
                         "fullName": full_name,
-                        "email": email,
-                        "username": username,
-                        "password": password,
-                        "secondPassword": second_password,
-                        "rank": rank,
+                        "unit": unit_id,
                         "success": False,
-                        "note": "Thiếu ảnh cần thiết cho nhận diện khuôn mặt",
+                        "note": f"Thiếu ảnh cần thiết: {', '.join(missing_images)}",
                     }
                 )
                 continue
 
             image_paths = {}
-            upload_folder = app.config.get("UPLOAD_FOLDER")
-            for key, base64_image in user_images.items():
-                try:
-                    resized_image = resize_image(base64_image)
-                    file_name = f"{cccd}_{key}.png"
-                    file_path = os.path.join(upload_folder, file_name)
-                    with open(file_path, "wb") as image_file:
-                        image_file.write(base64.b64decode(resized_image.split(",")[1]))
-                    image_paths[key] = file_name
-                except Exception as e:
-                    app.logger.error(f"Error processing {key} image for {cccd}: {e}")
-                    results.append(
-                        {
-                            "index": user_index,
-                            "identityCardNumber": cccd,
-                            "fullName": full_name,
-                            "email": email,
-                            "username": username,
-                            "password": password,
-                            "secondPassword": second_password,
-                            "rank": rank,
-                            "success": False,
-                            "note": f"Error processing {key} image: {str(e)}",
-                        }
-                    )
-                    continue
-
-            if not all(k in image_paths for k in ["left", "right", "front"]):
-                app.logger.error(f"Missing processed images for {cccd}: {image_paths.keys()}")
-                results.append(
-                    {
-                        "index": user_index,
-                        "identityCardNumber": cccd,
-                        "fullName": full_name,
-                        "email": email,
-                        "username": username,
-                        "password": password,
-                        "secondPassword": second_password,
-                        "rank": rank,
-                        "success": False,
-                        "note": "Processing failed for one or more images",
-                    }
-                )
-                continue
-
             upload_folder = app.config.get("UPLOAD_FOLDER")
             os.makedirs(upload_folder, exist_ok=True)
 
-            image_paths = {}
             for key, base64_image in user_images.items():
                 try:
                     resized_image = resize_image(base64_image)
@@ -1147,32 +1303,26 @@ def import_normal_users():
                             "index": user_index,
                             "identityCardNumber": cccd,
                             "fullName": full_name,
-                            "email": email,
-                            "username": username,
-                            "password": password,
-                            "secondPassword": second_password,
-                            "rank": rank,
+                            "unit": unit_id,
                             "success": False,
-                            "note": str(e),
+                            "note": f"Lỗi xử lý ảnh {key}: {str(e)}",
                         }
                     )
                     continue
 
             # Extract face encodings from the front image
-            front_image_path = image_paths["front"]
+            front_image_path = image_paths.get("front")
             face_encoding_path = None
             try:
                 image = face_recognition.load_image_file(
                     os.path.join(upload_folder, front_image_path)
                 )
                 face_encodings = face_recognition.face_encodings(image)
-                if len(face_encodings) > 0:
+                if face_encodings:
                     encoding = face_encodings[0]
                     encoding_folder = app.config.get("FACE_DATA")
                     os.makedirs(encoding_folder, exist_ok=True)
-                    face_encoding_path = os.path.join(
-                        encoding_folder, f"{cccd}.npy"
-                    )
+                    face_encoding_path = os.path.join(encoding_folder, f"{cccd}.npy")
                     np.save(face_encoding_path, encoding)
                 else:
                     results.append(
@@ -1180,11 +1330,7 @@ def import_normal_users():
                             "index": user_index,
                             "identityCardNumber": cccd,
                             "fullName": full_name,
-                            "email": email,
-                            "username": username,
-                            "password": password,
-                            "secondPassword": second_password,
-                            "rank": rank,
+                            "unit": unit_id,
                             "success": False,
                             "note": "Không phát hiện khuôn mặt trong ảnh chính diện",
                         }
@@ -1196,27 +1342,23 @@ def import_normal_users():
                         "index": user_index,
                         "identityCardNumber": cccd,
                         "fullName": full_name,
-                        "email": email,
-                        "username": username,
-                        "password": password,
-                        "secondPassword": second_password,
-                        "rank": rank,
+                        "unit": unit_id,
                         "success": False,
                         "note": f"Lỗi xử lý ảnh chính diện: {str(e)}",
                     }
                 )
                 continue
 
-            # Create a new user
+            # Create a new user with random default values for required fields
             new_user = User(
+                email=None,
+                username=None,
+                password=str(uuid.uuid4()),
+                second_level_password=str(uuid.uuid4()),
                 identity_card=cccd,
-                username=username,
-                password=password,
-                second_level_password=second_password,
                 full_name=full_name,
-                email=email,
-                military_unit_id=military_unit.id,
-                military_unit_name=military_unit.name,
+                military_unit_id=military_unit.id if military_unit else None,
+                military_unit_name=military_unit.name if military_unit else None,
                 created_by_id=current_user.id,
                 left_image_path=image_paths["left"],
                 right_image_path=image_paths["right"],
@@ -1229,13 +1371,9 @@ def import_normal_users():
                     "index": user_index,
                     "identityCardNumber": cccd,
                     "fullName": full_name,
-                    "email": email,
-                    "username": username,
-                    "password": password,
-                    "secondPassword": second_password,
-                    "rank": rank,
+                    "unit": unit_id,
                     "success": True,
-                    "note": "Người dùng được thêm và huấn luyện thành công",
+                    "note": "Người dùng được thêm thành công",
                 }
             )
 

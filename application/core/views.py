@@ -18,7 +18,6 @@ from flask import (
 from werkzeug.security import generate_password_hash
 
 from application import db, send_email, app
-from application.decorator import second_level_password_required
 from application.email import generate_html_email, generate_reset_second_password_email
 from application.models import (
     User,
@@ -239,6 +238,7 @@ def input_personal():
         "input_personal.html", username=current_user.username, form=form
     )
 
+
 @core.route("/batch_input")
 @login_required
 def batch_input():
@@ -364,7 +364,6 @@ def get_relatives_for_sponsor(sponsor_id):
 
 @core.route("/reports", methods=["GET", "POST"])
 @login_required
-@second_level_password_required
 def reports():
     from_date = request.args.get("from_date")
     to_date = request.args.get("to_date")
@@ -649,6 +648,16 @@ def add_military_unit():
         return jsonify(
             {"success": False, "message": "Tên và Khóa không được để trống."}
         )
+
+    # Validate key for spaces or empty values
+    if not key.strip() or " " in key:
+        return jsonify(
+            {
+                "success": False,
+                "message": "Khóa không được để trống hoặc chứa khoảng trắng.",
+            }
+        )
+
     # Check for duplicate key
     existing_unit = MilitaryUnit.query.filter_by(key=key).first()
     if existing_unit:
@@ -711,6 +720,14 @@ def edit_military_unit():
     if not unit_id or not name or not key:
         return jsonify(
             {"success": False, "message": "ID, Tên và Khóa không được để trống."}
+        )
+    # Validate key for spaces or empty values
+    if not key.strip() or " " in key:
+        return jsonify(
+            {
+                "success": False,
+                "message": "Khóa không được để trống hoặc chứa khoảng trắng.",
+            }
         )
 
     # Fetch the military unit to edit
@@ -1166,7 +1183,6 @@ from sqlalchemy.orm import joinedload
 
 @core.route("/relative_reports", methods=["GET", "POST"])
 @login_required
-@second_level_password_required
 def relative_reports():
     # Base query
     # Retrieve filter inputs from the request
@@ -1595,11 +1611,14 @@ def get_military_units():
     units_data = [{"id": unit.id, "name": unit.name} for unit in units]
     return jsonify(units_data)
 
+
 @core.route("/get_military_manager", methods=["GET"])
 @login_required
 def get_military_manager():
     managers = User.query.filter_by(is_manager=True).all()
-    managers_data = [{"id": manager.id, "name": manager.full_name} for manager in managers]
+    managers_data = [
+        {"id": manager.id, "name": manager.full_name} for manager in managers
+    ]
     return jsonify(managers_data)
 
 
@@ -1649,9 +1668,11 @@ import pandas as pd
 def generate_excel_template():
     try:
         output = io.BytesIO()
+
         # Query the MilitaryUnit table for unit names
         military_units = MilitaryUnit.query.with_entities(MilitaryUnit.name).all()
-        unit_names = sorted([unit.name for unit in military_units])
+        unit_names = ["Lựa chọn"] + sorted(unit.name for unit in military_units)
+
         # Create an Excel file using pandas and XlsxWriter
         with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
             # First sheet: Main data
@@ -1667,41 +1688,98 @@ def generate_excel_template():
                     ],
                     "Tên Đăng Nhập": ["123456789012", "123456789013", "123456789014"],
                     "Mật Khẩu": ["123456", "123456", "123456"],
-                    "Mật Khẩu Cấp Cấp2": ["12345678", "12345678", "12345678"],
-                    "Cấp Bậc": ["Lựa chọn", "Lựa chọn", "Lựa chọn"],
+                    "Đơn vị": ["Lựa chọn", "Lựa chọn", "Lựa chọn"],
                 }
             )
             df_main.to_excel(writer, index=False, sheet_name="Main")
 
             # Adjust column widths for Main sheet
-            workbook = writer.book
             worksheet_main = writer.sheets["Main"]
-            worksheet_main.set_column("A:A", 10)  # STT
-            worksheet_main.set_column("B:B", 20)  # CCCD
-            worksheet_main.set_column("C:C", 30)  # Họ Và Tên
-            worksheet_main.set_column("D:D", 30)  # Email
-            worksheet_main.set_column("E:E", 20)  # Tên Đăng Nhập
-            worksheet_main.set_column("F:F", 20)  # Mật Khẩu
-            worksheet_main.set_column("G:G", 25)  # Mật Khẩu Cấp Cấp2
-            worksheet_main.set_column("H:H", 25)  # Cấp Bậc
+            column_widths = [10, 20, 30, 30, 20, 20, 25]
+            for col_idx, width in enumerate(column_widths, start=1):
+                worksheet_main.set_column(col_idx - 1, col_idx - 1, width)
 
             # Second sheet: Options
-            df_options = pd.DataFrame({"Cấp Bậc": unit_names})
+            df_options = pd.DataFrame({"Đơn vị": unit_names})
             df_options.to_excel(writer, index=False, sheet_name="Options")
 
             # Adjust column widths for Options sheet
             worksheet_options = writer.sheets["Options"]
-            worksheet_options.set_column("A:A", 25)  # Cấp Bậc
+            worksheet_options.set_column(0, 0, 25)
 
             # Define the range in the Options sheet for the dropdown
             dropdown_range = f"Options!$A$2:$A${len(unit_names) + 1}"
 
             # Add data validation to the 'Cấp Bậc' column in Main sheet
             worksheet_main.data_validation(
-                "H2:H1048576",  # Range for the Cấp Bậc column
+                "G2:G1048576",  # Range for the Cấp Bậc column
                 {
                     "validate": "list",
-                    "source": dropdown_range,  # Reference to the dropdown range
+                    "source": dropdown_range,
+                    "error_type": "stop",
+                    "error_message": "Vui lòng chọn cấp bậc hợp lệ từ danh sách.",
+                },
+            )
+
+        # Reset buffer and save Excel content
+        output.seek(0)
+        return send_file(
+            output,
+            as_attachment=True,
+            download_name="template.xlsx",
+            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+    except Exception as e:
+        current_app.logger.error(f"Error generating Excel template: {e}")
+        return jsonify({"error": "Error generating Excel template"}), 500
+
+
+@core.route("/generate_excel_template_import_normal_user", methods=["GET"])
+@login_required
+def generate_excel_template_import_normal_user():
+    try:
+        output = io.BytesIO()
+
+        # Query the MilitaryUnit table for unit names
+        military_units = MilitaryUnit.query.with_entities(MilitaryUnit.name).all()
+        unit_names = ["Lựa chọn"] + sorted(unit.name for unit in military_units)
+
+        # Create an Excel file using pandas and XlsxWriter
+        with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
+            # First sheet: Main data
+            df_main = pd.DataFrame(
+                {
+                    "STT": [1, 2, 3],
+                    "CCCD": ["123456789012", "123456789013", "123456789014"],
+                    "Họ Và Tên": ["Nguyễn Anh Tú", "Phan Thị Thư", "Lê Thị Ái"],
+                    "Đơn vị": ["Lựa chọn", "Lựa chọn", "Lựa chọn"],
+                }
+            )
+            df_main.to_excel(writer, index=False, sheet_name="Main")
+
+            # Adjust column widths for Main sheet
+            worksheet_main = writer.sheets["Main"]
+            column_widths = [10, 20, 30, 30, 20, 25]
+            for col_idx, width in enumerate(column_widths, start=1):
+                worksheet_main.set_column(col_idx - 1, col_idx - 1, width)
+
+            # Second sheet: Options
+            df_options = pd.DataFrame({"Đơn vị": unit_names})
+            df_options.to_excel(writer, index=False, sheet_name="Options")
+
+            # Adjust column widths for Options sheet
+            worksheet_options = writer.sheets["Options"]
+            worksheet_options.set_column(0, 0, 25)
+
+            # Define the range in the Options sheet for the dropdown
+            dropdown_range = f"Options!$A$2:$A${len(unit_names) + 1}"
+
+            # Add data validation to the 'Cấp Bậc' column in Main sheet
+            worksheet_main.data_validation(
+                "D2:D1048576",  # Range for the Cấp Bậc column
+                {
+                    "validate": "list",
+                    "source": dropdown_range,
                     "error_type": "stop",
                     "error_message": "Vui lòng chọn cấp bậc hợp lệ từ danh sách.",
                 },
@@ -1722,7 +1800,6 @@ def generate_excel_template():
 
 @core.route("/import_manager")
 @login_required
-@second_level_password_required
 def import_manager():
     csrf_token_value = generate_csrf()
     return render_template(
@@ -1730,3 +1807,28 @@ def import_manager():
         username=current_user.username,
         csrf_token_value=csrf_token_value,
     )
+
+
+@core.route("/unauthorized", methods=["GET"])
+def unauthorized():
+    return render_template("unauthorized.html"), 403
+
+
+@core.app_template_filter("mask_cccd")
+def mask_cccd(identity_card):
+    """
+    Masks the identity card number, showing only the last 4 digits.
+    Example: "123456789012" -> "********9012"
+    """
+    if identity_card and len(identity_card) >= 4:
+        return "*" * (len(identity_card) - 4) + identity_card[-4:]
+    return identity_card or "N/A"
+
+
+@core.app_template_filter("mask_email")
+def mask_email(email):
+    if not email or "@" not in email:
+        return email
+    local_part, domain = email.split("@", 1)
+    masked_local = local_part[:4] + "*" * (len(local_part) - 4)
+    return f"{masked_local}@{domain}"

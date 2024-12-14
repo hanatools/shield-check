@@ -38,14 +38,7 @@ function handleSearch(query) {
                     >
                         <i class="bi bi-eye"></i>
                     </button>
-                    <button
-                            class="btn btn-warning btn-sm"
-                            data-bs-toggle="tooltip"
-                            title="Sửa"
-                            onclick="editUser(${ user.id })"
-                    >
-                        <i class="bi bi-pencil"></i>
-                    </button>
+         
                     </form>
                 </td>
                 <td>${ user.full_name }</td>
@@ -53,6 +46,8 @@ function handleSearch(query) {
                 <td>${ user.management_level }</td>
                 <td>${ user.unit_name }</td>
                 <td>${ user.email }</td>
+                <td>${ user.note }</td>
+                <td>${ user.created_time }</td>
                 `;
 
                 tableBody.appendChild(row);

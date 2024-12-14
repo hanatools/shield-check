@@ -16,9 +16,7 @@ class MilitaryUnit(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)  # Primary Key
     name = db.Column(db.String(255), nullable=False)  # Unit name
-    key = db.Column(
-        db.String(128), unique=True, nullable=False
-    )  # Unique key for the unit
+    key = db.Column(db.String(128), unique=True, nullable=False)
     parent = db.Column(
         db.Integer, db.ForeignKey("military_units.id"), nullable=True
     )  # Parent unit (self-referencing foreign key)
@@ -122,25 +120,25 @@ class SponsorCheckIn(db.Model):
     __tablename__ = "sponsor_check_in"
 
     id = db.Column(db.Integer, primary_key=True)
-
-    acceptor_level_1_id = db.Column(
-        db.Integer,
-        db.ForeignKey("users.id", name="fk_sponsor_check_in_acceptor_level_1_id"),
-        nullable=True,
-    )
-    acceptor_level_1_full_name = db.Column(db.String(255), nullable=True)
-    acceptor_level_2_id = db.Column(
-        db.Integer,
-        db.ForeignKey("users.id", name="fk_sponsor_check_in_acceptor_level_2_id"),
-        nullable=True,
-    )
-    acceptor_level_2_full_name = db.Column(db.String(255), nullable=True)
-    acceptor_level_3_id = db.Column(
-        db.Integer,
-        db.ForeignKey("users.id", name="fk_sponsor_check_in_acceptor_level_3_id"),
-        nullable=True,
-    )
-    acceptor_level_3_full_name = db.Column(db.String(255), nullable=True)
+    acceptors = db.Column(db.Text, nullable=True)
+    # acceptor_level_1_id = db.Column(
+    #     db.Integer,
+    #     db.ForeignKey("users.id", name="fk_sponsor_check_in_acceptor_level_1_id"),
+    #     nullable=True,
+    # )
+    # acceptor_level_1_full_name = db.Column(db.String(255), nullable=True)
+    # acceptor_level_2_id = db.Column(
+    #     db.Integer,
+    #     db.ForeignKey("users.id", name="fk_sponsor_check_in_acceptor_level_2_id"),
+    #     nullable=True,
+    # )
+    # acceptor_level_2_full_name = db.Column(db.String(255), nullable=True)
+    # acceptor_level_3_id = db.Column(
+    #     db.Integer,
+    #     db.ForeignKey("users.id", name="fk_sponsor_check_in_acceptor_level_3_id"),
+    #     nullable=True,
+    # )
+    # acceptor_level_3_full_name = db.Column(db.String(255), nullable=True)
 
     email = db.Column(db.String(255), nullable=True)
     full_name = db.Column(db.String(255), nullable=False)
@@ -219,25 +217,25 @@ class RelativeCheckIn(db.Model):
         db.ForeignKey("users.id", name="fk_relative_check_in_soldier_user_id"),
         nullable=True,
     )
-
-    acceptor_level_1_id = db.Column(
-        db.Integer,
-        db.ForeignKey("users.id", name="fk_relative_check_in_acceptor_level_1_id"),
-        nullable=True,
-    )
-    acceptor_level_1_full_name = db.Column(db.String(255), nullable=True)
-    acceptor_level_2_id = db.Column(
-        db.Integer,
-        db.ForeignKey("users.id", name="fk_relative_check_in_acceptor_level_2_id"),
-        nullable=True,
-    )
-    acceptor_level_2_full_name = db.Column(db.String(255), nullable=True)
-    acceptor_level_3_id = db.Column(
-        db.Integer,
-        db.ForeignKey("users.id", name="fk_relative_check_in_acceptor_level_3_id"),
-        nullable=True,
-    )
-    acceptor_level_3_full_name = db.Column(db.String(255), nullable=True)
+    acceptors = db.Column(db.Text, nullable=True)
+    # acceptor_level_1_id = db.Column(
+    #     db.Integer,
+    #     db.ForeignKey("users.id", name="fk_relative_check_in_acceptor_level_1_id"),
+    #     nullable=True,
+    # )
+    # acceptor_level_1_full_name = db.Column(db.String(255), nullable=True)
+    # acceptor_level_2_id = db.Column(
+    #     db.Integer,
+    #     db.ForeignKey("users.id", name="fk_relative_check_in_acceptor_level_2_id"),
+    #     nullable=True,
+    # )
+    # acceptor_level_2_full_name = db.Column(db.String(255), nullable=True)
+    # acceptor_level_3_id = db.Column(
+    #     db.Integer,
+    #     db.ForeignKey("users.id", name="fk_relative_check_in_acceptor_level_3_id"),
+    #     nullable=True,
+    # )
+    # acceptor_level_3_full_name = db.Column(db.String(255), nullable=True)
 
     full_name = db.Column(db.String(255), nullable=False)
     identity_card = db.Column(db.String(255), nullable=False)

@@ -1,8 +1,8 @@
 """Initial database.
 
-Revision ID: d09a069c7e63
+Revision ID: 4ce7ff1d81a6
 Revises: 
-Create Date: 2024-12-08 17:07:22.864221
+Create Date: 2024-12-14 08:53:29.068200
 
 """
 
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = "d09a069c7e63"
+revision = "4ce7ff1d81a6"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -43,7 +43,7 @@ def upgrade():
         "users",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("profile_image", sa.String(length=255), nullable=False),
-        sa.Column("email", sa.String(length=255), nullable=False),
+        sa.Column("email", sa.String(length=255), nullable=True),
         sa.Column("username", sa.String(length=64), nullable=True),
         sa.Column("password", sa.String(length=500), nullable=True),
         sa.Column("second_level_password", sa.String(length=500), nullable=True),
@@ -52,7 +52,7 @@ def upgrade():
         sa.Column("military_unit_name", sa.String(length=255), nullable=True),
         sa.Column("military_manager_full_name", sa.String(length=255), nullable=True),
         sa.Column("note", sa.Text(), nullable=True),
-        sa.Column("is_manager", sa.Boolean(), nullable=False),
+        sa.Column("is_manager", sa.Boolean(), nullable=True),
         sa.Column("military_unit_id", sa.Integer(), nullable=True),
         sa.Column("military_manager_id", sa.Integer(), nullable=True),
         sa.Column("created_by_id", sa.Integer(), nullable=True),
@@ -86,56 +86,35 @@ def upgrade():
     op.create_table(
         "relative_check_in",
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("soldier_user_id", sa.Integer(), nullable=False),
-        sa.Column("acceptor_level_1_id", sa.Integer(), nullable=True),
-        sa.Column("acceptor_level_1_full_name", sa.String(length=255), nullable=False),
-        sa.Column("acceptor_level_2_id", sa.Integer(), nullable=True),
-        sa.Column("acceptor_level_2_full_name", sa.String(length=255), nullable=False),
-        sa.Column("acceptor_level_3_id", sa.Integer(), nullable=True),
-        sa.Column("acceptor_level_3_full_name", sa.String(length=255), nullable=False),
+        sa.Column("soldier_user_id", sa.Integer(), nullable=True),
+        sa.Column("acceptors", sa.Text(), nullable=True),
         sa.Column("full_name", sa.String(length=255), nullable=False),
         sa.Column("identity_card", sa.String(length=255), nullable=False),
         sa.Column("relationship", sa.String(length=64), nullable=True),
         sa.Column("note", sa.Text(), nullable=True),
         sa.Column("profile_image", sa.String(length=255), nullable=False),
-        sa.Column("management_level", sa.String(length=255), nullable=False),
-        sa.Column("unit_name", sa.String(length=255), nullable=False),
+        sa.Column("unit_name", sa.String(length=255), nullable=True),
         sa.Column("file_scan_path", sa.String(length=255), nullable=True),
         sa.Column("left_image_path", sa.String(length=255), nullable=True),
         sa.Column("right_image_path", sa.String(length=255), nullable=True),
         sa.Column("front_image_path", sa.String(length=255), nullable=True),
         sa.Column("created_time", sa.DateTime(), nullable=False),
         sa.Column("status", sa.String(length=50), nullable=False),
-        sa.Column("token", sa.String(length=255), nullable=False),
+        sa.Column("token", sa.String(length=255), nullable=True),
         sa.Column("accepted_datetime", sa.DateTime(), nullable=True),
         sa.Column("check_in_time", sa.DateTime(), nullable=True),
         sa.Column("check_out_time", sa.DateTime(), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=False),
-        sa.Column("created_by", sa.Integer(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.Column("sponsor_full_name", sa.String(length=255), nullable=True),
         sa.Column("sponsor_military_unit_name", sa.String(length=255), nullable=True),
         sa.Column(
             "sponsor_military_manager_full_name", sa.String(length=255), nullable=True
         ),
-        sa.Column("sponsor_id", sa.Integer(), nullable=False),
-        sa.Column("sponsor_identity_card", sa.String(length=50), nullable=False),
+        sa.Column("sponsor_id", sa.Integer(), nullable=True),
+        sa.Column("sponsor_identity_card", sa.String(length=50), nullable=True),
         sa.Column("sponsor_military_unit_id", sa.Integer(), nullable=True),
         sa.Column("sponsor_military_manager_id", sa.Integer(), nullable=True),
-        sa.ForeignKeyConstraint(
-            ["acceptor_level_1_id"],
-            ["users.id"],
-            name="fk_relative_check_in_acceptor_level_1_id",
-        ),
-        sa.ForeignKeyConstraint(
-            ["acceptor_level_2_id"],
-            ["users.id"],
-            name="fk_relative_check_in_acceptor_level_2_id",
-        ),
-        sa.ForeignKeyConstraint(
-            ["acceptor_level_3_id"],
-            ["users.id"],
-            name="fk_relative_check_in_acceptor_level_3_id",
-        ),
         sa.ForeignKeyConstraint(
             ["created_by"], ["users.id"], name="fk_relative_check_in_created_by"
         ),
@@ -168,18 +147,13 @@ def upgrade():
     op.create_table(
         "sponsor_check_in",
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("acceptor_level_1_id", sa.Integer(), nullable=True),
-        sa.Column("acceptor_level_1_full_name", sa.String(length=255), nullable=False),
-        sa.Column("acceptor_level_2_id", sa.Integer(), nullable=True),
-        sa.Column("acceptor_level_2_full_name", sa.String(length=255), nullable=False),
-        sa.Column("acceptor_level_3_id", sa.Integer(), nullable=True),
-        sa.Column("acceptor_level_3_full_name", sa.String(length=255), nullable=False),
-        sa.Column("email", sa.String(length=255), nullable=False),
+        sa.Column("acceptors", sa.Text(), nullable=True),
+        sa.Column("email", sa.String(length=255), nullable=True),
         sa.Column("full_name", sa.String(length=255), nullable=False),
         sa.Column("identity_card", sa.String(length=255), nullable=False),
-        sa.Column("military_manager_full_name", sa.String(length=255), nullable=False),
-        sa.Column("military_manager_id", sa.Integer(), nullable=False),
-        sa.Column("military_unit_name", sa.String(length=255), nullable=False),
+        sa.Column("military_manager_full_name", sa.String(length=255), nullable=True),
+        sa.Column("military_manager_id", sa.Integer(), nullable=True),
+        sa.Column("military_unit_name", sa.String(length=255), nullable=True),
         sa.Column("military_unit_id", sa.Integer(), nullable=True),
         sa.Column("file_scan_path", sa.String(length=255), nullable=True),
         sa.Column("left_image_path", sa.String(length=255), nullable=True),
@@ -187,26 +161,19 @@ def upgrade():
         sa.Column("front_image_path", sa.String(length=255), nullable=True),
         sa.Column("created_time", sa.DateTime(), nullable=False),
         sa.Column("status", sa.String(length=50), nullable=False),
-        sa.Column("token", sa.String(length=255), nullable=False),
+        sa.Column("token", sa.String(length=255), nullable=True),
         sa.Column("accepted_datetime", sa.DateTime(), nullable=True),
         sa.Column("check_in_time", sa.DateTime(), nullable=True),
         sa.Column("check_out_time", sa.DateTime(), nullable=True),
         sa.Column("note", sa.Text(), nullable=True),
-        sa.Column("user_id", sa.Integer(), nullable=False),
+        sa.Column("created_by_id", sa.Integer(), nullable=True),
+        sa.Column("update_time", sa.DateTime(), nullable=True),
+        sa.Column("user_id", sa.Integer(), nullable=True),
+        sa.Column("acceptor_level_1_status", sa.String(length=50), nullable=True),
+        sa.Column("acceptor_level_2_status", sa.String(length=50), nullable=True),
+        sa.Column("acceptor_level_3_status", sa.String(length=50), nullable=True),
         sa.ForeignKeyConstraint(
-            ["acceptor_level_1_id"],
-            ["users.id"],
-            name="fk_sponsor_check_in_acceptor_level_1_id",
-        ),
-        sa.ForeignKeyConstraint(
-            ["acceptor_level_2_id"],
-            ["users.id"],
-            name="fk_sponsor_check_in_acceptor_level_2_id",
-        ),
-        sa.ForeignKeyConstraint(
-            ["acceptor_level_3_id"],
-            ["users.id"],
-            name="fk_sponsor_check_in_acceptor_level_3_id",
+            ["created_by_id"], ["users.id"], name="fk_user_created_by"
         ),
         sa.ForeignKeyConstraint(
             ["military_manager_id"],

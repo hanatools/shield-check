@@ -151,27 +151,23 @@ async function moveToStep2(cardNumber, videoElement, imageElement) {
     const noteMessage = document.getElementById("user-exists-note");
 
 
-    // Check if the user exists by using `/search_members`
     try {
         const response = await fetch(`/search_members?query=${cardNumber}`);
         const users = await response.json();
+        console.log(users)
 
         if (users.length > 0) {
-            const user = users.find(u => u.identity_card === cardNumber);
+            const user = users[0];
 
-            if (user) {
+                console.log("User found:", user);
                 // Populate Step 2 fields with the user's data
                 document.getElementById("full-name").value = user.full_name || "";
                 document.getElementById("email").value = user.email || "";
+                document.getElementById("military_unit_id").value = user.unit_id || "";
+                document.getElementById("military-manager-id").value = user.military_manager_id || "";
 
                 noteMessage.classList.remove("d-none");
-            } else {
-                // Clear the form if no user is found
-                document.getElementById("full-name").value = "";
-                document.getElementById("email").value = "";
 
-                noteMessage.classList.add("d-none");
-            }
         } else {
             // Clear the form if no user is found
             document.getElementById("full-name").value = "";
@@ -521,7 +517,7 @@ document.getElementById("finish-form").addEventListener("click", () => {
 
                 if (data.user) {
                     alert(`Đăng ký cá nhân thành công:\nHọ tên: ${data.user.full_name}\nCCCD: ${data.user.identity_card}`);
-                    window.location.href = "/soldier_info"; // Redirect to member list
+                    window.location.href = "/soldier_info_personal_user/".concat(data.user.id);
                 } else {
                     throw new Error("Không tạo được người dùng: Không có người dùng nào được trả về trong phản hồi.");
                 }
@@ -571,7 +567,8 @@ $(document).ready(function() {
     const managementLevelSelect = document.getElementById("military-manager-id");
 
     // Fetch Military Units
-    fetch("/get_military_manager")
+    // fetch("/get_military_manager")
+    fetch("/get_military_units")
         .then((response) => response.json())
         .then((units) => {
             units.forEach((unit) => {
@@ -582,31 +579,21 @@ $(document).ready(function() {
             });
         });
 
-    // Handle Unit Name Change
-    unitNameSelect.addEventListener("change", function () {
-        const unitId = this.value;
-
-        // Clear and disable the Management Level dropdown
-        managementLevelSelect.innerHTML = '<option value="">-- Chọn cấp quản lý --</option>';
-        managementLevelSelect.disabled = true;
-
-        if (unitId) {
-            // Fetch Users for the selected Military Unit
-            fetch(`/get_users_by_unit/${unitId}`)
-                .then((response) => response.json())
-                .then((users) => {
-                    if (users.length > 0) {
-                        // Populate Management Level dropdown
-                        users.forEach((user) => {
-                            const option = document.createElement("option");
-                            option.value = user.id;
-                            option.textContent = user.full_name;
-                            managementLevelSelect.appendChild(option);
-                        });
-                        managementLevelSelect.disabled = false;
-                    }
+    fetch("/get_military_manager")
+        .then((response) => response.json())
+        .then((users) => {
+            if (users.length > 0) {
+                // Populate Management Level dropdown
+                users.forEach((user) => {
+                    const option = document.createElement("option");
+                    option.value = user.id;
+                    // option.textContent = user.full_name;
+                    option.textContent = user.name;
+                    managementLevelSelect.appendChild(option);
                 });
-        }
-    });
+                managementLevelSelect.disabled = false;
+            }
+        });
+
 
 });

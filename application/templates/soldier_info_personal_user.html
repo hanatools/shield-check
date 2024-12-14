@@ -19,7 +19,8 @@
         </div>
         <div class="detail-row">
             <label>Số CCCD:</label>
-            <span>{{ user.identity_card }}</span>
+<!--            <span>{{ user.identity_card }}</span>-->
+            <span>{{ user.identity_card|mask_cccd }}</span>
         </div>
         <div class="detail-row">
             <label>Email:</label>
@@ -40,9 +41,9 @@
             <label>Vai Trò:</label>
             <span id="role">
         {% if user.role == "SYSTEM_ADMIN_ROLE" %}
-            Quản Trị Hệ Thống
+            Quản Trị Viên Hệ Thống
         {% elif user.role == "ADMIN_ROLE" %}
-            Quản Trị Viên
+            Quản Lý
         {% elif user.role == "USER_ROLE" %}
           Quân Nhân
         {% else %}
@@ -57,20 +58,24 @@
         </div>
 
         <!-- Edit Button -->
+        {% if current_user.id and (current_user.role == "ADMIN_ROLE" or current_user.role == "SYSTEM_ADMIN_ROLE") %}
         <button class="btn btn-warning mt-3" data-bs-toggle="modal" data-bs-target="#editUserModal">
-            <i class="bi bi-pencil"></i> Chỉnh sửa
+            <i class="bi bi-pencil"></i> Cập nhật
         </button>
+        {% endif %}
+
+
     </div>
 
     <!-- Display Links for Logged-in User -->
-    {% if current_user.id == user.id %}
+    {% if current_user.id == user.id and (current_user.role == "ADMIN_ROLE" or current_user.role == "SYSTEM_ADMIN_ROLE") %}
     <div class="user-actions mt-4">
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
             Đổi Mật Khẩu
         </button>
-        <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#changeSecondPasswordModal">
-            Đổi Mật Khẩu Cấp Hai
-        </button>
+<!--        <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#changeSecondPasswordModal">-->
+<!--            Đổi Mật Khẩu Cấp Hai-->
+<!--        </button>-->
     </div>
     {% endif %}
 
@@ -125,6 +130,19 @@
                             <span id="edit-full-name-error" class="error-message"></span>
                         </div>
                         <div class="form-group mb-3">
+                            <label for="edit-identity-card" class="form-label">CCCD</label>
+                            <input
+                                    type="text"
+                                    id="edit-identity-card"
+                                    class="form-control"
+                                    value="" required
+                            />
+                            <span id="edit-identity-card-error" class="error-message"></span>
+                        </div>
+
+
+
+                        <div class="form-group mb-3">
                             <label for="edit-email" class="form-label">Email</label>
                             <input
                                     type="email"
@@ -152,7 +170,7 @@
                             <label for="edit-role">Vai Trò</label>
                             <select id="edit-role" class="form-control">
                                 <option value="SYSTEM_ADMIN_ROLE">Quản Trị Hệ Thống</option>
-                                <option value="ADMIN_ROLE">Quản Trị Viên</option>
+                                <option value="ADMIN_ROLE">Quản Lý</option>
                                 <option value="USER_ROLE">Quân Nhân</option>
                             </select>
                         </div>
