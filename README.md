@@ -38,3 +38,31 @@ flask db downgrade base
 pip install black
 black .
 ```
+
+### Set up deploy and test
+```angular2html
+1.rest database
+rm -rf shield_check_db.sqlite
+
+
+2. set up enviroment
+python -m venv app_venv
+.\app_venv\Scripts\activate (Windows)
+source ./app_venv/bin/activate
+pip install -r requirements.txt
+
+3. set up config
+source ./set_env_variables.sh
+test: 
+echo $DEFAULT_USER_EMAIL  # require not empty
+
+4. set up database
+flask db upgrade
+python create_default_user.py
+
+5. run cronjob
+python EmailPolling.py
+
+6. run web server
+python app.py
+```
