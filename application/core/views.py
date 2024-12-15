@@ -7,7 +7,6 @@ from flask_wtf.csrf import generate_csrf
 import face_recognition
 from flask import (
     render_template,
-    request,
     Blueprint,
     Response,
     url_for,
@@ -213,7 +212,6 @@ def batch_input():
         csrf_token_value=csrf_token_value,
     )
 
-
 @core.route("/register_relative", methods=["GET", "POST"])
 @login_required
 def register_relative():
@@ -236,7 +234,16 @@ def register_relative():
                 "Đầu vào không hợp lệ: Vui lòng đảm bảo tất cả các trường bắt buộc được điền chính xác.",
                 "danger",
             )
-            return redirect(url_for("register_relative"))
+            return redirect(url_for("core.register_relative"))
+
+        # Check if a relative with this identity card already exists
+        existing_relative = RelativeCheckIn.query.filter_by(identity_card=identity_card).first()
+        if existing_relative:
+            flash(
+                f"Người thân với CCCD {identity_card} đã được đăng ký. Vui lòng kiểm tra lại.",
+                "danger",
+            )
+            return redirect(url_for("core.register_relative"))
 
         # Check if sponsor exists (should always be true since it's the logged-in user)
         sponsor = User.query.filter_by(identity_card=sponsor_identity_card).first()
@@ -244,7 +251,7 @@ def register_relative():
             flash(
                 "Nhà tài trợ không tồn tại. Vui lòng liên hệ bộ phận hỗ trợ.", "danger"
             )
-            return redirect(url_for("register_relative"))
+            return redirect(url_for("core.register_relative"))
 
         # Initialize sponsor-related fields
         sponsor_military_manager_id = None
@@ -292,7 +299,6 @@ def register_relative():
     return render_template(
         "register_relative.html", username=current_user.username, form=form
     )
-
 
 def add_relative(full_name, identity_card, sponsor_id, relationship, creator_id):
     # Check if sponsor exists
@@ -1452,6 +1458,7 @@ def confirm_relative_check_in(identity_card):
         elif not relative_check_in.check_out_time:
             relative_check_in.check_out_time = current_time
             relative_check_in.status = "completed"
+            relative_check_in.identity_card = None
             message = "Đã quét thời gian ra thành công!"
         else:
             return (

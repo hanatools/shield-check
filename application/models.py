@@ -197,27 +197,8 @@ class RelativeCheckIn(db.Model):
         nullable=True,
     )
     acceptors = db.Column(db.Text, nullable=True)
-    # acceptor_level_1_id = db.Column(
-    #     db.Integer,
-    #     db.ForeignKey("users.id", name="fk_relative_check_in_acceptor_level_1_id"),
-    #     nullable=True,
-    # )
-    # acceptor_level_1_full_name = db.Column(db.String(255), nullable=True)
-    # acceptor_level_2_id = db.Column(
-    #     db.Integer,
-    #     db.ForeignKey("users.id", name="fk_relative_check_in_acceptor_level_2_id"),
-    #     nullable=True,
-    # )
-    # acceptor_level_2_full_name = db.Column(db.String(255), nullable=True)
-    # acceptor_level_3_id = db.Column(
-    #     db.Integer,
-    #     db.ForeignKey("users.id", name="fk_relative_check_in_acceptor_level_3_id"),
-    #     nullable=True,
-    # )
-    # acceptor_level_3_full_name = db.Column(db.String(255), nullable=True)
-
     full_name = db.Column(db.String(255), nullable=False)
-    identity_card = db.Column(db.String(255), nullable=False)
+    identity_card = db.Column(db.String(255), nullable=True)
     relationship = db.Column(db.String(64), nullable=True)
     note = db.Column(db.Text, nullable=True)
     profile_image = db.Column(

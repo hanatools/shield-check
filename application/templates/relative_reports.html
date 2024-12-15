@@ -66,8 +66,8 @@
                         </span>
                     </td>
                     <td>{{ record.full_name }}</td>
-                    <td>{{ record.identity_card }}</td>
-                    <td>{{ record.soldier_identity_card }}</td>
+                    <td>{{ record.identity_card | mask_cccd }}</td>
+                    <td>{{ record.soldier_identity_card | mask_cccd }}</td>
                     <td>{{ record.soldier_name }}</td>
                     <td>{{ record.management_level }}</td>
                     <td>{{ record.unit_name }}</td>
