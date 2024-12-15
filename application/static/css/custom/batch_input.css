@@ -1,110 +1,303 @@
-/* Center Content */
+/* General Styles */
 .content {
     padding: 20px;
-    background-color: #f8f9fa; /* Light gray background */
-    min-height: 100vh; /* Full-page height */
+    background-color: #f8f9fa;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
+}
+
+/* Steps Visibility */
+/* Steps Visibility */
+.step {
+    display: none;
+    width: 100%; /* Full width for all steps */
+    max-width: 800px;
+}
+
+.step.full-width {
+    max-width: none; /* Remove the width restriction for specific steps */
+    padding: 20px; /* Add some padding for better spacing */
+}
+
+.step.active {
+    display: block;
+}
+
+/* Upload Section */
+.upload-container {
+    text-align: center;
+    margin: 20px auto;
+    padding: 20px;
+    border-radius: 8px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.placeholder-box {
+    border: 2px dashed #2563eb;
+    border-radius: 8px;
+    padding: 40px;
+    text-align: center;
+    color: #6b7280;
+    margin-top: 20px;
+    cursor: pointer;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+.placeholder-box:hover {
+    background-color: #f1f5f9;
+    border-color: #1d4ed8;
+}
+
+#upload-btn {
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+#upload-btn:hover {
+    background-color: #1d4ed8;
+}
+
+/* Table Styles */
+.table {
+    width: 100%;
+    margin: 20px 0;
+    border-collapse: collapse;
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.table th,
+.table td {
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #ddd;
+}
+
+.table th {
+    background-color: #2563eb;
+    color: white;
+    font-weight: bold;
 }
 
 /* Button Group */
 .button-group {
-    margin-bottom: 20px;
     display: flex;
-    justify-content: center;
-    gap: 10px;
+    justify-content: space-between;
+    margin-top: 20px;
 }
 
-.button-group .btn {
+.btn {
     border: none;
     padding: 10px 20px;
     border-radius: 5px;
     font-size: 16px;
-    font-weight: bold;
     cursor: pointer;
+    transition: background-color 0.3s;
 }
 
-.btn-active {
-    background-color: #10b981; /* Green */
+.btn-primary {
+    background-color: #10b981;
     color: white;
 }
 
-.btn-inactive {
-    background-color: #374151; /* Dark gray */
+.btn-primary:hover {
+    background-color: #059669;
+}
+
+.btn-secondary {
+    background-color: #6b7280;
     color: white;
 }
 
-.btn-inactive:hover {
-    background-color: #111827; /* Darker gray on hover */
+.btn-secondary:hover {
+    background-color: #4b5563;
 }
 
-/* Card Section */
-.card {
-    background-color: white;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    padding: 30px;
-    text-align: center;
-    width: 100%;
-    max-width: 600px; /* Set max-width for responsiveness */
-    position: relative;
+/* Success and Failure Indicators */
+.success {
+    color: #10b981;
+    font-weight: bold;
+}
+
+.failure {
+    color: #ef4444;
+    font-weight: bold;
 }
 
 /* Placeholder Box */
 .placeholder-box {
     background-color: #e5e7eb; /* Light gray placeholder background */
+    border: 2px dashed #9ca3af; /* Dashed border */
     border-radius: 10px;
     width: 100%;
+
     height: 300px; /* Fixed height */
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     font-size: 16px;
     color: #6b7280; /* Neutral gray text */
     margin-bottom: 20px;
     position: relative;
+    transition: all 0.3s ease;
+    cursor: pointer;
 }
 
-/* Template Download Button */
+.placeholder-box.dragging {
+    border-color: #2563eb; /* Blue border on drag */
+    background-color: #e0f2fe; /* Light blue background on drag */
+}
+
+/* Template Button */
 .template-btn {
     position: absolute;
-    top: 10px; /* Align with placeholder padding */
+    top: 10px; /* Position relative to placeholder-box */
     right: 10px;
-    background-color: #2563eb; /* Blue background */
-    color: white; /* White text */
+    background-color: #16e8a2 !important; /* Blue background */
+    color: white;
     border: none;
     border-radius: 5px;
     padding: 5px 10px;
     font-size: 14px;
     cursor: pointer;
     transition: all 0.3s ease;
-    height: 1.8rem;
 }
 
 .template-btn:hover {
-    background-color: #1d4ed8; /* Darker blue on hover */
+    background-color: #09ab75 !important; /* Darker blue on hover */
 }
 
-.template-btn:focus {
-    outline: none;
-    box-shadow: 0 0 5px rgba(37, 99, 235, 0.5); /* Subtle blue glow */
+/* Text inside Placeholder Box */
+.placeholder-box p {
+    margin: 0;
+    font-weight: bold;
 }
 
-/* Excel Upload Button */
-.upload-btn {
-    background-color: #374151; /* Dark gray */
-    color: white;
+/* Upload Button */
+.placeholder-box button {
+    margin-top: 10px;
+    padding: 10px 20px;
     border: none;
     border-radius: 5px;
-    padding: 10px 20px;
-    font-size: 16px;
+    font-size: 14px;
     cursor: pointer;
-    margin-top: 20px;
+    background-color: #2563eb;
+    color: white;
     transition: all 0.3s ease;
 }
 
-.upload-btn:hover {
-    background-color: #111827; /* Darker gray on hover */
+.placeholder-box button:hover {
+    background-color: #1d4ed8; /* Darker blue on hover */
+}
+
+/* step 2*/
+.preview-container.full-width {
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    width: 100%; /* Full width */
+    margin: 0 auto;
+    text-align: center;
+}
+
+.preview-container h2 {
+    margin-bottom: 20px;
+    color: #374151;
+    text-align: left;
+    padding-left: 10px;
+}
+
+.table-responsive.full-width {
+    max-height: 500px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.preview-table.full-width {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+}
+
+.preview-table th, .preview-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+    font-size: 14px; /* Adjust font size for better readability */
+}
+
+.preview-table th {
+    background-color: #f3f4f6;
+    color: #374151;
+    font-weight: bold;
+    position: sticky; /* Sticky header for better usability */
+    top: 0;
+    z-index: 2;
+}
+
+.preview-table td input {
+    width: 100%;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.button-group {
+    display: flex;
+    justify-content: flex-end; /* Align buttons to the right */
+    gap: 20px;
+    padding-right: 10px;
+}
+
+.button-group .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background-color: #10b981;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #059669;
+}
+
+.btn-secondary {
+    background-color: #6b7280;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #4b5563;
+}
+
+.failure-row {
+    background-color: #f8d7da; /* Light red background for failed rows */
+    color: #842029; /* Dark red text for better contrast */
+}
+
+.folder-upload-container {
+    text-align: right;
+    margin-bottom: 10px;
 }

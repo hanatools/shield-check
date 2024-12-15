@@ -53,13 +53,24 @@
       </div>
 
       <a href="#" class="main-button" data-toggle="submenu" data-target="#mgrInfoSubmenu">
-        <span class="icon">&#9881;</span> <!-- User Icon -->
+
+        <span class="icon">&#128196;</span>
         <span class="text">Quản lý thông tin</span>
       </a>
       <div class="submenu" id="mgrInfoSubmenu">
+        <a href="{{ url_for('core.import_manager') }}" id="import_manager">Thêm Quản Lý</a>
         <a href="{{ url_for('users.soldier_info') }}" id="soldier_info">Thông tin Quân Nhân</a>
         <a href="{{ url_for('core.reports') }}" id="reports">Báo cáo quân nhân</a>
         <a href="{{ url_for('core.relative_reports') }}" id="relative_reports">Báo cáo người thân</a>
+      </div>
+
+      <!-- Main Button with Submenu -->
+      <a href="#" class="main-button " data-toggle="submenu" data-target="#settingSubmenu">
+        <span class="icon">&#9881;</span>
+        <span class="text">Quản lý hệ thống</span>
+      </a>
+      <div class="submenu" id="settingSubmenu">
+        <a href="{{ url_for('core.military_units') }}"  id="input_military_units">Đơn vị</a>
       </div>
 
     </div>
@@ -78,13 +89,9 @@
           <span>{{ current_user.username if current_user.username else "Guest" }}</span>
         </a>
         <div class="dropdown-menu">
-          <a href="#" class="d-flex align-items-center gap-2">
+          <a href="{{ url_for('users.soldier_info_personal_user', user_id=current_user.id) }}" class="d-flex align-items-center gap-2">
             <i class="bi bi-person"></i> <!-- Profile Icon -->
             <span>Profile</span>
-          </a>
-          <a href="#" class="d-flex align-items-center gap-2">
-            <i class="bi bi-gear"></i> <!-- Settings Icon -->
-            <span>Settings</span>
           </a>
           <a href="#" class="d-flex align-items-center gap-2 text-danger" onclick="window.location.href='{{ url_for('users.logout') }}'" >
             <i class="bi bi-box-arrow-right"></i> <!-- Logout Icon -->
@@ -109,7 +116,7 @@
 
 
 
-  <script src="{{ url_for('static', filename='js/library/jquery-3.2.1.slim.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/library/jquery-3.6.0.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/library/popper.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/library/bootstrap.min.js') }}"></script>
 

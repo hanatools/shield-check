@@ -139,96 +139,218 @@ function sendToServer(identityCardValue) {
     fetch(`/api/check-in/${identityCardValue}`, { method: "GET" })
         .then((response) => response.json())
         .then((record) => {
-            closeScanModal()
+            closeScanModal();
             if (record.error) {
                 showErrorModal(record.error);
-            } else {
-                populateUserDetails(record);
+            } else if (record.type === "sponsor") {
+                populateSponsorDetails(record); // Handle SponsorCheckIn
+            } else if (record.type === "relative") {
+                showRelativeConfirmModal(record); // Handle RelativeCheckIn
             }
-
         })
         .catch((error) => {
             console.error("Error sending identity card value to server:", error);
-            closeScanModal()
+            closeScanModal();
         });
 }
 
-// Populate user details in the UI
+// Populate details for SponsorCheckIn
+function populateSponsorDetails(record) {
+    populateUserDetails(record);
+}
+
+function showRelativeConfirmModal(record) {
+    document.getElementById("relativeConfirmFullName").textContent = record.full_name || "N/A";
+    document.getElementById("relativeConfirmIdentityCard").textContent = record.identity_card || "N/A";
+    document.getElementById("relativeConfirmRelationship").textContent = record.relationship || "N/A";
+    document.getElementById("relativeConfirmUnitName").textContent = record.unit_name || "N/A";
+    document.getElementById("relativeConfirmCreatedTime").textContent = formatDateTime(record.created_time);
+    document.getElementById("relativeConfirmNote").textContent = record.note || "N/A";
+
+    const modalElement = document.getElementById("relativeConfirmModal");
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const relativeConfirmButton = document.getElementById("relativeConfirmButton");
+
+    // Add click event listener for the confirmation button
+    relativeConfirmButton.addEventListener("click", () => {
+        // Get the identity card number from the modal
+        const identityCard = document.getElementById("relativeConfirmIdentityCard").textContent.trim();
+
+        if (!identityCard) {
+            alert("Không tìm thấy Số CCCD. Vui lòng thử lại.");
+            return;
+        }
+
+        // Send the request to confirm the relative's check-in
+        confirmRelativeCheckIn(identityCard);
+    });
+});
+
+
+
+function confirmRelativeCheckIn(identityCard) {
+    // Get CSRF token
+    const csrfTokenInput = document.querySelector("input[name='csrf_token']");
+    if (!csrfTokenInput) {
+        console.error("CSRF token is missing.");
+        alert("Không tìm thấy token bảo mật. Vui lòng tải lại trang.");
+        return;
+    }
+
+    const csrfToken = csrfTokenInput.value;
+
+    fetch(`/api/confirm-relative-check-in/${identityCard}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken,
+        },
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            if (data.error) {
+                alert(`Lỗi: ${data.error}`);
+            } else {
+                showSuccessModal(data.message || "Check-in thành công!");
+            }
+        })
+        .catch((error) => {
+            console.error("Error confirming relative check-in:", error);
+            alert("Có lỗi xảy ra. Vui lòng thử lại sau.");
+        });
+}
+
+function showSuccessModal(message) {
+    const successModal = document.getElementById("successModal");
+    const successMessageElement = document.getElementById("successMessage");
+
+    // Update the modal message
+    successMessageElement.textContent = message;
+
+    // Initialize and show the modal
+    const modal = new bootstrap.Modal(successModal);
+    modal.show();
+
+    // Add an event listener to reload the page when the modal is closed
+    successModal.addEventListener("hidden.bs.modal", () => {
+        window.location.reload();
+    });
+}
+
 function populateUserDetails(record) {
     console.log("Record: ", record);
+
+    // Populate general details
     document.getElementById("fullname").value = record.full_name;
     document.getElementById("identity-card-number").value = record.identity_card;
     document.getElementById("unit").value = record.unit_name;
     document.getElementById("manager").value = record.management_level;
     document.getElementById("check-in-record-id-hidden").value = record.id;
     document.getElementById("created_time").value = formatDateTime(record.created_time);
-    // document.getElementById("status").value = record.status;
     document.getElementById("check_out_time").value = formatDateTime(record.check_out_time);
     document.getElementById("accepted_datetime").value = formatDateTime(record.accepted_datetime);
 
+    // Populate status badge
+    const statusContainer = document.getElementById("status");
+    statusContainer.innerHTML = getStatusBadgeHTML(record.status);
+
+    // Populate acceptor statuses dynamically
+    const infoResultContainer = document.getElementById("info-result");
+    infoResultContainer.innerHTML = `
+        <h5>Trạng thái duyệt:</h5>
+        <ul class="list-group">
+            ${record.acceptor_statuses
+        .map(
+            (status) => `
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>Cấp ${status.level}: ${status.name}</span>
+                    <span class="badge ${
+                getStatusBadgeClass(status.status)
+            }">${status.label}</span>
+                </li>
+            `
+        )
+        .join("")}
+        </ul>
+    `;
+
+    // Show face scan button if applicable
     const faceScanButton = document.getElementById("face-scan-button");
     if (faceScanButton) {
         faceScanButton.classList.remove("d-none");
     }
 
+    // Hide QR scan button if applicable
     const openScanModalBtn = document.getElementById("openScanModalBtn");
     if (openScanModalBtn) {
         openScanModalBtn.classList.add("d-none");
     }
-
-    const statusContainer = document.getElementById("status");
-    statusContainer.innerHTML = getStatusBadgeHTML(record.status);
-
-
-
+}
+// Get appropriate badge class for the status
+function getStatusBadgeClass(status) {
+    switch (status) {
+        case "created":
+            return "bg-warning text-dark";
+        case "accepted":
+            return "bg-success";
+        case "reject":
+            return "bg-danger";
+        case "cancel":
+            return "bg-secondary";
+        case "expired":
+            return "bg-primary";
+        case "completed":
+            return "bg-info";
+        default:
+            return "bg-light text-dark";
+    }
 }
 
+// Generate a status badge HTML
 function getStatusBadgeHTML(status) {
-    let badgeClass = "";
+    let badgeClass = getStatusBadgeClass(status);
     let badgeText = "";
 
     switch (status) {
         case "created":
-            badgeClass = "bg-warning text-dark";
             badgeText = "Đã tạo";
             break;
         case "accepted":
-            badgeClass = "bg-success";
             badgeText = "Đã duyệt";
             break;
         case "reject":
-            badgeClass = "bg-danger";
-            badgeText = "Lỗi";
+            badgeText = "Từ chối";
             break;
         case "cancel":
-            badgeClass = "bg-secondary";
             badgeText = "Đã hủy";
             break;
         case "expired":
-            badgeClass = "bg-primary";
             badgeText = "Hết hạn";
             break;
         case "completed":
-            badgeClass = "bg-info";
             badgeText = "Hoàn thành";
             break;
         default:
-            badgeClass = "bg-light text-dark";
-            badgeText = "Thông báo";
+            badgeText = "Không xác định";
     }
 
     return `<span class="badge ${badgeClass}">${badgeText}</span>`;
 }
 
+// Format the date and time
 function formatDateTime(dateTimeString) {
+    if (!dateTimeString) return "N/A";
+
     const date = new Date(dateTimeString);
 
-    // Format day, month, year
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
     const year = date.getFullYear();
 
-    // Format hours, minutes, seconds
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     const seconds = String(date.getSeconds()).padStart(2, '0');
@@ -367,7 +489,8 @@ document.getElementById("capture-photo").addEventListener("click", async () => {
             // Close the modal
             const faceScanModal = bootstrap.Modal.getInstance(document.getElementById("faceScanModal"));
             faceScanModal.hide();
-            window.location.href = "/reports";
+            // window.location.href = "/reports";
+            window.location.reload();
         }
 
         else {

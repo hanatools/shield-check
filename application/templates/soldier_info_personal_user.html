@@ -1,0 +1,289 @@
+{% extends "member_base.html" %}
+
+{% block stylecss %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/custom/soldier_info_personal_user.css') }}">
+{% endblock %}
+
+{% block title %}
+<title>HRM - Thông Tin Chi Tiết Quân Nhân</title>
+{% endblock %}
+
+{% block content %}
+<div class="content">
+    <!-- User Details Section -->
+    <div class="user-details">
+        <h2>Thông Tin Chi Tiết Quân Nhân</h2>
+        <div class="detail-row">
+            <label>Họ và Tên:</label>
+            <span>{{ user.full_name }}</span>
+        </div>
+        <div class="detail-row">
+            <label>Số CCCD:</label>
+<!--            <span>{{ user.identity_card }}</span>-->
+            <span>{{ user.identity_card|mask_cccd }}</span>
+        </div>
+        <div class="detail-row">
+            <label>Email:</label>
+            <span>{{ user.email or 'Chưa cung cấp' }}</span>
+        </div>
+        <div class="detail-row">
+            <label>Cấp Quản Lý:</label>
+            <span id="military-manager-name">{{ user.military_manager_full_name or 'Chưa cập nhật' }}</span>
+        </div>
+        <div class="detail-row">
+            <label>Đơn Vị:</label>
+            <span id="military-unit-name">{{ user.military_unit_name or 'Chưa cập nhật' }}</span>
+        </div>
+
+
+
+        <div class="detail-row">
+            <label>Vai Trò:</label>
+            <span id="role">
+        {% if user.role == "SYSTEM_ADMIN_ROLE" %}
+            Quản Trị Viên Hệ Thống
+        {% elif user.role == "ADMIN_ROLE" %}
+            Quản Lý
+        {% elif user.role == "USER_ROLE" %}
+          Quân Nhân
+        {% else %}
+            Chưa xác định
+        {% endif %}
+    </span>
+        </div>
+
+        <div class="detail-row">
+            <label>Ghi Chú:</label>
+            <span>{{ user.note or 'Không có ghi chú' }}</span>
+        </div>
+
+        <!-- Edit Button -->
+        {% if current_user.id and (current_user.role == "ADMIN_ROLE" or current_user.role == "SYSTEM_ADMIN_ROLE") %}
+        <button class="btn btn-warning mt-3" data-bs-toggle="modal" data-bs-target="#editUserModal">
+            <i class="bi bi-pencil"></i> Cập nhật
+        </button>
+        {% endif %}
+
+
+    </div>
+
+    <!-- Display Links for Logged-in User -->
+    {% if current_user.id == user.id and (current_user.role == "ADMIN_ROLE" or current_user.role == "SYSTEM_ADMIN_ROLE") %}
+    <div class="user-actions mt-4">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+            Đổi Mật Khẩu
+        </button>
+<!--        <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#changeSecondPasswordModal">-->
+<!--            Đổi Mật Khẩu Cấp Hai-->
+<!--        </button>-->
+    </div>
+    {% endif %}
+
+    <!-- Image Section -->
+    <div class="image-section">
+        <h4 class="text-center mt-4">Hình Ảnh Khi Đăng Ký</h4>
+
+        <div class="image-row">
+            <div class="image-item">
+                {% if user.left_image_path %}
+                <img src="{{ url_for('uploaded_file', filename=user.left_image_path) }}" alt="Hình bên trái" />
+                {% else %}
+                <p>Không có hình bên trái</p>
+                {% endif %}
+            </div>
+            <div class="image-item">
+                {% if user.right_image_path %}
+                <img src="{{ url_for('uploaded_file', filename=user.right_image_path) }}" alt="Hình bên phải" />
+                {% else %}
+                <p>Không có hình bên phải</p>
+                {% endif %}
+            </div>
+            <div class="image-item">
+                {% if user.front_image_path %}
+                <img src="{{ url_for('uploaded_file', filename=user.front_image_path) }}" alt="Hình chính diện" />
+                {% else %}
+                <p>Không có hình chính diện</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="edit-user-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token_value }}">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editUserModalLabel">Chỉnh Sửa Thông Tin Quân Nhân</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group mb-3">
+                            <label for="edit-full-name" class="form-label">Họ và Tên</label>
+                            <input
+                                    type="text"
+                                    id="edit-full-name"
+                                    class="form-control"
+                                    value="" required
+                            />
+                            <span id="edit-full-name-error" class="error-message"></span>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="edit-identity-card" class="form-label">CCCD</label>
+                            <input
+                                    type="text"
+                                    id="edit-identity-card"
+                                    class="form-control"
+                                    value="" required
+                            />
+                            <span id="edit-identity-card-error" class="error-message"></span>
+                        </div>
+
+
+
+                        <div class="form-group mb-3">
+                            <label for="edit-email" class="form-label">Email</label>
+                            <input
+                                    type="email"
+                                    id="edit-email"
+                                    class="form-control"
+                                    value=""
+                            />
+                            <span id="edit-email-error" class="error-message"></span>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="edit-military-unit-id" class="form-label">Chọn Tên Đơn Vị</label>
+                            <select id="edit-military-unit-id" class="form-control" value="" >
+                                <option value="">-- Chọn đơn vị --</option>
+                            </select>
+                            <span id="edit-military-unit-error" class="error-message"></span>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="edit-military-manager-id" class="form-label">Chức Danh Quản Lý</label>
+                            <select id="edit-military-manager-id" class="form-control" value="" >
+                                <option value="">-- Chọn cấp quản lý --</option>
+                            </select>
+                            <span id="edit-military-manager-error" class="error-message"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-role">Vai Trò</label>
+                            <select id="edit-role" class="form-control">
+                                <option value="SYSTEM_ADMIN_ROLE">Quản Trị Hệ Thống</option>
+                                <option value="ADMIN_ROLE">Quản Lý</option>
+                                <option value="USER_ROLE">Quân Nhân</option>
+                            </select>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="edit-note" class="form-label">Ghi Chú</label>
+                            <textarea id="edit-note" class="form-control"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary">Lưu Thay Đổi</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="change-password-form">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="changePasswordModalLabel">Đổi Mật Khẩu</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="current-password">Mật Khẩu Hiện Tại</label>
+                            <input type="password" id="current-password" class="form-control" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="new-password">Mật Khẩu Mới</label>
+                            <input type="password" id="new-password" class="form-control" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm-password">Xác Nhận Mật Khẩu Mới</label>
+                            <input type="password" id="confirm-password" class="form-control" required />
+                        </div>
+                        <div id="change-password-error" class="text-danger mt-2"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary">Lưu Thay Đổi</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Second Level Password Modal -->
+    <div class="modal fade" id="changeSecondPasswordModal" tabindex="-1" aria-labelledby="changeSecondPasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="change-second-password-form">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="changeSecondPasswordModalLabel">Đổi Mật Khẩu Cấp Hai</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="current-second-password">Mật Khẩu Cấp Hai Hiện Tại</label>
+                            <input type="password" id="current-second-password" class="form-control" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="new-second-password">Mật Khẩu Cấp Hai Mới</label>
+                            <input type="password" id="new-second-password" class="form-control" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm-second-password">Xác Nhận Mật Khẩu Cấp Hai Mới</label>
+                            <input type="password" id="confirm-second-password" class="form-control" required />
+                        </div>
+                        <div id="change-second-password-error" class="text-danger mt-2"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary">Lưu Thay Đổi</button>
+                    </div>
+                    <div class="text-end p-2">
+                        <a href="#" id="reset-second-password-link">Đặt lại mật khẩu thứ hai</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal fade" id="resetSecondPasswordConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Xác nhận</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    Bạn có chắc chắn muốn đặt lại mật khẩu thứ hai không? Một liên kết đặt lại sẽ được gửi đến email của bạn.
+                </div>
+                <div class="modal-footer">
+
+                    <button type="button" id="confirm-reset-second-password" class="btn btn-primary">
+                        <span id="confirm-reset-spinner" class="spinner-border spinner-border-sm me-2" style="display: none;"></span>
+                        Confirm
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+</div>
+{% endblock %}
+
+{% block stylejs %}
+<script src="{{ url_for('static', filename='js/custom/soldier_info_personal_user.js') }}"></script>
+{% endblock %}

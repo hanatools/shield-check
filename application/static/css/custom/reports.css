@@ -127,3 +127,11 @@
         font-size: 12px; /* Reduce font size for smaller screens */
     }
 }
+
+
+ .status-container {
+     display: flex;
+     flex-direction: column;
+     align-items: flex-start;
+     gap: 5px;
+ }

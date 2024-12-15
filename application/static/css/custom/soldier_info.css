@@ -75,3 +75,30 @@
 .table-container td a:hover {
     text-decoration: underline;
 }
+
+.pagination {
+    margin: 0 auto;
+    font-size: 14px;
+}
+
+.page-item.active .page-link {
+    background-color: #007bff; /* Primary color */
+    border-color: #007bff;
+    color: #fff;
+}
+
+.page-item .page-link {
+    color: #007bff;
+    border: 1px solid #dee2e6;
+}
+
+.page-item .page-link:hover {
+    background-color: #f8f9fa;
+    color: #0056b3;
+}
+
+.page-item.disabled .page-link {
+    color: #6c757d;
+    pointer-events: none;
+    background-color: #f8f9fa;
+}

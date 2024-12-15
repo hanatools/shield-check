@@ -10,6 +10,20 @@ document.getElementById('search-form').addEventListener('submit', function (e) {
         });
 });
 
+function maskIdentityCard(identityCard) {
+    // Mask all but the last 4 digits
+    return identityCard.replace(/.(?=.{4})/g, "*");
+}
+
+function maskEmail(email) {
+    // Mask the email's username part
+    const [username, domain] = email.split("@");
+    if (username.length <= 2) {
+        return "*".repeat(username.length) + "@" + domain;
+    }
+    return username[0] + "*".repeat(username.length - 2) + username[username.length - 1] + "@" + domain;
+}
+
 
 function handleSearch(query) {
     console.log("handleSearch called with query:", query);
@@ -28,31 +42,26 @@ function handleSearch(query) {
                 const row = document.createElement("tr");
 
                 row.innerHTML = `
-                   <td>${ user.id }</td>
+                   <td>${user.id}</td>
                 <td class="text-center">
                     <button
                             class="btn btn-info btn-sm"
                             data-bs-toggle="tooltip"
                             title="Xem"
-                            onclick="viewUser(${ user.id })"
+                            onclick="viewUser(${user.id})"
                     >
                         <i class="bi bi-eye"></i>
                     </button>
-                    <button
-                            class="btn btn-warning btn-sm"
-                            data-bs-toggle="tooltip"
-                            title="Sửa"
-                            onclick="editUser(${ user.id })"
-                    >
-                        <i class="bi bi-pencil"></i>
-                    </button>
+         
                     </form>
                 </td>
-                <td>${ user.full_name }</td>
-                <td>${ user.identity_card }</td>
-                <td>${ user.management_level }</td>
-                <td>${ user.unit_name }</td>
-                <td>${ user.email }</td>
+                <td>${user.full_name}</td>
+               <td>${maskIdentityCard(user.identity_card)}</td>
+                   <td>${user.management_level}</td>
+                   <td>${user.unit_name}</td>
+                   <td>${maskEmail(user.email)}</td>
+                <td>${user.note}</td>
+                <td>${user.created_time}</td>
                 `;
 
                 tableBody.appendChild(row);
@@ -80,3 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
         new bootstrap.Tooltip(tooltipTriggerEl);
     });
 });
+
+function viewUser(userId) {
+    window.location.href = `/soldier_info_personal_user/${userId}`;
+}

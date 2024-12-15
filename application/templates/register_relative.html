@@ -13,35 +13,71 @@
     <div class="form-section">
         <h4>Đăng ký ra vào dành cho người thân</h4>
         <hr>
-        <form>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="alert-section">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('core.register_relative') }}">
+            {{ form.hidden_tag() }}
             <div class="mb-3">
-                <label for="relativeName" class="form-label">Họ tên người thân:</label>
-                <input type="text" class="form-control" id="relativeName" placeholder="Nhập họ tên người thân">
+                <label for="full_name" class="form-label">Họ tên người thân:<span
+                        class="text-danger">(*)</span></label>
+                <input type="text" class="form-control" id="full_name" name="full_name"
+                       placeholder="Nhập họ tên người thân">
             </div>
             <div class="mb-3">
-                <label for="relativeId" class="form-label">Số CCCD:</label>
-                <input type="text" class="form-control" id="relativeId" placeholder="Nhập số CCCD">
+                <label for="identity_card" class="form-label">Số CCCD:<span class="text-danger">(*)</span></label>
+                <input type="text" class="form-control" id="identity_card" name="identity_card" placeholder="Nhập số CCCD">
             </div>
             <div class="mb-3">
-                <label for="sponsorName" class="form-label">Tên Quân nhân bảo lãnh:</label>
-                <input type="text" class="form-control" id="sponsorName" placeholder="Nhập tên Quân nhân bảo lãnh">
+                <label for="relationship" class="form-label">Mối quan hệ:</label>
+                <input type="text" class="form-control" id="relationship" name="relationship"
+                       placeholder="Nhập mối quan hệ">
             </div>
             <div class="mb-3">
-                <label for="sponsorId" class="form-label">Số CCCD của Quân nhân:</label>
-                <input type="text" class="form-control" id="sponsorId" placeholder="Nhập số CCCD của Quân nhân">
+                <label for="sponsor_full_name" class="form-label">Tên Quân nhân bảo lãnh:</label>
+                <input type="text" disabled class="form-control" name="sponsor_full_name" id="sponsor_full_name" placeholder="Tên Quân nhân bảo lãnh">
             </div>
             <div class="mb-3">
-                <label for="rank" class="form-label">Cấp quản lý Quân nhân:</label>
-                <input type="text" class="form-control" id="rank" placeholder="Nhập cấp quản lý Quân nhân">
+                <label for="sponsor_identity_card" class="form-label">Số CCCD của Quân nhân:<span
+                        class="text-danger">(*)</span></label>
+                <input type="text" class="form-control" id="sponsor_identity_card" name="sponsor_identity_card"
+                       placeholder="Số CCCD của Quân nhân" value="">
             </div>
+
             <div class="mb-3">
-                <label for="unit" class="form-label">Đơn vị của Quân nhân:</label>
-                <input type="text" class="form-control" id="unit" placeholder="Nhập đơn vị của Quân nhân">
+                <label for="sponsor_military_unit_name" class="form-label">Đơn vị của Quân nhân:</label>
+                <input type="text" class="form-control" id="sponsor_military_unit_name" disabled name="sponsor_military_unit_name"
+                       placeholder="Đơn vị của Quân nhân">
+                <input type="text" hidden="hidden" value="" id="sponsor_military_unit_id" name="sponsor_military_unit_id" >
             </div>
+
+
+            <div class="mb-3">
+                <label for="sponsor_military_manager_full_name" class="form-label">Cấp quản lý Quân nhân:</label>
+                <input type="text" class="form-control" disabled id="sponsor_military_manager_full_name" name="sponsor_military_manager_full_name"
+                       placeholder="Cấp quản lý Quân nhân">
+                <input type="text" hidden="hidden" value="" id="sponsor_military_manager_id" name="sponsor_military_manager_id" >
+            </div>
+
+            <div class="mb-3">
+                <label for="note"  class="form-label" >Ghi chú</label>
+                <textarea id="note" name="note" class="form-control"></textarea>
+            </div>
+
+
             <div class="mb-3 text-center">
-                <button type="submit" class="btn btn-primary">Đăng ký</button>
+                <button type="submit" disabled class="btn btn-primary">Đăng ký</button>
             </div>
         </form>
+
+
     </div>
 </div>
 {% endblock %}

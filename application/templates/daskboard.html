@@ -47,9 +47,10 @@
                     <label for="status" class="form-label">Trạng thái:</label>
                     <div id="status" class="" disabled></div>
                 </div>
+
             <div class="mb-3">
                 <label for="reason" class="form-label">Lý do ra ngoài:</label>
-                <textarea class="form-control" id="reason" rows="3" placeholder="Nhập lý do ra ngoài" disabled></textarea>
+                <textarea class="form-control" id="reason" rows="3" placeholder="Lý do ra ngoài" disabled></textarea>
             </div>
 
         </form>
@@ -70,18 +71,6 @@
 
     </div>
 </div>
-
-<!-- Scan Modal -->
-<!-- Button to Open the Modal -->
-<!--<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#scanModal">-->
-<!--    Quét CCCD-->
-<!--</button>-->
-
-<!--<div id="face-scan-container" class="text-center mt-3">-->
-<!--    <button id="face-scan-button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#scanModal" >-->
-<!--        Thông tin chính xác, tiến hành xác thực gương mặt-->
-<!--    </button>-->
-<!--</div>-->
 
 <!-- Modal -->
 <div class="modal fade" id="scanModal" tabindex="-1" aria-labelledby="scanModalLabel" aria-hidden="true">
@@ -142,7 +131,45 @@
     </div>
 </div>
 
+<div class="modal fade" id="relativeConfirmModal" tabindex="-1" aria-labelledby="relativeConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="relativeConfirmModalLabel">Xác nhận thông tin Người thân</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Họ và tên:</strong> <span id="relativeConfirmFullName"></span></p>
+                <p><strong>Số CCCD:</strong> <span id="relativeConfirmIdentityCard"></span></p>
+                <p><strong>Mối quan hệ:</strong> <span id="relativeConfirmRelationship"></span></p>
+                <p><strong>Đơn vị:</strong> <span id="relativeConfirmUnitName"></span></p>
+                <p><strong>Thời gian tạo:</strong> <span id="relativeConfirmCreatedTime"></span></p>
+                <p><strong>Ghi chú:</strong> <span id="relativeConfirmNote"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary btn-sm w-auto" data-bs-dismiss="modal">Hủy</button>
+                <button class="btn btn-primary btn-sm w-auto" id="relativeConfirmButton">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+</div>
 
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-success" id="successModalLabel">Thành công</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="successMessage">Đã quét đi vào thành công</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 

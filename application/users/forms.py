@@ -6,6 +6,7 @@ from wtforms import ValidationError
 from flask_wtf.file import FileField, FileAllowed
 from application.models import User
 
+
 class LoginForm(FlaskForm):
     username = StringField(
         "Username", validators=[DataRequired(), Length(min=3, max=25)]
@@ -56,8 +57,10 @@ class UpdateUserForm(FlaskForm):
         if User.query.filter_by(username=field.data).first():
             raise ValidationError("Sorry, that username is taken!")
 
+
 class DeleteUserForm(FlaskForm):
     csrf_token = HiddenField()
+
 
 class SoldierRegistrationForm(FlaskForm):
     full_name = StringField("Họ và Tên", validators=[DataRequired()])
@@ -68,3 +71,36 @@ class SoldierRegistrationForm(FlaskForm):
 
 class InputPersonalForm(FlaskForm):
     pass
+
+
+class RegisterRelativeForm(FlaskForm):
+    relative_name = StringField(
+        "Họ tên người thân",
+        validators=[
+            DataRequired(message="Họ tên người thân không được để trống."),
+            Length(max=128),
+        ],
+    )
+    relative_id = StringField(
+        "Số CCCD",
+        validators=[
+            DataRequired(message="Số CCCD không được để trống."),
+            Length(min=12, max=12, message="Số CCCD phải gồm 12 ký tự."),
+        ],
+    )
+    relationship = StringField("Mối quan hệ", validators=[Length(max=64)])
+    rank = StringField("Cấp quản lý Quân nhân", validators=[Length(max=64)])
+    unit = StringField("Đơn vị của Quân nhân", validators=[Length(max=128)])
+    submit = SubmitField("Đăng ký")
+
+
+class ResetSecondPasswordForm(FlaskForm):
+    new_password = PasswordField("New Password", validators=[DataRequired()])
+    confirm_password = PasswordField(
+        "Confirm Password",
+        validators=[
+            DataRequired(),
+            EqualTo("new_password", message="Passwords must match."),
+        ],
+    )
+    submit = SubmitField("Submit")

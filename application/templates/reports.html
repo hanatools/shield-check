@@ -21,6 +21,7 @@
                     <th>ID</th>
                     <th>Họ và tên</th>
                     <th>Trạng thái</th>
+                    <th>Trạng thái chi tiết</th>
                     <th>Số CCCD</th>
 
                     <th>Thời gian vào</th>
@@ -44,26 +45,31 @@
                                      {% elif record.status == 'expired' %} bg-primary
                                      {% elif record.status == 'completed' %} bg-info
                                      {% endif %}">
-                             {% if record.status == 'created' %}
-                                                Đã tạo
-                                            {% elif record.status == 'accepted' %}
-                                                Đã duyệt
-                                            {% elif record.status == 'reject' %}
-                                                Lỗi
-                                            {% elif record.status == 'cancel' %}
-                                                Đã hủy
-                                            {% elif record.status == 'expired' %}
-                                                Hết hạn
-                                                   {% elif record.status == 'completed' %}
 
-                                                Hoàn thành
-                                            {% else %}
 
-                                                Thông báo
-                                            {% endif %}
+                                        {{ STATUS_TRANSLATIONS.get(record.status, "Đã tạo") }}
                         </span>
                     </td>
-                    <td>{{ record.identity_card }}</td>
+                    <td>
+                        <div class="status-container">
+                            {% for acceptor in record.acceptors %}
+                            <div>
+                                <strong>{{ loop.index }}:</strong>
+                                <span class="badge
+                 {% if acceptor.status == 'accepted' %} bg-success
+                 {% elif acceptor.status == 'rejected' %} bg-danger
+                 {% else %} bg-warning text-dark
+                 {% endif %}">
+                {{ STATUS_TRANSLATIONS.get(acceptor.status, "Chờ duyệt") }}
+            </span>
+                                <span>({{ acceptor.get('acceptor-level-' ~ loop.index ~ '-manager_id-manager_full_name', 'N/A') }})</span>
+                                <span>({{ acceptor.get('acceptor-level-' ~ loop.index ~ '-manager_id-manager_email') | mask_email }})</span>
+
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </td>
+                    <td>{{ record.identity_card | mask_cccd }}</td>
                     <td>{{ record.check_in_time }}</td>
                     <td>{{ record.check_out_time }}</td>
                     <td>{{ record.duration }}</td>

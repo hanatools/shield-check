@@ -1,0 +1,100 @@
+body {
+    background-color: #f8f9fa;
+    font-family: 'Arial', sans-serif;
+}
+
+/* Section Headers */
+h2, h5 {
+    color: #1e88e5;
+    font-weight: bold;
+}
+
+/* Hierarchy Map Styling */
+#hierarchy-map {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+/* Table Styling */
+#military-units-table {
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    background-color: #ffffff;
+}
+
+#military-units-table thead th {
+    background-color: #1e88e5;
+    color: #ffffff;
+    text-align: center;
+    font-size: 14px;
+}
+
+#military-units-table tbody tr:nth-child(odd) {
+    background-color: #f9f9f9;
+}
+
+#military-units-table tbody tr:hover {
+    background-color: #f1f7ff;
+}
+
+/* Buttons Styling */
+.btn {
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+.btn-primary {
+    background-color: #1e88e5;
+    border-color: #1e88e5;
+}
+
+.btn-primary:hover {
+    background-color: #1565c0;
+    border-color: #1565c0;
+}
+
+.btn-info {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+}
+
+.btn-info:hover {
+    background-color: #138496;
+    border-color: #138496;
+}
+
+.btn-danger {
+    background-color: #e53935;
+    border-color: #e53935;
+}
+
+.btn-danger:hover {
+    background-color: #c62828;
+    border-color: #c62828;
+}
+
+/* Modal Styling */
+.modal-content {
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.modal-header {
+    background-color: #1e88e5;
+    color: #ffffff;
+    border-radius: 10px 10px 0 0;
+}
+
+.modal-title {
+    font-weight: bold;
+    color: whitesmoke;
+}
+
+.btn-close {
+    color: #ffffff;
+}

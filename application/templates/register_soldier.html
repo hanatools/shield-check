@@ -18,52 +18,70 @@
             <form method="POST" id="register-form">
                 {{ form.hidden_tag() }}
                 <div class="mb-3">
-                    <label for="fullname" class="form-label">Họ và tên: <span class="text-danger">(*)</span> </label>
-                    <input
-                            type="text"
-                            class="form-control"
-                            id="fullname"
-                            name="fullname"
-                            placeholder="Nhập họ và tên"
-                            value="Nguyễn Văn A"
-                    />
-                    <small id="fullname-error" class="text-danger"></small>
-                </div>
-                <div class="mb-3">
-                    <label for="management_level" class="form-label">Cấp quản lý:<span class="text-danger">(*)</span> </label>
-                    <input
-                            type="text"
-                            class="form-control"
-                            id="management_level"
-                            name="management_level"
-                            placeholder="Nhập cấp quản lý"
-                            value="Cấp 1d"
-                    />
-                    <small id="management_level-error" class="text-danger"></small>
-                </div>
-                <div class="mb-3">
-                    <label for="identity_card" class="form-label">Số CCCD:  </label>
+                    <label for="identity_card" class="form-label">Số CCCD:  <span class="text-danger">(*)</span></label>
                     <input
                             type="text"
                             class="form-control"
                             id="identity_card"
                             name="identity_card"
                             placeholder="Nhập số CCCD"
-                            readonly
                     />
                 </div>
 
                 <div class="mb-3">
-                    <label for="unit_name" class="form-label">Đơn vị:<span class="text-danger">(*)</span>  </label>
+                    <label for="fullname" class="form-label">Họ và tên:  </label>
                     <input
                             type="text"
                             class="form-control"
-                            id="unit_name"
-                            name="unit_name"
-                            placeholder="Nhập Đơn vị"
-                            value="Đơn vị 1"
+                            id="fullname"
+                            name="fullname"
+                            placeholder="Nhập họ và tên"
+                            value=""
+                            disabled
                     />
+                    <small id="fullname-error" class="text-danger"></small>
                 </div>
+                <div class="mb-3">
+                    <label for="military-manager-id" class="form-label">Chức danh quản lý: </label>
+                    <select id="military-manager-id" class="form-control" disabled>
+                        <option value="">-- Chọn cấp quản lý --</option>
+                    </select>
+                    <span id="military-manager-id-error" class="error-message"></span>
+                </div>
+
+
+                <div class="mb-3">
+                    <label for="military_unit_id" class="form-label">Đơn vị: </label>
+
+
+                        <select
+                                class="form-control "
+                                name="military_unit_id"
+                                id="military_unit_id"
+
+                        >
+                            <option value="">Chọn Đơn vị</option>
+                        </select>
+
+
+
+                </div>
+                <div id="acceptors-container" class="mb-3">
+                    <label for="acceptor_ids" class="form-label">Người duyệt: </label>
+                    <div class="acceptor-item d-flex align-items-center mb-2">
+                        <select
+                                class="form-control acceptor-select"
+                                name="acceptor_ids"
+                                id="acceptor_ids"
+                                required
+                        >
+                            <option value="">Chọn người duyệt</option>
+                        </select>
+                        <button type="button" class="btn btn-danger btn-sm ms-2 remove-acceptor" style="display: none;">X</button>
+                    </div>
+                </div>
+                <button type="button" id="add-acceptor" class="btn btn-success btn-sm mt-2">+ Thêm người duyệt</button>
+
                 <div class="mb-3">
                     <label for="file-scan-step1" class="form-label">File scan:</label>
                     <input
@@ -77,6 +95,13 @@
 
                 </div>
                 <div class="mb-3 text-danger" id="error-message"></div>
+
+                <div class="mb-3">
+                    <label for="note">Ghi chú</label>
+                    <textarea id="note" class="form-control" placeholder="Thêm ghi chú"></textarea>
+                </div>
+
+
                 <div class="mb-3 text-center">
                     <button
                             type="button"
@@ -153,13 +178,15 @@
                 <!-- Form Details -->
                 <div style="flex: 2">
                     <div class="form-group">
-                        <label for="fullname-step3">Họ và tên:</label>
-                        <input type="text" class="form-control" id="fullname-step3" readonly />
-                    </div>
-                    <div class="form-group">
                         <label for="identity-card-step3">Số CCCD:</label>
                         <input type="text" class="form-control" id="identity-card-step3" readonly />
                     </div>
+
+                    <div class="form-group">
+                        <label for="fullname-step3">Họ và tên:</label>
+                        <input type="text" class="form-control" id="fullname-step3" readonly />
+                    </div>
+
                     <div class="form-group">
                         <label for="management-level-step3">Cấp quản lý:</label>
                         <input type="text" class="form-control" id="management-level-step3" readonly />
@@ -168,28 +195,37 @@
                         <label for="unit-step3">Đơn vị:</label>
                         <input type="text" class="form-control" id="unit-step3" readonly />
                     </div>
+                    <div id="acceptors-container-step3" class="mb-3">
+                    </div>
+
                     <div class="form-group">
                         <label for="file-scan-step3">File scan:</label>
-                        <input type="text" class="form-control" id="file-scan-step3" readonly />
+                        <input type="text" class="form-control bg-white" id="file-scan-step3" readonly />
                     </div>
+
+                    <div class="mb-3">
+                        <label for="note-step3">Ghi chú</label>
+                        <textarea id="note-step3" readonly class="form-control" placeholder="Thêm ghi chú"></textarea>
+                    </div>
+
                 </div>
                 <!-- Photo Placeholders -->
                 <div style="flex: 1" class="side-photos">
                     <div class="side-photo">
                         <div id="left-photo-step3" class="photo-placeholder">
-                            <img id="left-photo-preview-step3" class="photo-preview" />
+                            <img id="left-photo-preview-step3" class="photo-preview" src="" alt="" />
                         </div>
                         <label for="left-photo-step3">Bên trái</label>
                     </div>
                     <div class="side-photo">
                         <div id="right-photo-step3" class="photo-placeholder">
-                            <img id="right-photo-preview-step3" class="photo-preview" />
+                            <img id="right-photo-preview-step3" class="photo-preview" src="" alt="" />
                         </div>
                         <label for="right-photo-step3">Bên phải</label>
                     </div>
                     <div class="side-photo">
                         <div id="front-photo-step3" class="photo-placeholder">
-                            <img id="front-photo-preview-step3" class="photo-preview" />
+                            <img id="front-photo-preview-step3" class="photo-preview" src="" alt="" />
                         </div>
                         <label for="front-photo-step3">Đối diện</label>
                     </div>

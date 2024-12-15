@@ -10,28 +10,86 @@
 
 {% block content %}
 <div class="content">
-    <!-- Button Group -->
-    <div class="button-group">
-        <button class="btn btn-inactive" onclick="window.location.href='{{ url_for('core.input_personal') }}'">
-            Nhập thông tin cá nhân
-        </button>
-        <button class="btn btn-active">
-            Nhập thông tin theo lô
-        </button>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token_value }}">
+    <!-- Step 1: Upload Section -->
+    <div class="step active" id="step-1">
+        <div class="upload-container">
+            <h2 class="fw-bold text-primary">Nhập Thông Tin Quân nhân </h2>
+            <div class="placeholder-box" id="file-drop-zone">
+                <button class="template-btn btn-sm">Tải mẫu</button>
+                <p>Kéo thả file Excel vào đây hoặc</p>
+                <button id="upload-btn" class="btn-sm" type="button">Chọn file</button>
+                <input id="file-input" type="file" accept=".xlsx, .xls" hidden />
+            </div>
+        </div>
     </div>
 
-    <!-- Card Section -->
-    <div class="card">
-        <div class="placeholder-box">
-            Hãy chọn file Excel để tải lên
-            <button class="template-btn ">Tải mẫu</button>
+    <!-- Step 2: Data Preview Section -->
+    <div class="step  full-width" id="step-2">
+        <div class="preview-container full-width">
+            <h2>Xem Trước Dữ Liệu</h2>
+            <div class="folder-upload-container">
+                <button id="folder-upload-btn" onclick="" class="btn btn-primary btn-sm">Upload Folder</button>
+            </div>
+
+            <div class="table-responsive full-width">
+                <table class="preview-table full-width">
+                    <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>CCCD</th>
+                        <th>Họ Và Tên</th>
+                        <th>Đơn vị</th>
+                        <th>Mặt trái</th>
+                        <th>Mặt phải</th>
+                        <th>Mặt trước</th>
+                    </tr>
+
+                    </thead>
+                    <tbody id="preview-table-body">
+                    <!-- Rows will be dynamically generated here -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="button-group">
+                <button id="cancel-btn" onclick="goToStep(1)" class="btn btn-secondary">Hủy</button>
+                <button id="next-btn" class="btn btn-primary">Tiếp tục</button>
+            </div>
         </div>
-        <button class="upload-btn">Truyền file excel</button>
     </div>
+
+
+    <!-- Step 3: Result Section -->
+    <div class="step full-width" id="step-3">
+        <h2>Kết Quả Đăng Ký</h2>
+        <table class="table" id="result-table">
+            <thead>
+            <tr>
+            <tr>
+                <th>STT</th>
+                <th>CCCD</th>
+                <th>Họ Và Tên</th>
+                <th>Đơn vị</th>
+                <th>Kết Quả</th>
+                <th>Ghi Chú</th>
+            </tr>
+            </tr>
+            </thead>
+            <tbody id="result-table-body">
+            <!-- Results will be populated dynamically -->
+            </tbody>
+        </table>
+        <div class="button-group">
+            <button id="finish-btn" class="btn btn-primary btn-sm">Hoàn Thành</button>
+        </div>
+    </div>
+
+
 </div>
 {% endblock %}
 
 
 {% block stylejs %}
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <script src="{{ url_for('static', filename='js/custom/batch_input.js') }}"></script>
 {% endblock %}
