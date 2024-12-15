@@ -27,7 +27,7 @@ from application.models import (
 )
 from flask_login import login_required, current_user
 import threading
-
+import socket
 from application.users.forms import (
     SoldierRegistrationForm,
     InputPersonalForm,
@@ -783,6 +783,19 @@ def delete_military_unit(unit_id):
             500,
         )
 
+def get_public_ip_and_port():
+    try:
+        # Get the hostname and resolve the IP
+        hostname = socket.gethostname()
+        local_ip = socket.gethostbyname(hostname)
+
+        # Assuming Flask server is running on a known port
+        port = app.config.get("PORT", 5001)  # Default port is 5001
+        return f"http://{local_ip}:{port}"
+    except Exception as e:
+        print(f"Error getting public IP: {e}")
+        return None
+
 
 @core.route("/register_soldier_checkin_data", methods=["POST"])
 @login_required
@@ -862,6 +875,14 @@ def register_soldier_checkin_data():
                 image_file.write(base64.b64decode(base64_image.split(",")[1]))
             image_paths[key] = file_path
 
+        # Get public IP dynamically
+        public_url = get_public_ip_and_port()
+        if not public_url:
+            return render_template(
+                "error.html",
+                error_message="Không thể lấy địa chỉ máy chủ. Vui lòng kiểm tra cấu hình mạng.",
+            )
+
         # Save file scan if provided
         file_scan_path = None
         if file_scan:
@@ -904,11 +925,7 @@ def register_soldier_checkin_data():
             for index, acceptor in enumerate(acceptors)
         ]
 
-        # Send approval email to Acceptor Level 1
-
-        approval_url = (
-            f"{app.config.get('WEB_HOST_URL')}/approve/{user.id}/check-out/{token}/1"
-        )
+        approval_url = f"{public_url}/approve/{user.id}/check-out/{token}/1"
         subject = "Yêu cầu phê duyệt để ra ngoài"
         body_html = generate_html_email(
             user.full_name,
@@ -1312,8 +1329,16 @@ def approve_check_out(user_id, token, acceptor_level):
         next_acceptor["status"] = "created"
         acceptors[next_acceptor_level - 1] = next_acceptor
 
+        # Get public IP dynamically
+        public_url = get_public_ip_and_port()
+        if not public_url:
+            return render_template(
+                "error.html",
+                error_message="Không thể lấy địa chỉ máy chủ. Vui lòng kiểm tra cấu hình mạng.",
+            )
+
         # Prepare and send the approval email
-        approval_url = f"{app.config.get('WEB_HOST_URL')}/approve/{user_id}/check-out/{token}/{next_acceptor_level}"
+        approval_url = f"{public_url}/approve/{user_id}/check-out/{token}/{next_acceptor_level}"
         subject = f"Approval Request for Check-in: {check_in_record.full_name}"
         approvers_list = [
             {
