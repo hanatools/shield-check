@@ -1,4 +1,5 @@
 import base64
+import json
 import os
 import uuid
 from datetime import datetime
@@ -89,145 +90,108 @@ def scan_identity():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
-# @core.route("/api/check-in/<identity_card>", methods=["GET"])
-# @login_required
-# def get_latest_check_in(identity_card):
-#     print(f"Identity card: {identity_card}")
-#     check_in = (
-#         SponsorCheckIn.query.filter_by(identity_card=identity_card, status="accepted")
-#         .order_by(SponsorCheckIn.created_time.desc())
-#         .first()
-#     )
-#
-#     if not check_in:
-#         return (
-#             jsonify({"error": "Không tìm thấy thông tin check-in đã được phê duyệt"}),
-#             404,
-#         )
-#
-#     return (
-#         jsonify(
-#             {
-#                 "id": check_in.id,
-#                 "full_name": check_in.full_name,
-#                 "identity_card": check_in.identity_card,
-#                 "unit_name": check_in.unit_name,
-#                 "management_level": check_in.management_level,
-#                 "created_time": (
-#                     check_in.created_time.isoformat() if check_in.created_time else None
-#                 ),
-#                 "check_out_time": (
-#                     check_in.check_out_time.isoformat()
-#                     if check_in.check_out_time
-#                     else None
-#                 ),
-#                 "accepted_datetime": (
-#                     check_in.accepted_datetime.isoformat()
-#                     if check_in.accepted_datetime
-#                     else None
-#                 ),
-#                 "status": check_in.status,
-#             }
-#         ),
-#         200,
-#     )
 @core.route("/api/check-in/<identity_card>", methods=["GET"])
 @login_required
 def get_latest_check_in(identity_card):
-    print(f"Identity card: {identity_card}")
+    try:
+        print(f"Identity card: {identity_card}")
 
-    # Check in SponsorCheckIn first
-    check_in = (
-        SponsorCheckIn.query.filter_by(identity_card=identity_card, status="accepted")
-        .order_by(SponsorCheckIn.created_time.desc())
-        .first()
-    )
-
-    if check_in:
-        # Prepare acceptor-level status for SponsorCheckIn
-        acceptor_statuses = [
-            {
-                "level": 1,
-                "name": check_in.acceptor_level_1_full_name or "N/A",
-                "status": check_in.acceptor_level_1_status,
-                "label": STATUS_TRANSLATIONS.get(check_in.acceptor_level_1_status),
-            },
-            {
-                "level": 2,
-                "name": check_in.acceptor_level_2_full_name or "N/A",
-                "status": check_in.acceptor_level_2_status,
-                "label": STATUS_TRANSLATIONS.get(check_in.acceptor_level_2_status),
-            },
-            {
-                "level": 3,
-                "name": check_in.acceptor_level_3_full_name or "N/A",
-                "status": check_in.acceptor_level_3_status,
-                "label": STATUS_TRANSLATIONS.get(check_in.acceptor_level_3_status),
-            },
-        ]
-
-        return jsonify(
-            {
-                "type": "sponsor",
-                "id": check_in.id,
-                "full_name": check_in.full_name,
-                "identity_card": check_in.identity_card,
-                "unit_name": check_in.military_unit_name or "N/A",
-                "management_level": check_in.military_manager_full_name or "N/A",
-                "created_time": (
-                    check_in.created_time.isoformat() if check_in.created_time else None
-                ),
-                "check_out_time": (
-                    check_in.check_out_time.isoformat()
-                    if check_in.check_out_time
-                    else None
-                ),
-                "accepted_datetime": (
-                    check_in.accepted_datetime.isoformat()
-                    if check_in.accepted_datetime
-                    else None
-                ),
-                "status": check_in.status,
-                "acceptor_statuses": acceptor_statuses,
-            }
+        # Check in SponsorCheckIn first
+        check_in = (
+            SponsorCheckIn.query.filter_by(
+                identity_card=identity_card, status="accepted"
+            )
+            .order_by(SponsorCheckIn.created_time.desc())
+            .first()
         )
 
-    # If no SponsorCheckIn is found, check RelativeCheckIn
-    relative_check_in = (
-        RelativeCheckIn.query.filter_by(identity_card=identity_card, status="accepted")
-        .order_by(RelativeCheckIn.created_time.desc())
-        .first()
-    )
+        if check_in:
+            # Parse acceptors JSON from the record
+            acceptors = json.loads(check_in.acceptors or "[]")
 
-    if relative_check_in:
-        return jsonify(
-            {
-                "type": "relative",
-                "id": relative_check_in.id,
-                "full_name": relative_check_in.full_name,
-                "identity_card": relative_check_in.identity_card,
-                "relationship": relative_check_in.relationship or "N/A",
-                "unit_name": relative_check_in.unit_name or "N/A",
-                "created_time": (
-                    relative_check_in.created_time.isoformat()
-                    if relative_check_in.created_time
-                    else None
-                ),
-                "check_out_time": (
-                    relative_check_in.check_out_time.isoformat()
-                    if relative_check_in.check_out_time
-                    else None
-                ),
-                "status": relative_check_in.status,
-            }
+            # Prepare acceptor statuses dynamically
+            acceptor_statuses = [
+                {
+                    "level": index + 1,
+                    "name": acceptor.get(
+                        f"acceptor-level-{index + 1}-manager_id-manager_full_name",
+                        "N/A",
+                    ),
+                    "status": acceptor.get("status", "Chờ duyệt"),
+                    "label": STATUS_TRANSLATIONS.get(
+                        acceptor.get("status", "created"), "Không xác định"
+                    ),
+                }
+                for index, acceptor in enumerate(acceptors)
+            ]
+
+            return jsonify(
+                {
+                    "type": "sponsor",
+                    "id": check_in.id,
+                    "full_name": check_in.full_name,
+                    "identity_card": check_in.identity_card,
+                    "unit_name": check_in.military_unit_name or "N/A",
+                    "management_level": check_in.military_manager_full_name or "N/A",
+                    "created_time": (
+                        check_in.created_time.isoformat()
+                        if check_in.created_time
+                        else None
+                    ),
+                    "check_out_time": (
+                        check_in.check_out_time.isoformat()
+                        if check_in.check_out_time
+                        else None
+                    ),
+                    "accepted_datetime": (
+                        check_in.accepted_datetime.isoformat()
+                        if check_in.accepted_datetime
+                        else None
+                    ),
+                    "status": check_in.status,
+                    "acceptor_statuses": acceptor_statuses,
+                }
+            )
+
+        # If no SponsorCheckIn is found, check RelativeCheckIn
+        relative_check_in = (
+            RelativeCheckIn.query.filter_by(
+                identity_card=identity_card, status="accepted"
+            )
+            .order_by(RelativeCheckIn.created_time.desc())
+            .first()
         )
 
-    # If neither SponsorCheckIn nor RelativeCheckIn is found
-    return (
-        jsonify({"error": "Không tìm thấy thông tin check-in đã được phê duyệt"}),
-        404,
-    )
+        if relative_check_in:
+            return jsonify(
+                {
+                    "type": "relative",
+                    "id": relative_check_in.id,
+                    "full_name": relative_check_in.full_name,
+                    "identity_card": relative_check_in.identity_card,
+                    "relationship": relative_check_in.relationship or "N/A",
+                    "unit_name": relative_check_in.unit_name or "N/A",
+                    "created_time": (
+                        relative_check_in.created_time.isoformat()
+                        if relative_check_in.created_time
+                        else None
+                    ),
+                    "check_out_time": (
+                        relative_check_in.check_out_time.isoformat()
+                        if relative_check_in.check_out_time
+                        else None
+                    ),
+                    "status": relative_check_in.status,
+                }
+            )
+
+        # If neither SponsorCheckIn nor RelativeCheckIn is found
+        return (
+            jsonify({"error": "Không tìm thấy thông tin check-in đã được phê duyệt"}),
+            404,
+        )
+    except Exception as e:
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
 
 @core.route("/input_personal")
@@ -361,7 +325,6 @@ def get_relatives_created_by(user_id):
 def get_relatives_for_sponsor(sponsor_id):
     return UserRelative.query.filter_by(sponsor_id=sponsor_id).all()
 
-
 @core.route("/reports", methods=["GET", "POST"])
 @login_required
 def reports():
@@ -383,6 +346,9 @@ def reports():
     # Prepare data for rendering
     report_data = []
     for record in check_ins:
+        # Parse acceptors JSON
+        acceptors = json.loads(record.acceptors) if record.acceptors else []
+
         # Calculate duration
         if record.check_in_time and record.check_out_time:
             duration = abs(
@@ -397,9 +363,7 @@ def reports():
                 "id": record.id,
                 "full_name": record.full_name,
                 "status": record.status,
-                "acceptor_level_1_status": record.acceptor_level_1_status,
-                "acceptor_level_2_status": record.acceptor_level_2_status,
-                "acceptor_level_3_status": record.acceptor_level_3_status,
+                "acceptors": acceptors,
                 "identity_card": record.identity_card,
                 "check_in_time": (
                     record.check_in_time.strftime("%H:%M:%S %d/%m/%Y")
@@ -813,102 +777,55 @@ def register_soldier_checkin_data():
         # Extract user details from the request
         data = request.json
         identity_card = data.get("identity_card", "").strip()
-        acceptor_level_1_id = data.get("acceptor_level_1_id", "").strip()
-        acceptor_level_2_id = data.get("acceptor_level_2_id", "").strip()
-        acceptor_level_3_id = data.get("acceptor_level_3_id", "").strip()
+        acceptors = data.get("acceptors", [])
         file_scan = data.get("file_scan", "")
         images = data.get("images", {})
 
-        # Validate required fields
-        if not all(
-            [
-                acceptor_level_1_id,
-                identity_card,
-                acceptor_level_2_id,
-                acceptor_level_3_id,
-            ]
-        ):
-            return jsonify({"error": "All fields are required"}), 400
+        # Validate acceptors JSON
+        if len(acceptors) == 0 or len(acceptors) > 4:
+            return jsonify({"error": "Người duyệt phải từ 1 đến 4."}), 400
 
-        if not all(k in images for k in ["left", "right", "front"]):
-            return jsonify({"error": "Missing one or more required images"}), 400
+        # Check for duplicate acceptor IDs
+        acceptor_ids = [
+            acceptor.get(f"acceptor-level-{index + 1}")
+            for index, acceptor in enumerate(acceptors)
+        ]
+        if len(acceptor_ids) != len(set(acceptor_ids)):
+            return jsonify({"error": "Không được chọn trùng người duyệt."}), 400
 
-        # Check if the user exists by identity card
+        # Validate identity card
         user = User.query.filter_by(identity_card=identity_card).first()
         if not user:
             return (
                 jsonify(
-                    {"error": f"User with identity card {identity_card} does not exist"}
+                    {"error": f"Người dùng với CCCD {identity_card} không tồn tại."}
                 ),
                 404,
             )
 
-        # Validate all acceptors
-        acceptor_level_1 = User.query.get(acceptor_level_1_id)
-        acceptor_level_2 = User.query.get(acceptor_level_2_id)
-        acceptor_level_3 = User.query.get(acceptor_level_3_id)
+        # Validate required images
+        if not all(k in images for k in ["left", "right", "front"]):
+            return jsonify({"error": "Thiếu một hoặc nhiều ảnh cần thiết."}), 400
 
-        if not all([acceptor_level_1, acceptor_level_2, acceptor_level_3]):
-            missing_acceptors = []
-            if not acceptor_level_1:
-                missing_acceptors.append(
-                    f"Acceptor Level 1 (ID: {acceptor_level_1_id})"
-                )
-            if not acceptor_level_2:
-                missing_acceptors.append(
-                    f"Acceptor Level 2 (ID: {acceptor_level_2_id})"
-                )
-            if not acceptor_level_3:
-                missing_acceptors.append(
-                    f"Acceptor Level 3 (ID: {acceptor_level_3_id})"
-                )
-            return (
-                jsonify(
-                    {
-                        "error": f"The following acceptors are missing: {', '.join(missing_acceptors)}"
-                    }
-                ),
-                400,
+        # Process dynamic acceptors
+        for index, acceptor in enumerate(acceptors):
+            manager_id_key = next(
+                (key for key in acceptor if key.endswith("-manager_id")), None
             )
-
-        # Handle None values for military manager and unit
-        military_manager_full_name = (
-            user.military_manager.full_name if user.military_manager else "N/A"
-        )
-        military_manager_id = (
-            user.military_manager.id if user.military_manager else None
-        )
-        military_unit_id = user.military_unit.id if user.military_unit else None
-        military_unit_name = user.military_unit.name if user.military_unit else "N/A"
-
-        # Validate user image and identity card
-        is_valid, validation_message = validate_user_image(images, user)
-        if not is_valid:
-            return jsonify({"error": validation_message}), 400
-
-        # Send approval email to Acceptor Level 1
-        token = str(uuid.uuid4())
-        acceptor_level = 1
-        approvers = [
-            {"name": acceptor_level_1.full_name, "status": "Chờ duyệt"},
-            {"name": acceptor_level_2.full_name, "status": "Chờ duyệt"},
-            {"name": acceptor_level_3.full_name, "status": "Chờ duyệt"},
-        ]
-
-        # Send approval email to Acceptor Level 1
-        approval_url = (
-            f"{app.config.get('WEB_HOST_URL')}/approve/{user.id}/check-out/{token}/1"
-        )
-        subject = "Yêu cầu phê duyệt để ra ngoài"
-        body_html = generate_html_email(
-            user.full_name,
-            military_unit_name,
-            datetime.utcnow().strftime("%d/%m/%Y %H:%M:%S"),
-            approval_url,
-            approvers,
-        )
-        send_email(subject, acceptor_level_1.email, body_html)
-
+            if manager_id_key:
+                manager_id = acceptor.get(manager_id_key)
+                if manager_id:
+                    manager = User.query.get(manager_id)
+                    if manager:
+                        print(f"acceptor ID: {acceptor}")
+                        acceptor[f"{manager_id_key}-manager_full_name"] = (
+                            manager.full_name
+                        )
+                        acceptor[f"{manager_id_key}-manager_email"] = manager.email
+                        if index == 0:
+                            acceptor["status"] = "created"
+                        else:
+                            acceptor["status"] = "pending"
         # Save images to disk
         check_in_folder = os.path.join("static", "check-in")
         os.makedirs(check_in_folder, exist_ok=True)
@@ -930,33 +847,55 @@ def register_soldier_checkin_data():
             )
             with open(file_scan_path, "wb") as file:
                 file.write(base64.b64decode(file_scan.split(",")[1]))
-
+        token = str(uuid.uuid4())
         # Create a new CheckIn record
         check_in_record = SponsorCheckIn(
             user_id=user.id,
             full_name=user.full_name,
             identity_card=identity_card,
-            military_manager_full_name=military_manager_full_name,
-            military_manager_id=military_manager_id,
-            military_unit_id=military_unit_id,
-            military_unit_name=military_unit_name,
             file_scan_path=file_scan_path,
             left_image_path=image_paths.get("left"),
             right_image_path=image_paths.get("right"),
             front_image_path=image_paths.get("front"),
-            token=token,
-            acceptor_level_1_id=acceptor_level_1_id,
-            acceptor_level_2_id=acceptor_level_2_id,
-            acceptor_level_3_id=acceptor_level_3_id,
+            acceptors=json.dumps(acceptors),
             created_by_id=current_user.id,
-            acceptor_level_1_status="created",
+            token=token,
         )
 
-        # Save to the database
         db.session.add(check_in_record)
         db.session.commit()
+        # Send email only to the first acceptor
 
-        # Return success response with details
+        approvers_list = [
+            {
+                "email": acceptor.get(
+                    f"acceptor-level-{index + 1}-manager_id-manager_email"
+                ),
+                "name": acceptor.get(
+                    f"acceptor-level-{index + 1}-manager_id-manager_full_name", "N/A"
+                ),
+                "status": STATUS_TRANSLATIONS.get(
+                    acceptor.get("status", "Chờ duyệt"), "Chờ duyệt"
+                ),
+            }
+            for index, acceptor in enumerate(acceptors)
+        ]
+
+        # Send approval email to Acceptor Level 1
+
+        approval_url = (
+            f"{app.config.get('WEB_HOST_URL')}/approve/{user.id}/check-out/{token}/1"
+        )
+        subject = "Yêu cầu phê duyệt để ra ngoài"
+        body_html = generate_html_email(
+            user.full_name,
+            user.military_unit.name if user.military_unit else "",
+            datetime.utcnow().strftime("%d/%m/%Y %H:%M:%S"),
+            approval_url,
+            approvers_list,
+        )
+        send_email(subject, approvers_list[0]["email"], body_html)
+
         return (
             jsonify(
                 {
@@ -965,11 +904,6 @@ def register_soldier_checkin_data():
                         "id": check_in_record.id,
                         "full_name": check_in_record.full_name,
                         "identity_card": check_in_record.identity_card,
-                        "military_manager_full_name": check_in_record.military_manager_full_name,
-                        "military_unit_name": check_in_record.military_unit_name,
-                        "status": check_in_record.status,
-                        "token": check_in_record.token,
-                        "created_time": check_in_record.created_time.isoformat(),
                     },
                 }
             ),
@@ -1269,43 +1203,6 @@ def relative_reports():
     )
 
 
-# @core.route("/approve/<int:user_id>/check-out/<string:token>", methods=["GET"])
-# def approve_check_out(user_id, token):
-#     try:
-#         # Retrieve the check-in record
-#         check_in_record = SponsorCheckIn.query.filter_by(user_id=user_id, token=token).first()
-#
-#         if not check_in_record:
-#             return render_template(
-#                 "approval_status.html",
-#                 status="error",
-#                 message="Không tìm thấy yêu cầu phê duyệt này hoặc liên kết không hợp lệ.",
-#             )
-#
-#         # Check if the record has already been approved
-#         if check_in_record.status == "accepted":
-#             return render_template(
-#                 "approval_status.html",
-#                 status="info",
-#                 message=f"Yêu cầu ra ngoài của {check_in_record.full_name} đã được phê duyệt trước đó.",
-#             )
-#
-#         # Update the status and record approval time
-#         check_in_record.status = "accepted"
-#         check_in_record.accepted_datetime = datetime.utcnow()
-#
-#         db.session.commit()
-#
-#         return render_template(
-#             "approval_status.html",
-#             status="success",
-#             message=f"Yêu cầu ra ngoài của {check_in_record.full_name} đã được phê duyệt thành công!",
-#         )
-#     except Exception as e:
-#         return render_template(
-#             "approval_status.html", status="error", message=f"Có lỗi xảy ra: {str(e)}"
-#         )
-
 STATUS_TRANSLATIONS = {
     "created": "Chờ duyệt",
     "accepted": "Đã duyệt",
@@ -1324,6 +1221,7 @@ STATUS_TRANSLATIONS = {
 def approve_check_out(user_id, token, acceptor_level):
     try:
         # Retrieve the check-in record
+        print(f"User ID: {user_id}, Token: {token}, Acceptor Level: {acceptor_level}")
         check_in_record = SponsorCheckIn.query.filter_by(
             user_id=user_id, token=token
         ).first()
@@ -1335,53 +1233,37 @@ def approve_check_out(user_id, token, acceptor_level):
                 message="Không tìm thấy yêu cầu phê duyệt này hoặc liên kết không hợp lệ.",
             )
 
-        # Determine the current approver's level and status attribute
-        approver_status_attr = f"acceptor_level_{acceptor_level}_status"
-        current_approver_status = getattr(check_in_record, approver_status_attr, None)
+        # Load the acceptors JSON field
+        acceptors = json.loads(check_in_record.acceptors or "[]")
+        if acceptor_level > len(acceptors):
+            return render_template(
+                "approval_status.html",
+                status="error",
+                message="Cấp phê duyệt không hợp lệ.",
+            )
 
-        # Translate the current approver's status
-        current_status_vi = STATUS_TRANSLATIONS.get(
-            current_approver_status, "Không xác định"
-        )
+        # Get the current approver details
+        current_acceptor = acceptors[acceptor_level - 1]
+        current_status = current_acceptor.get("status", "Chờ duyệt")
 
-        # Check if this approver already approved
-        if current_approver_status == "accepted":
+        # Check if already approved
+        if current_status == "accepted":
             return render_template(
                 "approval_status.html",
                 status="info",
                 message=f"Yêu cầu ra ngoài của {check_in_record.full_name} đã được phê duyệt bởi cấp {acceptor_level} trước đó.",
             )
 
-        # Update the current approver's status to "accepted"
-        setattr(check_in_record, approver_status_attr, "accepted")
-        check_in_record.accepted_datetime = datetime.utcnow()
-
-        # Prepare the approvers list with translated statuses
-        approvers = [
-            {
-                "name": User.query.get(check_in_record.acceptor_level_1_id).full_name,
-                "status": STATUS_TRANSLATIONS.get(
-                    check_in_record.acceptor_level_1_status, "Chờ duyệt"
-                ),
-            },
-            {
-                "name": User.query.get(check_in_record.acceptor_level_2_id).full_name,
-                "status": STATUS_TRANSLATIONS.get(
-                    check_in_record.acceptor_level_2_status, "Chờ duyệt"
-                ),
-            },
-            {
-                "name": User.query.get(check_in_record.acceptor_level_3_id).full_name,
-                "status": STATUS_TRANSLATIONS.get(
-                    check_in_record.acceptor_level_3_status, "Chờ duyệt"
-                ),
-            },
-        ]
+        # Update the current approver's status
+        current_acceptor["status"] = "accepted"
+        acceptors[acceptor_level - 1] = current_acceptor
 
         # Determine if this is the last approver
-        if acceptor_level == 3:
+        if acceptor_level == len(acceptors):
             # All approvers have approved; update the global status
             check_in_record.status = "accepted"
+            check_in_record.accepted_datetime = datetime.utcnow()
+            check_in_record.acceptors = json.dumps(acceptors)
             db.session.commit()
             return render_template(
                 "approval_status.html",
@@ -1389,34 +1271,44 @@ def approve_check_out(user_id, token, acceptor_level):
                 message=f"Yêu cầu ra ngoài của {check_in_record.full_name} đã được phê duyệt bởi tất cả cấp duyệt!",
             )
 
-        # Move to the next approver
+        # Prepare for the next approver
         next_acceptor_level = acceptor_level + 1
-        next_approver_id_attr = f"acceptor_level_{next_acceptor_level}_id"
-        next_approver_id = getattr(check_in_record, next_approver_id_attr, None)
+        next_acceptor = acceptors[next_acceptor_level - 1]
 
-        if next_approver_id:
-            # Query the User table to get the next approver's email
-            next_approver = User.query.get(next_approver_id)
-            if next_approver and next_approver.email:
-                # Update the next approver's status to "created"
-                next_approver_status_attr = (
-                    f"acceptor_level_{next_acceptor_level}_status"
-                )
-                setattr(check_in_record, next_approver_status_attr, "created")
+        next_approver_email = next_acceptor.get(
+            f"acceptor-level-{next_acceptor_level}-manager_id-manager_email", None
+        )
+        next_acceptor["status"] = "created"
+        acceptors[next_acceptor_level - 1] = next_acceptor
 
-                # Prepare and send email to the next approver
-                approval_url = f"{app.config.get('WEB_HOST_URL')}/approve/{user_id}/check-out/{token}/{next_acceptor_level}"
-                subject = f"Approval Request for Check-in: {check_in_record.full_name}"
-                body_html = generate_html_email(
-                    check_in_record.full_name,
-                    check_in_record.military_unit_name or "N/A",
-                    datetime.utcnow().strftime("%d/%m/%Y %H:%M:%S"),
-                    approval_url,
-                    approvers,  # Include current translated statuses for all approvers
-                )
-                send_email(subject, next_approver.email, body_html)
+        # Prepare and send the approval email
+        approval_url = f"{app.config.get('WEB_HOST_URL')}/approve/{user_id}/check-out/{token}/{next_acceptor_level}"
+        subject = f"Approval Request for Check-in: {check_in_record.full_name}"
+        approvers_list = [
+            {
+                "email": acceptor.get(
+                    f"acceptor-level-{index + 1}-manager_id-manager_email"
+                ),
+                "name": acceptor.get(
+                    f"acceptor-level-{index + 1}-manager_id-manager_full_name", "N/A"
+                ),
+                "status": STATUS_TRANSLATIONS.get(
+                    acceptor.get("status", "Chờ duyệt"), "Chờ duyệt"
+                ),
+            }
+            for index, acceptor in enumerate(acceptors)
+        ]
+        body_html = generate_html_email(
+            check_in_record.full_name,
+            check_in_record.military_unit_name or "N/A",
+            datetime.utcnow().strftime("%d/%m/%Y %H:%M:%S"),
+            approval_url,
+            approvers_list,
+        )
+        send_email(subject, next_approver_email, body_html)
 
-        # Commit changes to the database
+        # Save updated acceptors to the database
+        check_in_record.acceptors = json.dumps(acceptors)
         db.session.commit()
 
         return render_template(

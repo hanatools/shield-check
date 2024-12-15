@@ -187,8 +187,8 @@ def search_members():
         {
             "id": user.id,
             "full_name": user.full_name,
-            "identity_card": mask_identity_card(user.identity_card),
-            "email": mask_email(user.email),
+            "identity_card": user.identity_card,
+            "email": user.email,
             "management_level": (
                 user.military_manager.full_name if user.military_manager else "N/A"
             ),
@@ -417,7 +417,6 @@ def submit_data():
                 os.path.join(upload_folder, front_image_path)
             )
             face_encodings = face_recognition.face_encodings(image)
-            print(f"1")
             if len(face_encodings) > 0:
                 encoding = face_encodings[0]
                 encoding_folder = app.config.get("FACE_DATA")
@@ -430,7 +429,6 @@ def submit_data():
                 return jsonify({"error": "No face detected in the front image"}), 400
         except Exception as e:
             return jsonify({"error": f"Failed to process front image: {str(e)}"}), 500
-        print(f"2")
         # Update user data
         target_user.identity_card = identity_card
         target_user.full_name = full_name
@@ -478,97 +476,6 @@ def soldier_info_personal_user(user_id):
     )
 
 
-# @users.route("/update_user/<int:user_id>", methods=["POST"])
-# @login_required
-# def update_user(user_id):
-#     data = request.get_json()
-#     user = User.query.get_or_404(user_id)
-#
-#     # Validate required fields
-#     full_name = (data.get("fullName") or "").strip()
-#     identity_card = (data.get("identityCard") or "").strip()
-#     email = (data.get("email") or "").strip()
-#     military_unit_id = (data.get("militaryUnitId") or "").strip()
-#     military_manager_id = (data.get("militaryManagerId") or "").strip()
-#     note = (data.get("note") or "").strip()
-#     role = (data.get("role") or "").strip()
-#
-#     if not full_name:
-#         return (
-#             jsonify({"success": False, "message": "Họ và tên không được để trống."}),
-#             400,
-#         )
-#     if not identity_card:
-#         return (
-#             jsonify({"success": False, "message": "CCCD không được để trống."}),
-#             400,
-#         )
-#     if " " in identity_card:
-#         return (
-#             jsonify({"success": False, "message": "CCCD không được chứa khoảng trắng."}),
-#             400,
-#         )
-#     if len(identity_card) != 12:
-#         return (
-#             jsonify({"success": False, "message": "CCCD phải có đúng 12 ký tự."}),
-#             400,
-#         )
-#
-# # Check for duplicate identity card if changed
-#     if identity_card != user.identity_card:
-#         existing_identity_user = User.query.filter(
-#             User.identity_card == identity_card, User.id != user_id
-#         ).first()
-#         if existing_identity_user:
-#             return (
-#                 jsonify(
-#                     {
-#                         "success": False,
-#                         "message": "CCCD đã được sử dụng bởi người dùng khác.",
-#                     }
-#                 ),
-#                 400,
-#             )
-#
-#     # Check for duplicate email if provided
-#     if email:
-#         existing_email_user = User.query.filter(
-#             User.email == email, User.id != user_id
-#         ).first()
-#         if existing_email_user:
-#             return jsonify({"success": False, "message": "Email đã được sử dụng."}), 400
-#
-#     # Validate military unit if provided
-#     if military_unit_id:
-#         military_unit = MilitaryUnit.query.get(military_unit_id)
-#         if not military_unit:
-#             return (
-#                 jsonify({"success": False, "message": "ID đơn vị không hợp lệ."}),
-#                 400,
-#             )
-#
-#     # Validate manager ID if provided
-#     if military_manager_id:
-#         manager = User.query.get(military_manager_id)
-#         if not manager:
-#             return (
-#                 jsonify({"success": False, "message": "ID quản lý không hợp lệ."}),
-#                 400,
-#             )
-#
-#     # Update the user details
-#     user.full_name = full_name
-#     user.email = email
-#     user.military_unit_id = military_unit_id
-#     user.military_manager_id = military_manager_id
-#     user.note = note
-#     user.role = role
-#
-#     db.session.commit()
-#
-#     return jsonify(
-#         {"success": True, "message": "Thông tin đã được cập nhật thành công."}
-#     )
 @users.route("/update_user/<int:user_id>", methods=["POST"])
 @login_required
 @roles_required("SYSTEM_ADMIN_ROLE", "ADMIN_ROLE")
@@ -687,8 +594,8 @@ def get_user_details(user_id):
             "full_name": user.full_name,
             "note": user.note,
             "role": user.role,
-            "identity_card": mask_identity_card(user.identity_card),
-            "email": mask_email(user.email),
+            "identity_card": user.identity_card,
+            "email": user.email,
             "management_level": (
                 user.military_manager.full_name if user.military_manager else "N/A"
             ),
@@ -991,9 +898,35 @@ def get_user_by_identity(identity_card):
                 {
                     "identity_card": user.identity_card,
                     "full_name": user.full_name,
-                    "management_level": user.military_manager_full_name,
+                    # "management_level": user.military_manager_full_name,
                     "unit_name": (
                         user.military_unit.name if user.military_unit else None
+                    ),
+                    "id": user.id,
+                    # "full_name": user.full_name,
+                    "note": user.note,
+                    "role": user.role,
+                    # "identity_card": user.identity_card,
+                    "email": user.email,
+                    "military_manager_name": (
+                        user.military_manager.full_name
+                        if user.military_manager
+                        else "N/A"
+                    ),
+                    "military_manager_id": (
+                        user.military_manager.id if user.military_manager else "N/A"
+                    ),
+                    "military_unit_name": (
+                        user.military_unit.name if user.military_unit else "N/A"
+                    ),
+                    "military_unit_id": (
+                        user.military_unit.id if user.military_unit else "N/A"
+                    ),
+                    # "note": user.note or "N/A",
+                    "created_time": (
+                        user.created_time.strftime("%d/%m/%Y")
+                        if user.created_time
+                        else "N/A"
                     ),
                 }
             ),

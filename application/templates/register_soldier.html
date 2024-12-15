@@ -42,69 +42,45 @@
                     <small id="fullname-error" class="text-danger"></small>
                 </div>
                 <div class="mb-3">
-                    <label for="management_level" class="form-label">Chức danh quản lý: </label>
-                    <input
-                            type="text"
-                            class="form-control"
-                            id="management_level"
-                            name="management_level"
-                            placeholder="Nhập chức danh quản lý"
-                            value=""
-                            disabled
-                    />
-                    <small id="management_level-error" class="text-danger"></small>
-                </div>
-
-
-                <div class="mb-3">
-                    <label for="unit_name" class="form-label">Đơn vị: </label>
-                    <input
-                            type="text"
-                            class="form-control"
-                            id="unit_name"
-                            name="unit_name"
-                            placeholder="Nhập Đơn vị"
-                            value=""
-                            disabled
-                    />
-                </div>
-                <div class="mb-3">
-                    <label for="acceptor_level_1_id" class="form-label">Người duyệt cấp 1: </label>
-                    <select
-                            class="form-control"
-                            id="acceptor_level_1_id"
-                            name="acceptor_level_1_id"
-                            required
-                    >
-                        <option value="">Chọn người duyệt</option>
-
+                    <label for="military-manager-id" class="form-label">Chức danh quản lý: </label>
+                    <select id="military-manager-id" class="form-control" disabled>
+                        <option value="">-- Chọn cấp quản lý --</option>
                     </select>
+                    <span id="military-manager-id-error" class="error-message"></span>
                 </div>
+
 
                 <div class="mb-3">
-                    <label for="acceptor_level_2_id" class="form-label">Người duyệt cấp 2: </label>
-                    <select
-                            class="form-control"
-                            id="acceptor_level_2_id"
-                            name="acceptor_level_2_id"
-                            required
-                    >
-                        <option value="">Chọn người duyệt</option>
+                    <label for="military_unit_id" class="form-label">Đơn vị: </label>
 
-                    </select>
-                </div>
 
-                <div class="mb-3">
-                    <label for="acceptor_level_3_id" class="form-label">Người duyệt cấp 3: </label>
-                    <select
-                            class="form-control"
-                            id="acceptor_level_3_id"
-                            name="acceptor_level_3_id"
-                            required
-                    >
-                        <option value="">Chọn người duyệt</option>
-                    </select>
+                        <select
+                                class="form-control "
+                                name="military_unit_id"
+                                id="military_unit_id"
+
+                        >
+                            <option value="">Chọn Đơn vị</option>
+                        </select>
+
+
+
                 </div>
+                <div id="acceptors-container" class="mb-3">
+                    <label for="acceptor_ids" class="form-label">Người duyệt: </label>
+                    <div class="acceptor-item d-flex align-items-center mb-2">
+                        <select
+                                class="form-control acceptor-select"
+                                name="acceptor_ids"
+                                id="acceptor_ids"
+                                required
+                        >
+                            <option value="">Chọn người duyệt</option>
+                        </select>
+                        <button type="button" class="btn btn-danger btn-sm ms-2 remove-acceptor" style="display: none;">X</button>
+                    </div>
+                </div>
+                <button type="button" id="add-acceptor" class="btn btn-success btn-sm mt-2">+ Thêm người duyệt</button>
 
                 <div class="mb-3">
                     <label for="file-scan-step1" class="form-label">File scan:</label>
@@ -119,6 +95,13 @@
 
                 </div>
                 <div class="mb-3 text-danger" id="error-message"></div>
+
+                <div class="mb-3">
+                    <label for="note">Ghi chú</label>
+                    <textarea id="note" class="form-control" placeholder="Thêm ghi chú"></textarea>
+                </div>
+
+
                 <div class="mb-3 text-center">
                     <button
                             type="button"
@@ -212,41 +195,19 @@
                         <label for="unit-step3">Đơn vị:</label>
                         <input type="text" class="form-control" id="unit-step3" readonly />
                     </div>
-                    <div class="form-group">
-                        <label for="acceptor-level-1">Người duyệt cấp 1:</label>
-                        <input
-                                type="text"
-                                class="form-control"
-                                id="acceptor-level-1"
-                                readonly
-                                value=""
-                        />
-                    </div>
-                    <div class="form-group">
-                        <label for="acceptor-level-2">Người duyệt cấp 2:</label>
-                        <input
-                                type="text"
-                                class="form-control"
-                                id="acceptor-level-2"
-                                readonly
-                                value=""
-                        />
-                    </div>
-                    <div class="form-group">
-                        <label for="acceptor-level-3">Người duyệt cấp 3:</label>
-                        <input
-                                type="text"
-                                class="form-control"
-                                id="acceptor-level-3"
-                                readonly
-                                value=""
-                        />
+                    <div id="acceptors-container-step3" class="mb-3">
                     </div>
 
                     <div class="form-group">
                         <label for="file-scan-step3">File scan:</label>
-                        <input type="text" class="form-control" id="file-scan-step3" readonly />
+                        <input type="text" class="form-control bg-white" id="file-scan-step3" readonly />
                     </div>
+
+                    <div class="mb-3">
+                        <label for="note-step3">Ghi chú</label>
+                        <textarea id="note-step3" readonly class="form-control" placeholder="Thêm ghi chú"></textarea>
+                    </div>
+
                 </div>
                 <!-- Photo Placeholders -->
                 <div style="flex: 1" class="side-photos">

@@ -2,8 +2,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // DOM Elements
     const elements = {
         fullName: document.getElementById("fullname"),
-        managementLevel: document.getElementById("management_level"),
-        unitName: document.getElementById("unit_name"),
+        militaryManagerId: document.getElementById("military-manager-id"),
+        militaryUnitIdSelect: document.getElementById("military_unit_id"),
         identityCard: document.getElementById("identity_card"),
         errorMessage: document.getElementById("error-message"),
         nextStepButton: document.getElementById("next-step"),
@@ -19,9 +19,6 @@ document.addEventListener("DOMContentLoaded", () => {
         step3: document.getElementById("step-3"),
         fileScanStep1: document.getElementById("file-scan-step1"),
         fileScanError: document.getElementById("file-scan-error"),
-        acceptor1: document.getElementById("acceptor_level_1_id"),
-        acceptor2: document.getElementById("acceptor_level_2_id"),
-        acceptor3: document.getElementById("acceptor_level_3_id"),
     };
 
     let faceCameraStream = null;
@@ -67,42 +64,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    /** Validates user data and fetches details from the server. */
-    // function validateUser() {
-    //     const { identityCard, errorMessage, nextStepButton } = elements;
-    //     const csrfToken = document.querySelector("input[name='csrf_token']").value;
-    //
-    //     errorMessage.textContent = "";
-    //     identityCard.value = "";
-    //     nextStepButton.disabled = true;
-    //
-    //     if (fullName.value.trim() && managementLevel.value.trim() && unitName.value.trim()) {
-    //         fetch("/validate_identity_card", {
-    //             method: "POST",
-    //             headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken },
-    //             body: JSON.stringify({
-    //                 full_name: fullName.value.trim(),
-    //                 management_level: managementLevel.value.trim(),
-    //                 unit_name: unitName.value.trim(),
-    //             }),
-    //         })
-    //             .then((response) => response.json())
-    //             .then((data) => {
-    //                 if (data.user) {
-    //                     userData = data.user; // Store user data
-    //                     identityCard.value = data.user.identity_card;
-    //                     nextStepButton.disabled = false;
-    //                 } else {
-    //                     errorMessage.textContent = "User not found.";
-    //                     userData = {};
-    //                 }
-    //             })
-    //             .catch((error) => {
-    //                 console.error("Error validating user:", error);
-    //                 errorMessage.textContent = "An error occurred. Please try again later.";
-    //             });
-    //     }
-    // }
 
     /** Captures a photo and updates the placeholder. */
     function capturePhoto() {
@@ -165,55 +126,157 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /** Populates data for Step 3 review. */
+    // function populateStep3() {
+    //     document.getElementById("fullname-step3").value = userData.full_name || "";
+    //     document.getElementById("identity-card-step3").value = userData.identity_card || "";
+    //     document.getElementById("management-level-step3").value = userData.management_level || "";
+    //     document.getElementById("unit-step3").value = userData.military_unit_id || "";
+    //     document.getElementById("identity-card-step3").value = userData.identity_card || "";
+    //
+    //     const fileInput = document.getElementById("file-scan-step1");
+    //     const fileScanField = document.getElementById("file-scan-step3");
+    //     if (fileInput && fileInput.files[0]) {
+    //         fileScanField.value = fileInput.files[0].name; // Display file name
+    //     } else {
+    //         fileScanField.value = "Không có tệp nào được chọn.";
+    //     }
+    //
+    //     Object.entries(capturedImages).forEach(([key, imageSrc]) => {
+    //         const previewElement = document.getElementById(`${key}-photo-preview-step3`);
+    //         if (imageSrc) {
+    //             previewElement.src = imageSrc;
+    //             previewElement.style.display = "block";
+    //         }
+    //     });
+    //
+    //     // document.getElementById("acceptor-level-1").value =
+    //     //     document.getElementById("acceptor_level_1_id").options[
+    //     //         document.getElementById("acceptor_level_1_id").selectedIndex
+    //     //         ].text;
+    //     //
+    //     // document.getElementById("acceptor-level-2").value =
+    //     //     document.getElementById("acceptor_level_2_id").options[
+    //     //         document.getElementById("acceptor_level_2_id").selectedIndex
+    //     //         ].text;
+    //     //
+    //     // document.getElementById("acceptor-level-3").value =
+    //     //     document.getElementById("acceptor_level_3_id").options[
+    //     //         document.getElementById("acceptor_level_3_id").selectedIndex
+    //     //         ].text;
+    //
+    //
+    // }
+
+    // function populateStep3() {
+    //     const identityCardInput = document.getElementById("identity_card");
+    //     const fullNameInput = document.getElementById("fullname");
+    //
+    //     const militaryUnitIdSelect = document.getElementById("military_unit_id");
+    //     const managerSelect = document.getElementById("military-manager-id");
+    //     const noteInput = document.getElementById("note");
+    //
+    //     // Populate Step 3 fields
+    //     document.getElementById("identity-card-step3").value = identityCardInput.value.trim();
+    //     document.getElementById("fullname-step3").value = fullNameInput.value.trim();
+    //     document.getElementById("unit-step3").value = militaryUnitIdSelect.options[militaryUnitIdSelect.selectedIndex]?.text || "Không có đơn vị";
+    //     document.getElementById("management-level-step3").value = managerSelect.options[managerSelect.selectedIndex]?.text || "Không có cấp quản lý";
+    //     document.getElementById("acceptor-level-1").value = noteInput.value.trim() || "Không có ghi chú";
+    //
+    //     // Populate photo previews
+    //     Object.keys(capturedImages).forEach((key) => {
+    //         const previewElement = document.getElementById(`${key}-photo-preview-step3`);
+    //         if (previewElement && capturedImages[key]) {
+    //             previewElement.src = capturedImages[key];
+    //             previewElement.style.display = "block";
+    //         }
+    //     });
+    // }
     function populateStep3() {
-        document.getElementById("fullname-step3").value = userData.full_name || "";
-        document.getElementById("identity-card-step3").value = userData.identity_card || "";
-        document.getElementById("management-level-step3").value = userData.management_level || "";
-        document.getElementById("unit-step3").value = userData.unit_name || "";
-        document.getElementById("identity-card-step3").value = userData.identity_card || "";
+        const identityCardInput = document.getElementById("identity_card");
+        const fullNameInput = document.getElementById("fullname");
+        const militaryUnitIdSelect = document.getElementById("military_unit_id");
+        const militaryManagerIdSelect = document.getElementById("military-manager-id");
+        const noteInput = document.getElementById("note");
 
-        const fileInput = document.getElementById("file-scan-step1");
-        const fileScanField = document.getElementById("file-scan-step3");
-        if (fileInput && fileInput.files[0]) {
-            fileScanField.value = fileInput.files[0].name; // Display file name
-        } else {
-            fileScanField.value = "Không có tệp nào được chọn.";
-        }
+        document.getElementById("management-level-step3").value = militaryManagerIdSelect.options[militaryManagerIdSelect.selectedIndex]?.text || "Không có cấp quản lý";
 
-        Object.entries(capturedImages).forEach(([key, imageSrc]) => {
+        // Populate Step 3 fields
+        document.getElementById("identity-card-step3").value = identityCardInput.value.trim();
+        document.getElementById("fullname-step3").value = fullNameInput.value.trim();
+        document.getElementById("unit-step3").value =
+            militaryUnitIdSelect.options[militaryUnitIdSelect.selectedIndex]?.text || "Không có đơn vị";
+        document.getElementById("note-step3").value = noteInput.value.trim() || "Không có ghi chú";
+
+        // Handle dynamic acceptors
+        const acceptorsContainerStep3 = document.getElementById("acceptors-container-step3");
+        acceptorsContainerStep3.innerHTML = ""; // Clear any previous acceptors
+
+        const acceptorsContainerStep1 = document.getElementById("acceptors-container");
+        const acceptorSelects = acceptorsContainerStep1.querySelectorAll(".acceptor-select");
+
+        acceptorSelects.forEach((select, index) => {
+            const selectedOptionText = select.options[select.selectedIndex]?.text || "Chưa chọn";
+            const acceptorElement = document.createElement("div");
+            acceptorElement.className = "acceptor-item mb-2";
+
+            acceptorElement.innerHTML = `
+            <label for="acceptor-level-${index + 1}-step3">Người duyệt cấp ${index + 1}:</label>
+            <input 
+                type="text" 
+                class="form-control" 
+                id="acceptor-level-${index + 1}-step3" 
+                value="${selectedOptionText}" 
+                readonly
+            />
+        `;
+
+            acceptorsContainerStep3.appendChild(acceptorElement);
+        });
+
+            const fileInput = document.getElementById("file-scan-step1");
+            const fileScanField = document.getElementById("file-scan-step3");
+            if (fileInput && fileInput.files[0]) {
+                fileScanField.value = fileInput.files[0].name; // Display file name
+            } else {
+                fileScanField.value = "Không có tệp nào được chọn.";
+            }
+
+        // Populate photo previews
+        Object.keys(capturedImages).forEach((key) => {
             const previewElement = document.getElementById(`${key}-photo-preview-step3`);
-            if (imageSrc) {
-                previewElement.src = imageSrc;
+            if (previewElement && capturedImages[key]) {
+                previewElement.src = capturedImages[key];
                 previewElement.style.display = "block";
             }
         });
-
-        document.getElementById("acceptor-level-1").value =
-            document.getElementById("acceptor_level_1_id").options[
-                document.getElementById("acceptor_level_1_id").selectedIndex
-                ].text;
-
-        document.getElementById("acceptor-level-2").value =
-            document.getElementById("acceptor_level_2_id").options[
-                document.getElementById("acceptor_level_2_id").selectedIndex
-                ].text;
-
-        document.getElementById("acceptor-level-3").value =
-            document.getElementById("acceptor_level_3_id").options[
-                document.getElementById("acceptor_level_3_id").selectedIndex
-                ].text;
-
-
     }
 
-    // Function to validate required fields and enable the "Next" button
+    // Event listener to handle "Next" button click for Step 3
+    document.getElementById("next-step-3").addEventListener("click", () => {
+        populateStep3();
+        toggleSteps(document.getElementById("step-2"), document.getElementById("step-3"));
+    });
+
+
     function validateForm() {
-        const isValid =
-            elements.identityCard.value.trim().length === 12 &&
-            elements.acceptor1.value &&
-            elements.acceptor2.value &&
-            elements.acceptor3.value;
-        elements.nextStepButton.disabled = !isValid;
+        const identityCardValue = elements.identityCard.value.trim();
+        const acceptorDropdowns = document.querySelectorAll(".acceptor-select");
+        const isIdentityCardValid = identityCardValue.length === 12;
+
+        // Check if all acceptor dropdowns have a selected value
+        const areAllAcceptorsSelected = Array.from(acceptorDropdowns).every(
+            (dropdown) => dropdown.value.trim() !== ""
+        );
+
+        // Enable the "Next" button only if all validations pass
+        elements.nextStepButton.disabled = !(isIdentityCardValid && areAllAcceptorsSelected);
+    }
+
+    function handleAcceptorDropdownChanges() {
+        const acceptorDropdowns = document.querySelectorAll(".acceptor-select");
+        acceptorDropdowns.forEach((dropdown) => {
+            dropdown.addEventListener("change", validateForm);
+        });
     }
 
     // Event listener to fetch user data when identity card is 12 characters
@@ -222,24 +285,23 @@ document.addEventListener("DOMContentLoaded", () => {
         if (identityCardValue.length === 12) {
             fetch(`/get_user_by_identity/${identityCardValue}`)
                 .then((response) => {
-                    if (!response.ok) throw new Error("User not found");
+                    if (!response.ok) throw new Error("Không tìm thấy người dùng");
                     return response.json();
                 })
                 .then((data) => {
                     userData = data;
-                    // Populate the form fields with user data
                     elements.fullName.value = data.full_name || "";
-                    elements.managementLevel.value = data.management_level || "";
-                    elements.unitName.value = data.unit_name || "";
+                    elements.militaryManagerId.value = data.military_manager_id || "";
+                    elements.militaryUnitIdSelect.value = data.military_unit_id || "";
                     elements.errorMessage.textContent = ""; // Clear error message
                 })
                 .catch((error) => {
                     console.error("Error fetching user:", error);
                     userData = {};
                     elements.fullName.value = "";
-                    elements.managementLevel.value = "";
-                    elements.unitName.value = "";
-                    elements.errorMessage.textContent = "User not found or an error occurred.";
+                    elements.militaryManagerId.value = "";
+                    elements.militaryUnitIdSelect.value = "";
+                    elements.errorMessage.textContent = "Không tìm thấy người dùng hoặc đã xảy ra lỗi.";
                 })
                 .finally(() => {
                     validateForm(); // Ensure "Next" button state is updated
@@ -247,69 +309,134 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             // Clear fields if input is less than 12 characters
             elements.fullName.value = "";
-            elements.managementLevel.value = "";
-            elements.unitName.value = "";
+            elements.militaryManagerId.value = "";
+            elements.militaryUnitIdSelect.value = "";
             elements.errorMessage.textContent = "";
         }
     });
 
-    // Event listeners for acceptor dropdowns to validate the form
-    [elements.acceptor1, elements.acceptor2, elements.acceptor3].forEach((dropdown) => {
-        dropdown.addEventListener("change", validateForm);
-    });
 
-    // Validate form on load (in case of pre-filled values)
-    // validateForm();
-
+    // function handleFinish() {
+    //     const finishButton = document.getElementById("finish-step");
+    //     const backButton = document.getElementById("back-to-step-2");
+    //     const errorMessage = document.getElementById("result-error-message"); // Add an error display element if not present
+    //     const payload = {
+    //         identity_card: userData.identity_card,
+    //         acceptor_level_1_id: document.getElementById("acceptor_level_1_id").value,
+    //         acceptor_level_2_id: document.getElementById("acceptor_level_2_id").value,
+    //         acceptor_level_3_id:document.getElementById("acceptor_level_3_id").value,
+    //         file_scan: userData.fileScan,
+    //         images: capturedImages,
+    //     };
+    //
+    //     // Disable buttons and show loading indicator
+    //     finishButton.disabled = true;
+    //     backButton.disabled = true;
+    //     finishButton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`; // Show spinner
+    //     const csrfToken = document.querySelector("input[name='csrf_token']").value;
+    //     fetch("/register_soldier_checkin_data", {
+    //         method: "POST",
+    //         headers: {
+    //             "Content-Type": "application/json",
+    //             "X-CSRFToken": csrfToken
+    //         },
+    //         body: JSON.stringify(payload),
+    //     })
+    //         .then((response) => response.json())
+    //         .then((data) => {
+    //             if (data.error) {
+    //                 errorMessage.textContent = `Error: ${data.error}`; // Show error message
+    //             } else {
+    //                 alert("Bạn đã tạo yêu cầu thành công.  Xin hãy đợi duyệt");
+    //                 console.log(data);
+    //                 // Optionally redirect to another page or reset form
+    //                 location.href = "/reports"; // Redirect to success page
+    //             }
+    //         })
+    //         .catch((error) => {
+    //             console.error("Error submitting soldier data:", error);
+    //             errorMessage.textContent = "An error occurred. Please try again.";
+    //         })
+    //         .finally(() => {
+    //             // Re-enable buttons and restore text
+    //             finishButton.disabled = false;
+    //             backButton.disabled = false;
+    //             finishButton.innerHTML = `<i class="bi bi-arrow-right"></i>`; // Restore button icon
+    //         });
+    // }
     function handleFinish() {
         const finishButton = document.getElementById("finish-step");
         const backButton = document.getElementById("back-to-step-2");
-        const errorMessage = document.getElementById("result-error-message"); // Add an error display element if not present
+        const errorMessage = document.getElementById("result-error-message");
+        const acceptorSelects = document.querySelectorAll(".acceptor-select");
+
+        // Create the acceptors JSON array
+        const acceptors = Array.from(acceptorSelects).map((select, index) => ({
+            [`acceptor-level-${index + 1}`]: select.value,
+            status: "Chờ duyệt",
+            [`acceptor-level-${index + 1}-full_name`]: select.options[select.selectedIndex]?.text || "N/A",
+            [`acceptor-level-${index + 1}-manager_email`]:  "",
+            [`acceptor-level-${index + 1}-manager_id`]:  select.value,
+        }));
+
+        // Validate acceptors length and uniqueness
+        const managerIds = acceptors.map((acceptor, index) => acceptor[`acceptor-level-${index + 1}`]);
+        const hasDuplicate = new Set(managerIds).size !== managerIds.length;
+
+        if (acceptors.length === 0 || acceptors.length > 4) {
+            errorMessage.textContent = "Người duyệt phải từ 1 đến 4.";
+            return;
+        }
+
+        if (hasDuplicate) {
+            errorMessage.textContent = "Không được chọn trùng người duyệt.";
+            return;
+        }
+
+        // Prepare payload
         const payload = {
-            identity_card: userData.identity_card,
-            acceptor_level_1_id: document.getElementById("acceptor_level_1_id").value,
-            acceptor_level_2_id: document.getElementById("acceptor_level_2_id").value,
-            acceptor_level_3_id:document.getElementById("acceptor_level_3_id").value,
-            file_scan: userData.fileScan,
-            images: capturedImages,
+            identity_card: document.getElementById("identity_card").value.trim(),
+            acceptors: acceptors, // Send directly as an array
+            file_scan: userData.fileScan || null,
+            images: capturedImages || {},
         };
 
         // Disable buttons and show loading indicator
         finishButton.disabled = true;
         backButton.disabled = true;
-        finishButton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`; // Show spinner
+        finishButton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`;
+
         const csrfToken = document.querySelector("input[name='csrf_token']").value;
+
         fetch("/register_soldier_checkin_data", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "X-CSRFToken": csrfToken
+                "X-CSRFToken": csrfToken,
             },
             body: JSON.stringify(payload),
         })
             .then((response) => response.json())
             .then((data) => {
                 if (data.error) {
-                    errorMessage.textContent = `Error: ${data.error}`; // Show error message
+                    errorMessage.textContent = `Error: ${data.error}`;
                 } else {
-                    alert("Bạn đã tạo yêu cầu thành công.  Xin hãy đợi duyệt");
+                    alert("Bạn đã tạo yêu cầu thành công. Xin hãy đợi duyệt");
                     console.log(data);
-                    // Optionally redirect to another page or reset form
-                    location.href = "/reports"; // Redirect to success page
+                    location.href = "/reports";
                 }
             })
             .catch((error) => {
                 console.error("Error submitting soldier data:", error);
-                errorMessage.textContent = "An error occurred. Please try again.";
+                errorMessage.textContent = "Đã xảy ra lỗi. Vui lòng thử lại.";
             })
             .finally(() => {
                 // Re-enable buttons and restore text
                 finishButton.disabled = false;
                 backButton.disabled = false;
-                finishButton.innerHTML = `<i class="bi bi-arrow-right"></i>`; // Restore button icon
+                finishButton.innerHTML = `<i class="bi bi-arrow-right"></i>`;
             });
     }
-
     // File validation for Step 1
     elements.fileScanStep1.addEventListener("change", (event) => {
         const file = event.target.files[0];
@@ -331,10 +458,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Event listeners
-    // elements.fullName.addEventListener("change", validateUser);
-    // elements.managementLevel.addEventListener("change", validateUser);
-    // elements.unitName.addEventListener("change", validateUser);
-    // elements.nextStepButton.addEventListener("change", validateUser);
     elements.nextStepButton.addEventListener("click", () => toggleSteps(elements.step1, elements.step2, "start"));
     elements.backStepButton.addEventListener("click", () => toggleSteps(elements.step2, elements.step1, "stop"));
     elements.backToStep2Button.addEventListener("click", () => toggleSteps(elements.step3, elements.step2, "start"));
@@ -351,28 +474,177 @@ document.addEventListener("DOMContentLoaded", () => {
         new bootstrap.Tooltip(tooltipTriggerEl);
     });
 
+    const MAX_ACCEPTORS = 4;
 
+    const acceptorsContainer = document.getElementById("acceptors-container");
+    const addAcceptorButton = document.getElementById("add-acceptor");
+
+    /**
+     * Populate a dropdown with acceptor options
+     * @param {HTMLSelectElement} selectElement - The select element to populate
+     */
+    function populateAcceptorDropdown(selectElement) {
+        fetch("/get_managers")
+            .then((response) => response.json())
+            .then((managers) => {
+                selectElement.innerHTML = '<option value="">Chọn người duyệt</option>';
+                managers.forEach((manager) => {
+                    const option = document.createElement("option");
+                    option.value = manager.id;
+                    option.textContent = `${manager.full_name} (${manager.identity_card})`;
+                    selectElement.appendChild(option);
+                });
+            })
+            .catch((error) => console.error("Error fetching managers:", error));
+    }
+
+    /**
+     * Add a new acceptor dropdown
+     */
+    function addAcceptor() {
+        const acceptorItem = document.createElement("div");
+        acceptorItem.classList.add("acceptor-item", "d-flex", "align-items-center", "mb-2");
+
+        const selectElement = document.createElement("select");
+        selectElement.classList.add("form-control", "acceptor-select");
+        selectElement.name = "acceptor_ids";
+        selectElement.required = true;
+
+        populateAcceptorDropdown(selectElement);
+
+        const removeButton = document.createElement("button");
+        removeButton.type = "button";
+        removeButton.classList.add("btn", "btn-danger", "btn-sm", "ms-2", "remove-acceptor");
+        removeButton.textContent = "X";
+
+        removeButton.addEventListener("click", () => {
+            acceptorsContainer.removeChild(acceptorItem);
+            handleAcceptorDropdownChanges();
+            validateAcceptors();
+        });
+
+        acceptorItem.appendChild(selectElement);
+        acceptorItem.appendChild(removeButton);
+
+        acceptorsContainer.appendChild(acceptorItem);
+        handleAcceptorDropdownChanges();
+        validateAcceptors();
+    }
+
+    // Populate the initial acceptor dropdown
+    const initialSelect = document.querySelector(".acceptor-select");
+    populateAcceptorDropdown(initialSelect);
+
+    // Add event listener to the Add Acceptor button
+// Attach initial validation and event listeners
+    elements.identityCard.addEventListener("input", validateForm);
+    handleAcceptorDropdownChanges();
+
+// Revalidate whenever acceptors are added or removed
+    addAcceptorButton.addEventListener("click", () => {
+        addAcceptor();
+        handleAcceptorDropdownChanges();
+    });
+
+
+    function validateAcceptors() {
+        const acceptorItems = document.querySelectorAll(".acceptor-item");
+        const removeButtons = document.querySelectorAll(".remove-acceptor");
+
+        // Show or hide remove buttons based on number of acceptors
+        removeButtons.forEach((btn, index) => {
+            btn.style.display = acceptorItems.length > 1 ? "inline-block" : "none";
+        });
+
+        // Show or hide the Add Acceptor button based on the limit
+        addAcceptorButton.style.display = acceptorItems.length >= MAX_ACCEPTORS ? "none" : "inline-block";
+    }
+
+    validateAcceptors();
 
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-    // Fetch managers on page load
-    fetch("/get_managers")
-        .then((response) => response.json())
-        .then((data) => {
-            const level1Select = document.getElementById("acceptor_level_1_id");
-            const level2Select = document.getElementById("acceptor_level_2_id");
-            const level3Select = document.getElementById("acceptor_level_3_id");
+    // const MAX_ACCEPTORS = 4;
+    //
+    // const acceptorsContainer = document.getElementById("acceptors-container");
+    // const addAcceptorButton = document.getElementById("add-acceptor");
+    //
+    // /**
+    //  * Populate a dropdown with acceptor options
+    //  * @param {HTMLSelectElement} selectElement - The select element to populate
+    //  */
+    // function populateAcceptorDropdown(selectElement) {
+    //     fetch("/get_managers")
+    //         .then((response) => response.json())
+    //         .then((managers) => {
+    //             selectElement.innerHTML = '<option value="">Chọn người duyệt</option>';
+    //             managers.forEach((manager) => {
+    //                 const option = document.createElement("option");
+    //                 option.value = manager.id;
+    //                 option.textContent = `${manager.full_name} (${manager.identity_card})`;
+    //                 selectElement.appendChild(option);
+    //             });
+    //         })
+    //         .catch((error) => console.error("Error fetching managers:", error));
+    // }
+    //
+    // /**
+    //  * Add a new acceptor dropdown
+    //  */
+    // function addAcceptor() {
+    //     const acceptorItem = document.createElement("div");
+    //     acceptorItem.classList.add("acceptor-item", "d-flex", "align-items-center", "mb-2");
+    //
+    //     const selectElement = document.createElement("select");
+    //     selectElement.classList.add("form-control", "acceptor-select");
+    //     selectElement.name = "acceptor_ids";
+    //     selectElement.required = true;
+    //
+    //     populateAcceptorDropdown(selectElement);
+    //
+    //     const removeButton = document.createElement("button");
+    //     removeButton.type = "button";
+    //     removeButton.classList.add("btn", "btn-danger", "btn-sm", "ms-2", "remove-acceptor");
+    //     removeButton.textContent = "X";
+    //
+    //     removeButton.addEventListener("click", () => {
+    //         acceptorsContainer.removeChild(acceptorItem);
+    //         handleAcceptorDropdownChanges();
+    //         validateAcceptors();
+    //     });
+    //
+    //     acceptorItem.appendChild(selectElement);
+    //     acceptorItem.appendChild(removeButton);
+    //
+    //     acceptorsContainer.appendChild(acceptorItem);
+    //     handleAcceptorDropdownChanges();
+    //     validateAcceptors();
+    // }
+    //
+    // // Populate the initial acceptor dropdown
+    // const initialSelect = document.querySelector(".acceptor-select");
+    // populateAcceptorDropdown(initialSelect);
+    //
+    // // Add event listener to the Add Acceptor button
+    // addAcceptorButton.addEventListener("click", addAcceptor);
+    //
+    //
+    // function validateAcceptors() {
+    //     const acceptorItems = document.querySelectorAll(".acceptor-item");
+    //     const removeButtons = document.querySelectorAll(".remove-acceptor");
+    //
+    //     // Show or hide remove buttons based on number of acceptors
+    //     removeButtons.forEach((btn, index) => {
+    //         btn.style.display = acceptorItems.length > 1 ? "inline-block" : "none";
+    //     });
+    //
+    //     // Show or hide the Add Acceptor button based on the limit
+    //     addAcceptorButton.style.display = acceptorItems.length >= MAX_ACCEPTORS ? "none" : "inline-block";
+    // }
+    //
+    // validateAcceptors();
 
-            // Populate dropdowns with managers
-            populateDropdown(level1Select, data);
-            populateDropdown(level2Select, data);
-            populateDropdown(level3Select, data);
-
-            // Ensure unique selections across levels
-            handleUniqueSelections(level1Select, level2Select, level3Select);
-        })
-        .catch((error) => console.error("Error fetching managers:", error));
 });
 
 function populateDropdown(selectElement, data) {
@@ -396,3 +668,33 @@ function handleUniqueSelections(...selectElements) {
         });
     });
 }
+
+$(document).ready(function() {
+    const militaryManagerSelect = document.getElementById("military-manager-id");
+    fetch("/get_military_manager")
+        .then((response) => response.json())
+        .then((users) => {
+            if (users.length > 0) {
+                users.forEach((user) => {
+                    const option = document.createElement("option");
+                    option.value = user.id;
+                    option.textContent = user.name;
+                    militaryManagerSelect.appendChild(option);
+                });
+                militaryManagerSelect.disabled = false;
+            }
+        });
+
+    const militaryUnitIdSelect = document.getElementById("military_unit_id");
+    fetch("/get_military_units")
+        .then((response) => response.json())
+        .then((units) => {
+            units.forEach((unit) => {
+                const option = document.createElement("option");
+                option.value = unit.id;
+                option.textContent = unit.name;
+                militaryUnitIdSelect.appendChild(option);
+            });
+        });
+
+})

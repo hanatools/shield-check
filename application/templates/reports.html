@@ -52,41 +52,24 @@
                     </td>
                     <td>
                         <div class="status-container">
+                            {% for acceptor in record.acceptors %}
                             <div>
-                                <strong>Người duyệt 1:</strong>
+                                <strong>{{ loop.index }}:</strong>
                                 <span class="badge
-                                             {% if record.acceptor_level_1_status == 'accepted' %} bg-success
-                                             {% elif record.acceptor_level_1_status == 'rejected' %} bg-danger
-                                             {% else %} bg-warning text-dark
-                                             {% endif %}">
+                 {% if acceptor.status == 'accepted' %} bg-success
+                 {% elif acceptor.status == 'rejected' %} bg-danger
+                 {% else %} bg-warning text-dark
+                 {% endif %}">
+                {{ STATUS_TRANSLATIONS.get(acceptor.status, "Chờ duyệt") }}
+            </span>
+                                <span>({{ acceptor.get('acceptor-level-' ~ loop.index ~ '-manager_id-manager_full_name', 'N/A') }})</span>
+                                <span>({{ acceptor.get('acceptor-level-' ~ loop.index ~ '-manager_id-manager_email') | mask_email }})</span>
 
-                                            {{ STATUS_TRANSLATIONS.get(record.acceptor_level_1_status, "Chưa gửi") }}
-                                </span>
                             </div>
-                            <div>
-                                <strong>Người duyệt 2:</strong>
-                                <span class="badge
-                                             {% if record.acceptor_level_2_status == 'accepted' %} bg-success
-                                             {% elif record.acceptor_level_2_status == 'rejected' %} bg-danger
-                                             {% else %} bg-warning text-dark
-                                             {% endif %}">
-                                              {{ STATUS_TRANSLATIONS.get(record.acceptor_level_2_status, "Chưa gửi") }}
-
-                                </span>
-                            </div>
-                            <div>
-                                <strong>Người duyệt 3:</strong>
-                                <span class="badge
-                                             {% if record.acceptor_level_3_status == 'accepted' %} bg-success
-                                             {% elif record.acceptor_level_3_status == 'rejected' %} bg-danger
-                                             {% else %} bg-warning text-dark
-                                             {% endif %}">
-                                {{ STATUS_TRANSLATIONS.get(record.acceptor_level_3_status, "Chưa gửi") }}
-                                </span>
-                            </div>
+                            {% endfor %}
                         </div>
                     </td>
-                    <td>{{ record.identity_card }}</td>
+                    <td>{{ record.identity_card | mask_cccd }}</td>
                     <td>{{ record.check_in_time }}</td>
                     <td>{{ record.check_out_time }}</td>
                     <td>{{ record.duration }}</td>

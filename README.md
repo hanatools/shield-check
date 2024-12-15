@@ -60,17 +60,5 @@ them  gnuoi phe duyet, them nguoi,  maximun 4 nguoi phe duyet
 ten , so cc,  ai la nguoi phe duyet,
 email khong cho nhin thay, mau so cioi cua cccd, cccd, 
 
-
-
-====   oooo ====
-Phhh
-MVC:
-class:
-OOPS
-ket noi CSDL
-Giao dien
-Page => class
-
-quan ly ban hang van phong pham
-Login => 
-neu co function nao 
+=== === 
+loi dynamic ip trong email neu nhu moi may 1 ip khac nhau, lhong co domain

@@ -240,6 +240,55 @@ function showSuccessModal(message) {
     });
 }
 
+// function populateUserDetails(record) {
+//     console.log("Record: ", record);
+//
+//     // Populate general details
+//     document.getElementById("fullname").value = record.full_name;
+//     document.getElementById("identity-card-number").value = record.identity_card;
+//     document.getElementById("unit").value = record.unit_name;
+//     document.getElementById("manager").value = record.management_level;
+//     document.getElementById("check-in-record-id-hidden").value = record.id;
+//     document.getElementById("created_time").value = formatDateTime(record.created_time);
+//     document.getElementById("check_out_time").value = formatDateTime(record.check_out_time);
+//     document.getElementById("accepted_datetime").value = formatDateTime(record.accepted_datetime);
+//
+//     // Populate status badge
+//     const statusContainer = document.getElementById("status");
+//     statusContainer.innerHTML = getStatusBadgeHTML(record.status);
+//
+//     // Populate acceptor statuses dynamically
+//     const infoResultContainer = document.getElementById("info-result");
+//     infoResultContainer.innerHTML = `
+//         <h5>Trạng thái duyệt:</h5>
+//         <ul class="list-group">
+//             ${record.acceptor_statuses
+//         .map(
+//             (status) => `
+//                 <li class="list-group-item d-flex justify-content-between align-items-center">
+//                     <span>Cấp ${status.level}: ${status.name}</span>
+//                     <span class="badge ${
+//                 getStatusBadgeClass(status.status)
+//             }">${status.label}</span>
+//                 </li>
+//             `
+//         )
+//         .join("")}
+//         </ul>
+//     `;
+//
+//     // Show face scan button if applicable
+//     const faceScanButton = document.getElementById("face-scan-button");
+//     if (faceScanButton) {
+//         faceScanButton.classList.remove("d-none");
+//     }
+//
+//     // Hide QR scan button if applicable
+//     const openScanModalBtn = document.getElementById("openScanModalBtn");
+//     if (openScanModalBtn) {
+//         openScanModalBtn.classList.add("d-none");
+//     }
+// }
 function populateUserDetails(record) {
     console.log("Record: ", record);
 
@@ -289,7 +338,6 @@ function populateUserDetails(record) {
         openScanModalBtn.classList.add("d-none");
     }
 }
-
 // Get appropriate badge class for the status
 function getStatusBadgeClass(status) {
     switch (status) {

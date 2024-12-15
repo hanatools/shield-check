@@ -454,9 +454,6 @@ function moveToStep4() {
     document.getElementById("full-name-confirm").value = document.getElementById("full-name").value;
     document.getElementById("identity-card-confirm").value = document.getElementById("identity-card-number").value;
     document.getElementById("email-confirm").value = document.getElementById("email").value;
-    // document.getElementById("military-manager-id-confirm").value = document.getElementById("military-manager-id").options[
-    //     document.getElementById("military-manager-id").selectedIndex
-    //     ].text;
     const unitNameElement = document.getElementById("military_unit_id");
     document.getElementById("military_unit_id_confirm").value = unitNameElement.options[unitNameElement.selectedIndex]?.text || "Không có đơn vị";
 
@@ -492,7 +489,7 @@ document.getElementById("finish-form").addEventListener("click", () => {
         fullName: document.getElementById("full-name").value.trim(), // From Step 2
         identityCard: document.getElementById("identity-card-number").value.trim(), // From Step 2
         email: document.getElementById("email").value.trim(), // From Step 2
-        militaryManagerId: document.getElementById("military-manager-id").value.trim() || null, // Optional, from Step 2
+        militaryManagerId: document.getElementById("military-manager-id").value.trim() || null,
         militaryMilitaryUnitId: document.getElementById("military_unit_id").value.trim() || null, // From Step 2
         note: document.getElementById("note").value.trim() || "", // From Step 2
         images: capturedImages, // Include images from Step 3
@@ -530,9 +527,6 @@ document.getElementById("finish-form").addEventListener("click", () => {
             alert(`Đăng ký cá nhân thất bại:\n${error.message}`);
         });
 });
-
-
-
 
 $(document).ready(function() {
     initializeCamera();

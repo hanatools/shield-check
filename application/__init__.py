@@ -20,36 +20,25 @@ mail = Mail(app)
 
 
 def send_email(subject, recipient, body_html=None):
-    """
-    Sends an email with the given subject and body to the specified recipient.
-    Supports both plain text and HTML content.
-    """
-    try:
-        logging.info(f"Preparing to send email to {recipient}")
 
-        # Create the email message
-        msg = Message(
-            subject=subject,
-            sender=app.config["MAIL_DEFAULT_SENDER"],
-            recipients=[recipient],
-        )
-        msg.html = body_html  # HTML content
+    logging.info(f"Preparing to send email to {recipient}")
 
-        # Send the email
-        mail.send(msg)
+    # Create the email message
+    msg = Message(
+        subject=subject,
+        sender=app.config["MAIL_DEFAULT_SENDER"],
+        recipients=[recipient],
+    )
+    msg.html = body_html  # HTML content
 
-        logging.info(f"Email sent successfully to {recipient}")
-        return {
-            "status": "success",
-            "message": f"Email sent successfully to {recipient}",
-        }
+    # Send the email
+    mail.send(msg)
 
-    except Exception as e:
-        logging.error(f"Failed to send email to {recipient}: {str(e)}")
-        return {
-            "status": "error",
-            "message": f"Failed to send email to {recipient}: {str(e)}",
-        }
+    logging.info(f"Email sent successfully to {recipient}")
+    return {
+        "status": "success",
+        "message": f"Email sent successfully to {recipient}",
+    }
 
 
 ###########################

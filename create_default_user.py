@@ -31,52 +31,5 @@ with app.app_context():
         )
         db.session.add(non_manager_user)
 
-        # Create the second user (manager)
-        # manager_user = User(
-        #     email="luongcongphap@gmail.com",
-        #     username="111111111111",
-        #     password=app.config["DEFAULT_USER_PASSWORD"],
-        #     second_level_password=app.config["DEFAULT_USER_PASSWORD"],
-        #     identity_card="111111111111",
-        #     full_name="Thủ trưởng",
-        #     military_manager_id="",
-        #     military_manager_full_name="",
-        #     note="Tài khoản măc định của thủ trưởng",
-        #     role="ADMIN_ROLE",
-        #     is_manager=True,
-        # )
-        # db.session.add(manager_user)
-        #
-        # manager_user_2 = User(
-        #     email="georewilliam12@gmail.com",
-        #     username="111111111112",
-        #     password=app.config["DEFAULT_USER_PASSWORD"],
-        #     second_level_password=app.config["DEFAULT_USER_PASSWORD"],
-        #     identity_card="111111111112",
-        #     full_name="Thủ trưởng",
-        #     military_manager_id="",
-        #     military_manager_full_name="",
-        #     note="Tài khoản măc định của thủ trưởng",
-        #     role="USER_ROLE",
-        #     is_manager=True,
-        # )
-        # db.session.add(manager_user_2)
-        #
-        # manager_user_3 = User(
-        #     email="georewilliam19@gmail.com",
-        #     username="111111111113",
-        #     password=app.config["DEFAULT_USER_PASSWORD"],
-        #     second_level_password=app.config["DEFAULT_USER_PASSWORD"],
-        #     identity_card="111111111113",
-        #     full_name="Thủ trưởng",
-        #     military_manager_id="",
-        #     military_manager_full_name="",
-        #     note="Tài khoản măc định của thủ trưởng",
-        #     role="USER_ROLE",
-        #     is_manager=True,
-        # )
-        # db.session.add(manager_user_3)
-
-        # Commit both users to the database
         db.session.commit()
         print("Default users created.")
