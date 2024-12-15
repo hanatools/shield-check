@@ -119,10 +119,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 })
                 .then((data) => {
                     document.getElementById("sponsor_full_name").value = data.full_name || "";
-                    document.getElementById("sponsor_military_unit_name").value = data.sponsor_military_unit_name || "";
-                    document.getElementById("sponsor_military_unit_id").value = data.sponsor_military_unit_id || "";
-                    document.getElementById("sponsor_military_manager_full_name").value = data.sponsor_military_manager_full_name || "";
-                    document.getElementById("sponsor_military_manager_id").value = data.sponsor_military_manager_id || "";
+                    document.getElementById("sponsor_military_unit_name").value = data.military_unit_name || "";
+                    document.getElementById("sponsor_military_unit_id").value = data.military_unit_id || "";
+                    document.getElementById("sponsor_military_manager_full_name").value = data.manager_full_name || "";
+                    document.getElementById("sponsor_military_manager_id").value = data.military_manager_id || "";
                 })
                 .catch((error) => {
                     document.getElementById("sponsor_full_name").value =  "";

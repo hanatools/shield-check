@@ -38,11 +38,3 @@ flask db downgrade base
 pip install black
 black .
 ```
-
-``````
-
-ten , so cc,  ai la nguoi phe duyet,
-email khong cho nhin thay, mau so cioi cua cccd, cccd, 
-
-=== === 
-
