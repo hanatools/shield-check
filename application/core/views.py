@@ -27,7 +27,6 @@ from application.models import (
 )
 from flask_login import login_required, current_user
 import threading
-import socket
 from application.users.forms import (
     SoldierRegistrationForm,
     InputPersonalForm,
@@ -42,14 +41,6 @@ qr_data = {}
 @core.route("/")
 @login_required
 def index():
-    """
-    This is the home page view. Notice how it uses pagination to show a limited
-    number of posts by limiting its query size and then calling paginate.
-    """
-    # page = request.args.get("page", 1, type=int)
-    # blog_posts = BlogPost.query.order_by(BlogPost.date.desc()).paginate(
-    #     page=page, per_page=10
-    # )
     return render_template("daskboard.html")
 
 
@@ -88,6 +79,7 @@ def scan_identity():
         return jsonify({"identity_card": identity_number}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 @core.route("/api/check-in/<identity_card>", methods=["GET"])
 @login_required
@@ -212,6 +204,7 @@ def batch_input():
         csrf_token_value=csrf_token_value,
     )
 
+
 @core.route("/register_relative", methods=["GET", "POST"])
 @login_required
 def register_relative():
@@ -237,7 +230,9 @@ def register_relative():
             return redirect(url_for("core.register_relative"))
 
         # Check if a relative with this identity card already exists
-        existing_relative = RelativeCheckIn.query.filter_by(identity_card=identity_card).first()
+        existing_relative = RelativeCheckIn.query.filter_by(
+            identity_card=identity_card
+        ).first()
         if existing_relative:
             flash(
                 f"Người thân với CCCD {identity_card} đã được đăng ký. Vui lòng kiểm tra lại.",
@@ -300,6 +295,7 @@ def register_relative():
         "register_relative.html", username=current_user.username, form=form
     )
 
+
 def add_relative(full_name, identity_card, sponsor_id, relationship, creator_id):
     # Check if sponsor exists
     sponsor = User.query.filter_by(identity_card=sponsor_id).first()
@@ -330,6 +326,7 @@ def get_relatives_created_by(user_id):
 
 def get_relatives_for_sponsor(sponsor_id):
     return UserRelative.query.filter_by(sponsor_id=sponsor_id).all()
+
 
 @core.route("/reports", methods=["GET", "POST"])
 @login_required
@@ -783,19 +780,6 @@ def delete_military_unit(unit_id):
             500,
         )
 
-def get_public_ip_and_port():
-    try:
-        # Get the hostname and resolve the IP
-        hostname = socket.gethostname()
-        local_ip = socket.gethostbyname(hostname)
-
-        # Assuming Flask server is running on a known port
-        port = app.config.get("PORT", 5001)  # Default port is 5001
-        return f"http://{local_ip}:{port}"
-    except Exception as e:
-        print(f"Error getting public IP: {e}")
-        return None
-
 
 @core.route("/register_soldier_checkin_data", methods=["POST"])
 @login_required
@@ -875,14 +859,6 @@ def register_soldier_checkin_data():
                 image_file.write(base64.b64decode(base64_image.split(",")[1]))
             image_paths[key] = file_path
 
-        # Get public IP dynamically
-        # public_url = get_public_ip_and_port()
-        # if not public_url:
-        #     return render_template(
-        #         "error.html",
-        #         error_message="Không thể lấy địa chỉ máy chủ. Vui lòng kiểm tra cấu hình mạng.",
-        #     )
-
         # Save file scan if provided
         file_scan_path = None
         if file_scan:
@@ -925,10 +901,7 @@ def register_soldier_checkin_data():
             for index, acceptor in enumerate(acceptors)
         ]
 
-        # approval_url = f"{public_url}/approve/{user.id}/check-out/{token}/1"
-        approval_url = (
-            f"{app.config.get('WEB_HOST_URL')}/approve/{user.id}/check-out/{token}/1"
-        )
+        approval_url = f"approve/{user.id}/check-out/{token}/1"
         subject = "Yêu cầu phê duyệt để ra ngoài"
         body_html = generate_html_email(
             user.full_name,
@@ -936,7 +909,9 @@ def register_soldier_checkin_data():
             datetime.utcnow().strftime("%d/%m/%Y %H:%M:%S"),
             approval_url,
             approvers_list,
+            app.config.get("MAIL_USERNAME"),
         )
+
         send_email(subject, approvers_list[0]["email"], body_html)
 
         return (
@@ -1256,131 +1231,121 @@ STATUS_TRANSLATIONS = {
     "info": "Thông báo",
 }
 
-
-@core.route(
-    "/approve/<int:user_id>/check-out/<string:token>/<int:acceptor_level>",
-    methods=["GET"],
-)
-def approve_check_out(user_id, token, acceptor_level):
-    # Check internet connection
-    try:
-        requests.get("http://www.google.com", timeout=5)
-    except requests.ConnectionError:
-        return render_template(
-            "error.html",
-            error_message="Không thể kết nối Internet. Vui lòng kiểm tra kết nối mạng của bạn và thử lại.",
-        )
-    try:
-        # Retrieve the check-in record
-        print(f"User ID: {user_id}, Token: {token}, Acceptor Level: {acceptor_level}")
-        check_in_record = SponsorCheckIn.query.filter_by(
-            user_id=user_id, token=token
-        ).first()
-
-        if not check_in_record:
-            return render_template(
-                "approval_status.html",
-                status="error",
-                message="Không tìm thấy yêu cầu phê duyệt này hoặc liên kết không hợp lệ.",
-            )
-
-        # Load the acceptors JSON field
-        acceptors = json.loads(check_in_record.acceptors or "[]")
-        if acceptor_level > len(acceptors):
-            return render_template(
-                "approval_status.html",
-                status="error",
-                message="Cấp phê duyệt không hợp lệ.",
-            )
-
-        # Get the current approver details
-        current_acceptor = acceptors[acceptor_level - 1]
-        current_status = current_acceptor.get("status", "Chờ duyệt")
-
-        # Check if already approved
-        if current_status == "accepted":
-            return render_template(
-                "approval_status.html",
-                status="info",
-                message=f"Yêu cầu ra ngoài của {check_in_record.full_name} đã được phê duyệt bởi cấp {acceptor_level} trước đó.",
-            )
-
-        # Update the current approver's status
-        current_acceptor["status"] = "accepted"
-        acceptors[acceptor_level - 1] = current_acceptor
-
-        # Determine if this is the last approver
-        if acceptor_level == len(acceptors):
-            # All approvers have approved; update the global status
-            check_in_record.status = "accepted"
-            check_in_record.accepted_datetime = datetime.utcnow()
-            check_in_record.acceptors = json.dumps(acceptors)
-            db.session.commit()
-            return render_template(
-                "approval_status.html",
-                status="success",
-                message=f"Yêu cầu ra ngoài của {check_in_record.full_name} đã được phê duyệt bởi tất cả cấp duyệt!",
-            )
-
-        # Prepare for the next approver
-        next_acceptor_level = acceptor_level + 1
-        next_acceptor = acceptors[next_acceptor_level - 1]
-
-        next_approver_email = next_acceptor.get(
-            f"acceptor-level-{next_acceptor_level}-manager_id-manager_email", None
-        )
-        next_acceptor["status"] = "created"
-        acceptors[next_acceptor_level - 1] = next_acceptor
-
-        # Get public IP dynamically
-        # public_url = get_public_ip_and_port()
-        # if not public_url:
-        #     return render_template(
-        #         "error.html",
-        #         error_message="Không thể lấy địa chỉ máy chủ. Vui lòng kiểm tra cấu hình mạng.",
-        #     )
-
-        # Prepare and send the approval email
-        # approval_url = f"{public_url}/approve/{user_id}/check-out/{token}/{next_acceptor_level}"
-        approval_url = f"{app.config.get('WEB_HOST_URL')}/approve/{user_id}/check-out/{token}/{next_acceptor_level}"
-        subject = f"Approval Request for Check-in: {check_in_record.full_name}"
-        approvers_list = [
-            {
-                "email": acceptor.get(
-                    f"acceptor-level-{index + 1}-manager_id-manager_email"
-                ),
-                "name": acceptor.get(
-                    f"acceptor-level-{index + 1}-manager_id-manager_full_name", "N/A"
-                ),
-                "status": STATUS_TRANSLATIONS.get(
-                    acceptor.get("status", "Chờ duyệt"), "Chờ duyệt"
-                ),
-            }
-            for index, acceptor in enumerate(acceptors)
-        ]
-        body_html = generate_html_email(
-            check_in_record.full_name,
-            check_in_record.military_unit_name or "N/A",
-            datetime.utcnow().strftime("%d/%m/%Y %H:%M:%S"),
-            approval_url,
-            approvers_list,
-        )
-        send_email(subject, next_approver_email, body_html)
-
-        # Save updated acceptors to the database
-        check_in_record.acceptors = json.dumps(acceptors)
-        db.session.commit()
-
-        return render_template(
-            "approval_status.html",
-            status="success",
-            message=f"Yêu cầu ra ngoài của {check_in_record.full_name} đã được phê duyệt! Đã gửi yêu cầu tiếp theo cho cấp {next_acceptor_level}.",
-        )
-
-    except Exception as e:
-        return render_template(
-            "approval_status.html", status="error", message=f"Có lỗi xảy ra: {str(e)}"
-        )
+# NOTE: don't delete this
+# @core.route(
+#     "/approve/<int:user_id>/check-out/<string:token>/<int:acceptor_level>",
+#     methods=["GET"],
+# )
+# def approve_check_out(user_id, token, acceptor_level):
+#     # Check internet connection
+#     try:
+#         requests.get("http://www.google.com", timeout=5)
+#     except requests.ConnectionError:
+#         return render_template(
+#             "error.html",
+#             error_message="Không thể kết nối Internet. Vui lòng kiểm tra kết nối mạng của bạn và thử lại.",
+#         )
+#     try:
+#         # Retrieve the check-in record
+#         print(f"User ID: {user_id}, Token: {token}, Acceptor Level: {acceptor_level}")
+#         check_in_record = SponsorCheckIn.query.filter_by(
+#             user_id=user_id, token=token
+#         ).first()
+#
+#         if not check_in_record:
+#             return render_template(
+#                 "approval_status.html",
+#                 status="error",
+#                 message="Không tìm thấy yêu cầu phê duyệt này hoặc liên kết không hợp lệ.",
+#             )
+#
+#         # Load the acceptors JSON field
+#         acceptors = json.loads(check_in_record.acceptors or "[]")
+#         if acceptor_level > len(acceptors):
+#             return render_template(
+#                 "approval_status.html",
+#                 status="error",
+#                 message="Cấp phê duyệt không hợp lệ.",
+#             )
+#
+#         # Get the current approver details
+#         current_acceptor = acceptors[acceptor_level - 1]
+#         current_status = current_acceptor.get("status", "Chờ duyệt")
+#
+#         # Check if already approved
+#         if current_status == "accepted":
+#             return render_template(
+#                 "approval_status.html",
+#                 status="info",
+#                 message=f"Yêu cầu ra ngoài của {check_in_record.full_name} đã được phê duyệt bởi cấp {acceptor_level} trước đó.",
+#             )
+#
+#         # Update the current approver's status
+#         current_acceptor["status"] = "accepted"
+#         acceptors[acceptor_level - 1] = current_acceptor
+#
+#         # Determine if this is the last approver
+#         if acceptor_level == len(acceptors):
+#             # All approvers have approved; update the global status
+#             check_in_record.status = "accepted"
+#             check_in_record.accepted_datetime = datetime.utcnow()
+#             check_in_record.acceptors = json.dumps(acceptors)
+#             db.session.commit()
+#             return render_template(
+#                 "approval_status.html",
+#                 status="success",
+#                 message=f"Yêu cầu ra ngoài của {check_in_record.full_name} đã được phê duyệt bởi tất cả cấp duyệt!",
+#             )
+#
+#         # Prepare for the next approver
+#         next_acceptor_level = acceptor_level + 1
+#         next_acceptor = acceptors[next_acceptor_level - 1]
+#
+#         next_approver_email = next_acceptor.get(
+#             f"acceptor-level-{next_acceptor_level}-manager_id-manager_email", None
+#         )
+#         next_acceptor["status"] = "created"
+#         acceptors[next_acceptor_level - 1] = next_acceptor
+#         approval_url = f"approve/{user_id}/check-out/{token}/{next_acceptor_level}"
+#         subject = f"Approval Request for Check-in: {check_in_record.full_name}"
+#         approvers_list = [
+#             {
+#                 "email": acceptor.get(
+#                     f"acceptor-level-{index + 1}-manager_id-manager_email"
+#                 ),
+#                 "name": acceptor.get(
+#                     f"acceptor-level-{index + 1}-manager_id-manager_full_name", "N/A"
+#                 ),
+#                 "status": STATUS_TRANSLATIONS.get(
+#                     acceptor.get("status", "Chờ duyệt"), "Chờ duyệt"
+#                 ),
+#             }
+#             for index, acceptor in enumerate(acceptors)
+#         ]
+#         body_html = generate_html_email(
+#             check_in_record.full_name,
+#             check_in_record.military_unit_name or "N/A",
+#             datetime.utcnow().strftime("%d/%m/%Y %H:%M:%S"),
+#             approval_url,
+#             approvers_list,
+#             app.config.get("MAIL_USERNAME")
+#         )
+#         send_email(subject, next_approver_email, body_html)
+#
+#         # Save updated acceptors to the database
+#         check_in_record.acceptors = json.dumps(acceptors)
+#         db.session.commit()
+#
+#         return render_template(
+#             "approval_status.html",
+#             status="success",
+#             message=f"Yêu cầu ra ngoài của {check_in_record.full_name} đã được phê duyệt! Đã gửi yêu cầu tiếp theo cho cấp {next_acceptor_level}.",
+#         )
+#
+#     except Exception as e:
+#         return render_template(
+#             "approval_status.html", status="error", message=f"Có lỗi xảy ra: {str(e)}"
+#         )
 
 
 @core.route("/validate-face-scan", methods=["POST"])
