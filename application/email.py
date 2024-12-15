@@ -155,7 +155,7 @@ def generate_reset_second_password_email(user_full_name, reset_url):
     <!DOCTYPE html>
     <html lang="vi">
       <head>
-        <title>Reset Second Password</title>
+        <title>Đặt lại mật khẩu thứ hai</title>
         <meta charset="UTF-8" />
         <style>
           body {{
@@ -211,16 +211,16 @@ def generate_reset_second_password_email(user_full_name, reset_url):
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td class="header">
-                    <h1>RESET SECOND PASSWORD</h1>
+                    <h1>ĐẶT LẠI MẬT KHẨU THỨ HAI</h1>
                   </td>
                 </tr>
                 <tr>
                   <td class="content-block email-body">
-                    <p>Dear <strong>{user_full_name}</strong>,</p>
+                    <p>Kính gửi <strong>{user_full_name}</strong>,</p>
                     <p>
                       Chúng tôi đã nhận được yêu cầu đặt lại mật khẩu thứ hai của bạn. Để tiếp tục, vui lòng nhấp vào nút bên dưới::
                     </p>
-                    <a href="{reset_url}" class="button" target="_blank">Reset Second Password</a>
+                    <a href="{reset_url}" class="button" target="_blank">Đặt lại mật khẩu thứ hai</a>
                     <hr />
                     <p>
                       Nếu bạn không yêu cầu thiết lập lại này, vui lòng bỏ qua email này hoặc liên hệ với quản trị viên để được trợ giúp.
@@ -252,7 +252,7 @@ def generate_reset_password_email(user_full_name, reset_url):
     <!DOCTYPE html>
     <html lang="vi">
       <head>
-        <title>Reset Password</title>
+        <title>Đặt lại mật khẩu</title>
         <meta charset="UTF-8" />
         <style>
           body {{
@@ -308,22 +308,22 @@ def generate_reset_password_email(user_full_name, reset_url):
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td class="header">
-                    <h1>RESET PASSWORD</h1>
+                    <h1>ĐẶT LẠI MẬT KHẨU</h1>
                   </td>
                 </tr>
                 <tr>
                   <td class="content-block email-body">
-                    <p>Dear <strong>{user_full_name}</strong>,</p>
+                    <p>Kính gửi <strong>{user_full_name}</strong>,</p>
                     <p>
-                      We have received a request to reset your password. Please click the button below to proceed:
+                      Chúng tôi đã nhận được yêu cầu đặt lại mật khẩu của bạn. Vui lòng nhấp vào nút bên dưới để tiếp tục:
                     </p>
-                    <a href="{reset_url}" class="button" target="_blank">Reset Password</a>
+                    <a href="{reset_url}" class="button" target="_blank">Đặt lại mật khẩu</a>
                     <hr />
                     <p>
-                      If you did not request this reset, please ignore this email or contact the administrator for assistance.
+                      Nếu bạn không yêu cầu thiết lập lại này, vui lòng bỏ qua email này hoặc liên hệ với quản trị viên để được hỗ trợ.
                     </p>
                     <p>
-                     For security reasons, this link will expire in 5 minutes.
+                        Vì lý do bảo mật, liên kết này sẽ hết hạn sau 5 phút.
                     </p>
                   </td>
                 </tr>

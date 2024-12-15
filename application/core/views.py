@@ -16,7 +16,7 @@ from flask import (
     current_app,
 )
 from werkzeug.security import generate_password_hash
-
+import requests
 from application import db, send_email, app
 from application.email import generate_html_email, generate_reset_second_password_email
 from application.models import (
@@ -570,6 +570,14 @@ def validate_identity_card():
 @core.route("/register_soldier", methods=["GET", "POST"])
 def register_soldier():
     form = SoldierRegistrationForm()
+    # Check internet connection
+    try:
+        requests.get("http://www.google.com", timeout=5)
+    except requests.ConnectionError:
+        return render_template(
+            "error.html",
+            error_message="Không thể kết nối Internet. Vui lòng kiểm tra kết nối mạng của bạn và thử lại.",
+        )
     return render_template(
         "register_soldier.html", form=form, username=current_user.username
     )
@@ -779,6 +787,15 @@ def delete_military_unit(unit_id):
 @core.route("/register_soldier_checkin_data", methods=["POST"])
 @login_required
 def register_soldier_checkin_data():
+
+    # Check internet connection
+    try:
+        requests.get("http://www.google.com", timeout=5)
+    except requests.ConnectionError:
+        return render_template(
+            "error.html",
+            error_message="Không thể kết nối Internet. Vui lòng kiểm tra kết nối mạng của bạn và thử lại.",
+        )
     try:
         # Extract user details from the request
         data = request.json
@@ -1225,6 +1242,14 @@ STATUS_TRANSLATIONS = {
     methods=["GET"],
 )
 def approve_check_out(user_id, token, acceptor_level):
+    # Check internet connection
+    try:
+        requests.get("http://www.google.com", timeout=5)
+    except requests.ConnectionError:
+        return render_template(
+            "error.html",
+            error_message="Không thể kết nối Internet. Vui lòng kiểm tra kết nối mạng của bạn và thử lại.",
+        )
     try:
         # Retrieve the check-in record
         print(f"User ID: {user_id}, Token: {token}, Acceptor Level: {acceptor_level}")
