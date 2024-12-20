@@ -1,5 +1,8 @@
 from application import create_app, db
 from application.models import User
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = create_app()
 
