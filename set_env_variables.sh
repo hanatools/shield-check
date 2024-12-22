@@ -18,6 +18,3 @@ export MAIL_USERNAME="ssbcapital.noreply@gmail.com"
 export MAIL_PASSWORD="jmoydmgyvqtjnhpa"
 export MAIL_DEFAULT_SENDER="ssbcapital.noreply@gmail.com"
 
-# Web host configuration
-export WEB_HOST_URL="http://172.16.1.232:5001"
-

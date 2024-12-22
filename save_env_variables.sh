@@ -18,7 +18,6 @@ OUTPUT_FILE="environment_variables_check.txt"
   echo "MAIL_USERNAME=$MAIL_USERNAME"
   echo "MAIL_PASSWORD=$MAIL_PASSWORD"
   echo "MAIL_DEFAULT_SENDER=$MAIL_DEFAULT_SENDER"
-  echo "WEB_HOST_URL=$WEB_HOST_URL"
 } > $OUTPUT_FILE
 
 echo "Environment variables have been written to $OUTPUT_FILE"
