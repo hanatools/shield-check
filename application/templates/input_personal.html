@@ -16,21 +16,45 @@
 <button class="btn btn-inactive" onclick="window.location.href='/batch_input'">Nhập thông tin theo lô</button>
     </div>
     <!-- Step 1: QR Code Scanning -->
+<!--    <div id="step-1" class="step active">-->
+<!--        &lt;!&ndash; Card Section &ndash;&gt;-->
+<!--        <div class="card">-->
+<!--            <h4>Hãy quét mã QR trên thẻ CCCD</h4>-->
+<!--            <div class="qr-placeholder">-->
+<!--                <video id="camera-stream" autoplay></video>-->
+<!--                <img id="captured-image" style="display: none;" alt="Captured QR Frame" src="">-->
+<!--            </div>-->
+<!--            <div id="qr-result-container" style="display: none;">-->
+<!--                <p id="qr-result"></p>-->
+<!--                <button class="btn btn-capture" id="reset-button">Reset</button>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
     <div id="step-1" class="step active">
         <!-- Card Section -->
         <div class="card">
-            <h4>Hãy quét mã QR trên thẻ CCCD</h4>
-            <div class="qr-placeholder">
-                <video id="camera-stream" autoplay></video>
-                <img id="captured-image" style="display: none;" alt="Captured QR Frame" src="">
+            <h4>Nhập số CCCD hoặc quét mã bằng máy quét</h4>
+            <div class="form-group mb-2">
+                <label for="identity-card-input">Nhập Số CCCD</label>
+                <input
+                        type="text"
+                        id="identity-card-input"
+                        class="form-control"
+                        placeholder="Nhập số CCCD"
+                />
+                <span id="identity-card-error" class="error-message"></span>
             </div>
-            <div id="qr-result-container" style="display: none;">
-                <p id="qr-result"></p>
-                <button class="btn btn-capture" id="reset-button">Reset</button>
+            <div class="button-group">
+                <button
+                        type="button"
+                        id="submit-identity-card"
+                        class="btn btn-primary"
+                >
+                    Gửi
+                </button>
             </div>
         </div>
     </div>
-
     <div id="step-2" class="step">
         <div class="card">
             <h4>Nhập thông tin cá nhân</h4>

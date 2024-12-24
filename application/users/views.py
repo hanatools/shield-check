@@ -373,15 +373,15 @@ def submit_data():
         if not existing_user:
             random_password = uuid.uuid4().hex
             target_user = User(
-                email=email,
+                email=email if email else None,
                 username=identity_card,  # Use identity card as default username
                 password=random_password,
                 second_level_password=random_password,
                 identity_card=identity_card,
                 full_name=full_name,
-                military_unit_id=military_unit_id,
-                military_manager_id=military_manager_id,
-                note=note,
+                military_unit_id=military_unit_id if military_unit_id else None,
+                military_manager_id=military_manager_id if military_manager_id else None,
+                note=note if note else None,
             )
             target_user.identity_card = identity_card
         else:

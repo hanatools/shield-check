@@ -1,121 +1,91 @@
-let codeReader = null;
 
-// Initialize QR code reader
-async function initializeCamera() {
-    const videoElement = document.getElementById("camera-stream");
-    const imageElement = document.getElementById("captured-image");
-    const qrResultContainer = document.getElementById("qr-result-container");
-    const qrResultElement = document.getElementById("qr-result");
-    const resetButton = document.getElementById("reset-button");
+document.getElementById("identity-card-input").addEventListener("input", (event) => {
+    const inputValue = event.target.value.trim();
 
-    qrResultContainer.style.display = "none"; // Hide result initially
-    qrResultElement.textContent = ""; // Clear result text
-    imageElement.style.display = "none"; // Hide the image initially
-    videoElement.style.display = "block"; // Ensure video is displayed
-
-    // Stop any existing codeReader
-    if (codeReader) {
-        codeReader.reset();
-    }
-
-    codeReader = new ZXing.BrowserQRCodeReader();
-
-    try {
-        const videoInputDevices = await codeReader.listVideoInputDevices();
-        if (videoInputDevices.length > 0) {
-            const selectedDeviceId = videoInputDevices[0].deviceId;
-
-            codeReader.decodeFromVideoDevice(selectedDeviceId, videoElement, (result, error) => {
-                if (result) {
-                    const extractedValue = extractIdentityCardValue(result.text);
-                    if (extractedValue) {
-                        showResult(extractedValue, videoElement, imageElement);
-                    } else {
-                        console.error("Invalid QR code format.");
-                    }
-                }
-
-                if (error && !(error instanceof ZXing.NotFoundException)) {
-                    console.error("Error reading QR code:", error.message);
-                }
-            });
+    if (inputValue.length >= 12) {
+        if (inputValue.includes("|")) {
+            // Process the barcode string
+            processBarcode(inputValue);
         } else {
-            console.error("No camera devices found.");
-        }
-    } catch (err) {
-        console.error("Error initializing camera:", err.message);
-    }
-}
-
-// Extract value from QR code content
-function extractIdentityCardValue(qrContent) {
-    const parts = qrContent.split("|");
-    if (parts.length > 0 && parts[0].length === 12) {
-        return parts[0];
-    }
-    return null;
-}
-
-// Show the result and freeze the camera feed
-function showResult(extractedValue, videoElement, imageElement) {
-    const qrResultContainer = document.getElementById("qr-result-container");
-    const qrResultElement = document.getElementById("qr-result");
-
-    qrResultElement.textContent = `Mã định danh: ${extractedValue}`;
-    qrResultContainer.style.display = "block";
-
-    // Use a new offscreen canvas to grab the current video frame
-    const offscreenCanvas = document.createElement("canvas");
-    const ctx = offscreenCanvas.getContext("2d");
-
-    // Set canvas size to match video frame
-    offscreenCanvas.width = videoElement.videoWidth;
-    offscreenCanvas.height = videoElement.videoHeight;
-
-    // Ensure the video feed is still active before capturing the frame
-    if (videoElement.videoWidth > 0 && videoElement.videoHeight > 0) {
-        // Draw the current video frame onto the canvas
-        ctx.drawImage(videoElement, 0, 0, offscreenCanvas.width, offscreenCanvas.height);
-
-        // Convert the canvas to a data URL
-        const capturedImage = offscreenCanvas.toDataURL("image/png");
-        if (capturedImage && capturedImage.startsWith("data:image/png")) {
-            imageElement.src = capturedImage; // Set the image src to the captured data URL
-            imageElement.style.display = "block"; // Show the captured image
-            videoElement.style.display = "none"; // Hide the video feed
-        } else {
-            console.error("Failed to capture the video frame.");
+            // Enable submit button if the length is 12 and no "|" character is present
+            if (inputValue.length === 12) {
+                enableSubmitButton();
+            } else {
+                disableSubmitButton();
+            }
         }
     } else {
-        console.error("Video feed is not available or has been stopped.");
+        disableSubmitButton(); // Disable submit if input is less than 12
     }
+});
 
-    // Stop camera stream and QR code reader
-    const stream = videoElement.srcObject;
-    if (stream) {
-        const tracks = stream.getTracks();
-        tracks.forEach((track) => track.stop());
-        videoElement.srcObject = null;
+
+// Handle the "Submit" button click
+document.getElementById("submit-identity-card").addEventListener("click", () => {
+    const inputValue = document.getElementById("identity-card-input").value.trim();
+
+    if (inputValue.length === 12) {
+        processIdentityCard(inputValue);
+    } else {
+        document.getElementById("identity-card-error").textContent = "Số CCCD không hợp lệ. Vui lòng nhập đủ 12 số.";
     }
+});
 
-    // Reset the codeReader to stop listening for QR codes
-    if (codeReader) {
-        codeReader.reset();
-        codeReader = null; // Completely remove the instance
-        moveToStep2(extractedValue, videoElement, imageElement)
+// Function to process the barcode
+function processBarcode(barcode) {
+    const parts = barcode.split("|");
+
+    // Validate the format
+    if (parts.length >= 4) {
+        const identityCardNumber = parts[0]; // Extract the first part of the barcode
+
+        if (identityCardNumber.length === 12) {
+            // Set the input value and enable the submit button
+            document.getElementById("identity-card-input").value = identityCardNumber;
+            enableSubmitButton();
+        } else {
+            console.error("Invalid Barcode Format: First part is not 12 characters.");
+            disableSubmitButton();
+        }
+    } else {
+        console.error("Invalid Barcode Format: Not enough parts.");
+        disableSubmitButton();
     }
 }
 
-// Move to Step 2
-// Move to Step 2 with animation
-async function moveToStep2(cardNumber, videoElement, imageElement) {
+// Function to enable the submit button
+function enableSubmitButton() {
+    const submitButton = document.getElementById("submit-identity-card");
+    submitButton.disabled = false; // Enable the submit button
+}
+
+// Function to disable the submit button
+function disableSubmitButton() {
+    const submitButton = document.getElementById("submit-identity-card");
+    submitButton.disabled = true; // Disable the submit button
+}
+
+
+// Function to process the identity card number and move to the next step
+function processIdentityCard(identityCardNumber) {
+    document.getElementById("identity-card-error").textContent = ""; // Clear error message
+
+    // Set the identity card number to Step 2 input
+    document.getElementById("identity-card-number").value = identityCardNumber;
+
+    // Move to Step 2
+    moveToStep2(identityCardNumber);
+}
+
+
+function moveToStep2(cardNumber) {
     const step1 = document.getElementById("step-1");
     const step2 = document.getElementById("step-2");
 
     // Populate the card number in Step 2
     document.getElementById("identity-card-number").value = cardNumber;
 
-    // Add slide-out animation to Step 1 and slide-in animation to Step 2
+    // Transition to Step 2
     step1.classList.add("slide-out-left");
     setTimeout(() => {
         step1.classList.remove("active", "slide-out-left");
@@ -125,49 +95,28 @@ async function moveToStep2(cardNumber, videoElement, imageElement) {
         }, 500); // Match the transition duration in CSS
     }, 500);
 
-    // Freeze the last video frame
-    const offscreenCanvas = document.createElement("canvas");
-    const ctx = offscreenCanvas.getContext("2d");
-    offscreenCanvas.width = videoElement.videoWidth;
-    offscreenCanvas.height = videoElement.videoHeight;
+    // Fetch user data from the server
+    checkUserExistence(cardNumber);
+}
 
-    if (videoElement.videoWidth > 0 && videoElement.videoHeight > 0) {
-        ctx.drawImage(videoElement, 0, 0, offscreenCanvas.width, offscreenCanvas.height);
-        const capturedImage = offscreenCanvas.toDataURL("image/png");
-        if (capturedImage && capturedImage.startsWith("data:image/png")) {
-            imageElement.src = capturedImage;
-            imageElement.style.display = "block";
-            videoElement.style.display = "none";
-        }
-    }
-
-    // Stop the video stream
-    const stream = videoElement.srcObject;
-    if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-        videoElement.srcObject = null;
-    }
-
+// Fetch user data from the server
+async function checkUserExistence(cardNumber) {
     const noteMessage = document.getElementById("user-exists-note");
-
 
     try {
         const response = await fetch(`/search_members?query=${cardNumber}`);
         const users = await response.json();
-        console.log(users)
 
         if (users.length > 0) {
             const user = users[0];
 
-                console.log("User found:", user);
-                // Populate Step 2 fields with the user's data
-                document.getElementById("full-name").value = user.full_name || "";
-                document.getElementById("email").value = user.email || "";
-                document.getElementById("military_unit_id").value = user.unit_id || "";
-                document.getElementById("military-manager-id").value = user.military_manager_id || "";
+            // Populate Step 2 fields with the user's data
+            document.getElementById("full-name").value = user.full_name || "";
+            document.getElementById("email").value = user.email || "";
+            document.getElementById("military_unit_id").value = user.unit_id || "";
+            document.getElementById("military-manager-id").value = user.military_manager_id || "";
 
-                noteMessage.classList.remove("d-none");
-
+            noteMessage.classList.remove("d-none");
         } else {
             // Clear the form if no user is found
             document.getElementById("full-name").value = "";
@@ -196,7 +145,7 @@ function moveToStep1() {
         }, 500); // Match the transition duration in CSS
     }, 500);
 
-    initializeCamera();
+    // initializeCamera();
 }
 
 
@@ -529,7 +478,7 @@ document.getElementById("finish-form").addEventListener("click", () => {
 });
 
 $(document).ready(function() {
-    initializeCamera();
+    // initializeCamera();
 
     // Event Listeners
     document.getElementById("capture-photo").addEventListener("click", capturePhoto);
@@ -544,9 +493,9 @@ $(document).ready(function() {
     // Event Listeners
     document.getElementById("back-to-step-1").addEventListener("click", moveToStep1);
     document.getElementById("personal-info-form").addEventListener("input", validateForm);
-    document.getElementById("reset-button").addEventListener("click", () => {
-        initializeCamera();
-    });
+    // document.getElementById("reset-button").addEventListener("click", () => {
+        // initializeCamera();
+    // });
 
     // Add event listener for the Reset button
     document.getElementById("reset-capture-photo").addEventListener("click", resetAllCapturedPhotos);
