@@ -41,7 +41,12 @@ qr_data = {}
 @core.route("/")
 @login_required
 def index():
-    return render_template("daskboard.html")
+    csrf_token_value = generate_csrf()  # Rename to avoid conflict
+    return render_template(
+        "daskboard.html",
+        username=current_user.username,
+        csrf_token_value=csrf_token_value,
+    )
 
 
 @core.route("/daskboard", methods=["GET"])
@@ -1231,122 +1236,6 @@ STATUS_TRANSLATIONS = {
     "info": "Thông báo",
 }
 
-# NOTE: don't delete this
-# @core.route(
-#     "/approve/<int:user_id>/check-out/<string:token>/<int:acceptor_level>",
-#     methods=["GET"],
-# )
-# def approve_check_out(user_id, token, acceptor_level):
-#     # Check internet connection
-#     try:
-#         requests.get("http://www.google.com", timeout=5)
-#     except requests.ConnectionError:
-#         return render_template(
-#             "error.html",
-#             error_message="Không thể kết nối Internet. Vui lòng kiểm tra kết nối mạng của bạn và thử lại.",
-#         )
-#     try:
-#         # Retrieve the check-in record
-#         print(f"User ID: {user_id}, Token: {token}, Acceptor Level: {acceptor_level}")
-#         check_in_record = SponsorCheckIn.query.filter_by(
-#             user_id=user_id, token=token
-#         ).first()
-#
-#         if not check_in_record:
-#             return render_template(
-#                 "approval_status.html",
-#                 status="error",
-#                 message="Không tìm thấy yêu cầu phê duyệt này hoặc liên kết không hợp lệ.",
-#             )
-#
-#         # Load the acceptors JSON field
-#         acceptors = json.loads(check_in_record.acceptors or "[]")
-#         if acceptor_level > len(acceptors):
-#             return render_template(
-#                 "approval_status.html",
-#                 status="error",
-#                 message="Cấp phê duyệt không hợp lệ.",
-#             )
-#
-#         # Get the current approver details
-#         current_acceptor = acceptors[acceptor_level - 1]
-#         current_status = current_acceptor.get("status", "Chờ duyệt")
-#
-#         # Check if already approved
-#         if current_status == "accepted":
-#             return render_template(
-#                 "approval_status.html",
-#                 status="info",
-#                 message=f"Yêu cầu ra ngoài của {check_in_record.full_name} đã được phê duyệt bởi cấp {acceptor_level} trước đó.",
-#             )
-#
-#         # Update the current approver's status
-#         current_acceptor["status"] = "accepted"
-#         acceptors[acceptor_level - 1] = current_acceptor
-#
-#         # Determine if this is the last approver
-#         if acceptor_level == len(acceptors):
-#             # All approvers have approved; update the global status
-#             check_in_record.status = "accepted"
-#             check_in_record.accepted_datetime = datetime.utcnow()
-#             check_in_record.acceptors = json.dumps(acceptors)
-#             db.session.commit()
-#             return render_template(
-#                 "approval_status.html",
-#                 status="success",
-#                 message=f"Yêu cầu ra ngoài của {check_in_record.full_name} đã được phê duyệt bởi tất cả cấp duyệt!",
-#             )
-#
-#         # Prepare for the next approver
-#         next_acceptor_level = acceptor_level + 1
-#         next_acceptor = acceptors[next_acceptor_level - 1]
-#
-#         next_approver_email = next_acceptor.get(
-#             f"acceptor-level-{next_acceptor_level}-manager_id-manager_email", None
-#         )
-#         next_acceptor["status"] = "created"
-#         acceptors[next_acceptor_level - 1] = next_acceptor
-#         approval_url = f"approve/{user_id}/check-out/{token}/{next_acceptor_level}"
-#         subject = f"Approval Request for Check-in: {check_in_record.full_name}"
-#         approvers_list = [
-#             {
-#                 "email": acceptor.get(
-#                     f"acceptor-level-{index + 1}-manager_id-manager_email"
-#                 ),
-#                 "name": acceptor.get(
-#                     f"acceptor-level-{index + 1}-manager_id-manager_full_name", "N/A"
-#                 ),
-#                 "status": STATUS_TRANSLATIONS.get(
-#                     acceptor.get("status", "Chờ duyệt"), "Chờ duyệt"
-#                 ),
-#             }
-#             for index, acceptor in enumerate(acceptors)
-#         ]
-#         body_html = generate_html_email(
-#             check_in_record.full_name,
-#             check_in_record.military_unit_name or "N/A",
-#             datetime.utcnow().strftime("%d/%m/%Y %H:%M:%S"),
-#             approval_url,
-#             approvers_list,
-#             app.config.get("MAIL_USERNAME")
-#         )
-#         send_email(subject, next_approver_email, body_html)
-#
-#         # Save updated acceptors to the database
-#         check_in_record.acceptors = json.dumps(acceptors)
-#         db.session.commit()
-#
-#         return render_template(
-#             "approval_status.html",
-#             status="success",
-#             message=f"Yêu cầu ra ngoài của {check_in_record.full_name} đã được phê duyệt! Đã gửi yêu cầu tiếp theo cho cấp {next_acceptor_level}.",
-#         )
-#
-#     except Exception as e:
-#         return render_template(
-#             "approval_status.html", status="error", message=f"Có lỗi xảy ra: {str(e)}"
-#         )
-
 
 @core.route("/validate-face-scan", methods=["POST"])
 def validate_face_scan():
@@ -1355,7 +1244,7 @@ def validate_face_scan():
         identity_card = data.get("identity_card")
         check_in_record_id = data.get("check_in_record_id")
         captured_image = data.get("captured_image")
-
+        print(f"Data: {data}")
         # Validate inputs
         if not identity_card or not check_in_record_id or not captured_image:
             return jsonify({"error": "Thiếu thông tin cần thiết để xác minh."}), 400

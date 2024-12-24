@@ -1,21 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // Initialize camera when the modal is shown
-    const scanModal = document.getElementById("scanModal");
-
-    scanModal.addEventListener("shown.bs.modal", () => {
-        stopFaceCamera();
-        initializeCamera();
-    });
-
-    scanModal.addEventListener("hidden.bs.modal", () => {
-        stopCamera();
-    });
-
 
     const faceScanModal = document.getElementById("faceScanModal");
 
     faceScanModal.addEventListener("shown.bs.modal", () => {
-        stopCamera();
+        // stopCamera();
         initializeFaceScan();
     });
 
@@ -25,121 +13,89 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
+    const manualInput = document.getElementById("manual-identity-card-input");
+    const submitButton = document.getElementById("submit-manual-identity-card");
+    const errorSpan = document.getElementById("manual-identity-card-error");
+
+    // Enable the submit button when input length is valid (12 characters)
+    manualInput.addEventListener("input", (event) => {
+        const inputValue = manualInput.value.trim();
+
+        if (inputValue.length >= 12) {
+            if (inputValue.includes("|")) {
+                // Barcode detected, process and split the value
+                processBarcode(inputValue);
+            } else if (inputValue.length === 12) {
+                // Enable the submit button for valid manual input
+                enableSubmitButton();
+                errorSpan.textContent = "";
+            } else {
+                disableSubmitButton();
+                errorSpan.textContent = "Số CCCD phải có đúng 12 ký tự.";
+            }
+        } else {
+            disableSubmitButton();
+        }
+    });
+
+    // Handle the submission of the manual input
+    submitButton.addEventListener("click", () => {
+        const identityCard = manualInput.value.trim();
+
+        if (identityCard.length === 12) {
+            processIdentityCard(identityCard);
+        } else {
+            errorSpan.textContent = "Số CCCD phải có đúng 12 ký tự.";
+        }
+    });
+
 
 
 });
 
+// Function to process the barcode
+function processBarcode(barcode) {
+    const parts = barcode.split("|");
 
+    if (parts.length >= 4) {
+        const identityCard = parts[0]; // Extract the first part of the barcode
 
-let codeReader = null;
+        if (identityCard.length === 12) {
+            const manualInput = document.getElementById("manual-identity-card-input");
+            manualInput.value = identityCard;
 
-// Initialize camera for QR scanning
-async function initializeCamera() {
-    const videoElement = document.getElementById("camera-stream");
-    const imageElement = document.getElementById("captured-image");
-    const qrResultContainer = document.getElementById("qr-result-container");
-    const qrResultElement = document.getElementById("qr-result");
-    const resetButton = document.getElementById("reset-button");
-
-    qrResultContainer.style.display = "none"; // Hide result initially
-    qrResultElement.textContent = ""; // Clear result text
-    imageElement.style.display = "none"; // Hide the image initially
-    videoElement.style.display = "block"; // Ensure video is displayed
-
-    // Stop any existing codeReader
-    if (codeReader) {
-        codeReader.reset();
-    }
-
-    codeReader = new ZXing.BrowserQRCodeReader();
-
-    try {
-        const videoInputDevices = await codeReader.listVideoInputDevices();
-        if (videoInputDevices.length > 0) {
-            const selectedDeviceId = videoInputDevices[0].deviceId;
-
-            codeReader.decodeFromVideoDevice(selectedDeviceId, videoElement, (result, error) => {
-                if (result) {
-                    console.log("QR code read:", result.text);
-                    const extractedValue = extractIdentityCardValue(result.text);
-                    if (extractedValue) {
-                        showResult(extractedValue, videoElement, imageElement);
-                    } else {
-                        console.error("Invalid QR code format.");
-                    }
-                }
-
-                if (error && !(error instanceof ZXing.NotFoundException)) {
-                    console.error("Error reading QR code:", error.message);
-                }
-            });
+            enableSubmitButton(); // Enable the submit button automatically
+            document.getElementById("manual-identity-card-error").textContent = "";
         } else {
-            console.error("No camera devices found.");
-        }
-    } catch (err) {
-        console.error("Error initializing camera:", err.message);
-    }
-
-    resetButton.addEventListener("click", () => {
-        initializeCamera();
-    });
-}
-
-// Show QR scan result and handle frame capture
-function showResult(extractedValue, videoElement, imageElement) {
-    const qrResultContainer = document.getElementById("qr-result-container");
-    const qrResultElement = document.getElementById("qr-result");
-
-    qrResultElement.textContent = `Mã định danh: ${extractedValue}`;
-    qrResultContainer.style.display = "block";
-
-    // Use a new offscreen canvas to grab the current video frame
-    const offscreenCanvas = document.createElement("canvas");
-    const ctx = offscreenCanvas.getContext("2d");
-
-    // Set canvas size to match video frame
-    offscreenCanvas.width = videoElement.videoWidth;
-    offscreenCanvas.height = videoElement.videoHeight;
-
-    // Ensure the video feed is still active before capturing the frame
-    if (videoElement.videoWidth > 0 && videoElement.videoHeight > 0) {
-        // Draw the current video frame onto the canvas
-        ctx.drawImage(videoElement, 0, 0, offscreenCanvas.width, offscreenCanvas.height);
-
-        // Convert the canvas to a data URL
-        const capturedImage = offscreenCanvas.toDataURL("image/png");
-        if (capturedImage && capturedImage.startsWith("data:image/png")) {
-            imageElement.src = capturedImage; // Set the image src to the captured data URL
-            imageElement.style.display = "block"; // Show the captured image
-            videoElement.style.display = "none"; // Hide the video feed
-        } else {
-            console.error("Failed to capture the video frame.");
+            console.error("Invalid Barcode Format: First part is not 12 characters.");
+            disableSubmitButton();
         }
     } else {
-        console.error("Video feed is not available or has been stopped.");
-    }
-
-    // Stop camera stream and QR code reader
-    const stream = videoElement.srcObject;
-    if (stream) {
-        const tracks = stream.getTracks();
-        tracks.forEach((track) => track.stop());
-        videoElement.srcObject = null;
-    }
-
-    // Reset the codeReader to stop listening for QR codes
-    if (codeReader) {
-        console.log("Extracted value: ", extractedValue);
-        sendToServer(extractedValue);
+        console.error("Invalid Barcode Format: Not enough parts.");
+        disableSubmitButton();
     }
 }
 
-// Send identity card value to server and handle response
-function sendToServer(identityCardValue) {
-    fetch(`/api/check-in/${identityCardValue}`, { method: "GET" })
+// Function to enable the submit button
+function enableSubmitButton() {
+    const submitButton = document.getElementById("submit-manual-identity-card");
+    submitButton.disabled = false;
+}
+
+// Function to disable the submit button
+function disableSubmitButton() {
+    const submitButton = document.getElementById("submit-manual-identity-card");
+    submitButton.disabled = true;
+}
+
+
+// Function to process the identity card number and send it to the server
+function processIdentityCard(identityCard) {
+    fetch(`/api/check-in/${identityCard}`, { method: "GET" })
         .then((response) => response.json())
         .then((record) => {
             closeScanModal();
+
             if (record.error) {
                 showErrorModal(record.error);
             } else if (record.type === "sponsor") {
@@ -153,6 +109,7 @@ function sendToServer(identityCardValue) {
             closeScanModal();
         });
 }
+
 
 // Populate details for SponsorCheckIn
 function populateSponsorDetails(record) {
@@ -377,20 +334,7 @@ function extractIdentityCardValue(qrContent) {
 }
 
 // Initialize camera on page load
-function stopCamera() {
-    const videoElement = document.getElementById("camera-stream");
-    const stream = videoElement.srcObject;
-    if (stream) {
-        const tracks = stream.getTracks();
-        tracks.forEach((track) => track.stop());
-        videoElement.srcObject = null;
-    }
 
-    if (codeReader) {
-        codeReader.reset();
-        codeReader = null;
-    }
-}
 
 function closeScanModal() {
     const modalElement = document.getElementById("scanModal");
@@ -426,16 +370,17 @@ function stopFaceCamera() {
 }
 document.getElementById("capture-photo").addEventListener("click", async () => {
     try {
+        console.log("dfghnj")
         const videoElement = document.getElementById("face-camera");
         const identityCard = document.getElementById("identity-card-number").value;
         const checkInRecordId = document.getElementById("check-in-record-id-hidden").value;
-
+        console.log("1");
         if (!identityCard || !checkInRecordId) {
             console.error("Identity card or check-in record ID is missing.");
             alert("Thông tin không đầy đủ để thực hiện xác minh.");
             return;
         }
-
+        console.log("2");
         // Get CSRF token
         const csrfTokenInput = document.querySelector("input[name='csrf_token']");
         if (!csrfTokenInput) {
@@ -469,8 +414,10 @@ document.getElementById("capture-photo").addEventListener("click", async () => {
             check_in_record_id: checkInRecordId,
             captured_image: capturedImage,
         };
+        console.log("Payload:", payload);
 
         // Send the data to the server
+        console.log("csrfToken", csrfToken)
         const response = await fetch("/validate-face-scan", {
             method: "POST",
             headers: {

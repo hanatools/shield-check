@@ -380,7 +380,9 @@ def submit_data():
                 identity_card=identity_card,
                 full_name=full_name,
                 military_unit_id=military_unit_id if military_unit_id else None,
-                military_manager_id=military_manager_id if military_manager_id else None,
+                military_manager_id=(
+                    military_manager_id if military_manager_id else None
+                ),
                 note=note if note else None,
             )
             target_user.identity_card = identity_card
