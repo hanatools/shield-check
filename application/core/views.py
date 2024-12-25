@@ -265,11 +265,17 @@ def register_relative():
             ).first()
             if military_unit:
                 military_manager = User.query.filter_by(
-                    military_unit_id=military_unit.id, is_manager=True
+                    military_unit_id=military_unit.id
                 ).first()
-                if military_manager:
-                    sponsor_military_manager_id = military_manager.id
-                    sponsor_military_manager_full_name = military_manager.full_name
+                if military_manager is None:
+                    flash(
+                        f"Người bảo lãnh với CCCD {identity_card} không được đăng ký. Vui lòng kiểm tra lại.",
+                        "danger",
+                    )
+                    return redirect(url_for("core.register_relative"))
+
+                sponsor_military_manager_id = military_manager.id
+                sponsor_military_manager_full_name = military_manager.full_name
                 sponsor_military_unit_name = military_unit.name
 
         # Add relative to RelativeCheckIn
@@ -911,7 +917,7 @@ def register_soldier_checkin_data():
         body_html = generate_html_email(
             user.full_name,
             user.military_unit.name if user.military_unit else "",
-            datetime.utcnow().strftime("%d/%m/%Y %H:%M:%S"),
+            to_vietnam_time(datetime.utcnow()).strftime("%d/%m/%Y %H:%M:%S"),
             approval_url,
             approvers_list,
             app.config.get("MAIL_USERNAME"),
@@ -1303,7 +1309,7 @@ def validate_face_scan():
             return jsonify({"error": "CCCD từ nhận diện không khớp với dữ liệu."}), 400
 
         # Update database: check_out_time or check_in_time
-        current_time = datetime.utcnow()
+        current_time =   to_vietnam_time(datetime.utcnow())
         if not check_in_record.check_out_time:
             check_in_record.check_out_time = current_time
         else:
@@ -1359,7 +1365,7 @@ def confirm_relative_check_in(identity_card):
             )
 
         # Update database: check_in_time or check_out_time
-        current_time = datetime.utcnow()
+        current_time =   to_vietnam_time(datetime.utcnow())
         if not relative_check_in.check_in_time:
             relative_check_in.check_in_time = current_time
             message = "Đã quét thời gian vào thành công!"

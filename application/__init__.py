@@ -6,6 +6,7 @@ from application.config import Config
 from flask_wtf.csrf import CSRFProtect
 from flask_mail import Mail, Message
 import logging
+import pytz
 
 csrf = CSRFProtect()
 
@@ -17,6 +18,23 @@ csrf.init_app(app)
 db = SQLAlchemy(app)
 Migrate(app, db)
 mail = Mail(app)
+
+# Define Vietnamese timezone globally
+VIETNAM_TIMEZONE = pytz.timezone("Asia/Ho_Chi_Minh")
+
+# Helper function to convert datetime to Vietnamese local time
+def to_vietnam_time(dt):
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        dt = pytz.utc.localize(dt)  # Assume UTC if timezone info is missing
+    return dt.astimezone(VIETNAM_TIMEZONE)
+
+# Add Jinja filter for templates
+@app.template_filter("vietnam_time")
+def vietnam_time_filter(dt, fmt="%H:%M:%S %d/%m/%Y"):
+    vn_time = to_vietnam_time(dt)
+    return vn_time.strftime(fmt) if vn_time else "N/A"
 
 
 def send_email(subject, recipient, body_html=None):

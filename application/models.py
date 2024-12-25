@@ -4,12 +4,19 @@ from application import db, login_manager
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
-
+import pytz
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(user_id)
 
+# Define Vietnamese timezone globally
+VIETNAM_TIMEZONE = pytz.timezone("Asia/Ho_Chi_Minh")
+
+def to_vietnam_time():
+    """Return the current time in Vietnamese local time."""
+    utc_now = datetime.utcnow()
+    return pytz.utc.localize(utc_now).astimezone(VIETNAM_TIMEZONE)
 
 class MilitaryUnit(db.Model):
     __tablename__ = "military_units"
@@ -22,7 +29,7 @@ class MilitaryUnit(db.Model):
     )  # Parent unit (self-referencing foreign key)
     note = db.Column(db.Text, nullable=True)  # Optional note
     created_date = db.Column(
-        db.DateTime, default=datetime.utcnow, nullable=False
+        db.DateTime, default=to_vietnam_time, nullable=False
     )  # Creation timestamp
     created_by = db.Column(
         db.Integer, db.ForeignKey("users.id"), nullable=False
@@ -74,9 +81,9 @@ class User(db.Model, UserMixin):
     created_by_id = db.Column(
         db.Integer, db.ForeignKey("users.id", name="fk_user_created_by"), nullable=True
     )
-    created_time = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_time = db.Column(db.DateTime, default=to_vietnam_time, nullable=False)
     update_time = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+        db.DateTime, default=to_vietnam_time, onupdate=datetime.utcnow
     )
 
     # Relationships
@@ -143,7 +150,7 @@ class SponsorCheckIn(db.Model):
     left_image_path = db.Column(db.String(255), nullable=True)
     right_image_path = db.Column(db.String(255), nullable=True)
     front_image_path = db.Column(db.String(255), nullable=True)
-    created_time = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_time = db.Column(db.DateTime, default=to_vietnam_time, nullable=False)
     status = db.Column(db.String(50), default="created", nullable=False)
     token = db.Column(
         db.String(255), default=lambda: str(uuid.uuid4()), unique=True, nullable=True
@@ -156,7 +163,7 @@ class SponsorCheckIn(db.Model):
         db.Integer, db.ForeignKey("users.id", name="fk_user_created_by"), nullable=True
     )
     update_time = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+        db.DateTime, default=to_vietnam_time, onupdate=datetime.utcnow
     )
 
     # Relationships
@@ -210,7 +217,7 @@ class RelativeCheckIn(db.Model):
     left_image_path = db.Column(db.String(255), nullable=True)
     right_image_path = db.Column(db.String(255), nullable=True)
     front_image_path = db.Column(db.String(255), nullable=True)
-    created_time = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_time = db.Column(db.DateTime, default=to_vietnam_time, nullable=False)
     status = db.Column(
         db.String(50), default="created", nullable=False
     )  # Status: created, accepted, etc.
@@ -220,7 +227,7 @@ class RelativeCheckIn(db.Model):
     accepted_datetime = db.Column(db.DateTime, nullable=True)
     check_in_time = db.Column(db.DateTime, nullable=True)
     check_out_time = db.Column(db.DateTime, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=to_vietnam_time, nullable=False)
     created_by = db.Column(
         db.Integer,
         db.ForeignKey("users.id", name="fk_relative_check_in_created_by"),
