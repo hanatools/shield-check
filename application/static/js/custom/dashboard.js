@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function processBarcode(barcode) {
     const parts = barcode.split("|");
 
-    if (parts.length >= 4) {
+    if (parts.length >= 1) {
         let identityCard = parts[0]; // Extract the first part of the barcode
 
         // Ensure the identity card number is trimmed to 12 characters
