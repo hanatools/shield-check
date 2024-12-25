@@ -54,11 +54,38 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Function to process the barcode
+// function processBarcode(barcode) {
+//     const parts = barcode.split("|");
+//
+//     if (parts.length >= 4) {
+//         const identityCard = parts[0]; // Extract the first part of the barcode
+//
+//         if (identityCard.length === 12) {
+//             const manualInput = document.getElementById("manual-identity-card-input");
+//             manualInput.value = identityCard;
+//
+//             enableSubmitButton(); // Enable the submit button automatically
+//             document.getElementById("manual-identity-card-error").textContent = "";
+//         } else {
+//             console.error("Invalid Barcode Format: First part is not 12 characters.");
+//             disableSubmitButton();
+//         }
+//     } else {
+//         console.error("Invalid Barcode Format: Not enough parts.");
+//         disableSubmitButton();
+//     }
+// }
 function processBarcode(barcode) {
     const parts = barcode.split("|");
 
     if (parts.length >= 4) {
-        const identityCard = parts[0]; // Extract the first part of the barcode
+        let identityCard = parts[0]; // Extract the first part of the barcode
+
+        // Ensure the identity card number is trimmed to 12 characters
+        if (identityCard.length > 12) {
+            identityCard = identityCard.substring(0, 12);
+            console.warn("Identity card number exceeded 12 characters. Extra characters were removed.");
+        }
 
         if (identityCard.length === 12) {
             const manualInput = document.getElementById("manual-identity-card-input");

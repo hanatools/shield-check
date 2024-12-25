@@ -32,12 +32,39 @@ document.getElementById("submit-identity-card").addEventListener("click", () => 
 });
 
 // Function to process the barcode
+// function processBarcode(barcode) {
+//     const parts = barcode.split("|");
+//
+//     // Validate the format
+//     if (parts.length >= 4) {
+//         const identityCardNumber = parts[0]; // Extract the first part of the barcode
+//
+//         if (identityCardNumber.length === 12) {
+//             // Set the input value and enable the submit button
+//             document.getElementById("identity-card-input").value = identityCardNumber;
+//             enableSubmitButton();
+//         } else {
+//             console.error("Invalid Barcode Format: First part is not 12 characters.");
+//             disableSubmitButton();
+//         }
+//     } else {
+//         console.error("Invalid Barcode Format: Not enough parts.");
+//         disableSubmitButton();
+//     }
+// }
+// Function to process the barcode
 function processBarcode(barcode) {
     const parts = barcode.split("|");
 
     // Validate the format
     if (parts.length >= 4) {
-        const identityCardNumber = parts[0]; // Extract the first part of the barcode
+        let identityCardNumber = parts[0]; // Extract the first part of the barcode
+
+        // Ensure the identity card number is trimmed to 12 characters
+        if (identityCardNumber.length > 12) {
+            identityCardNumber = identityCardNumber.substring(0, 12);
+            console.warn("Identity card number exceeded 12 characters. Extra characters were removed.");
+        }
 
         if (identityCardNumber.length === 12) {
             // Set the input value and enable the submit button
@@ -52,7 +79,6 @@ function processBarcode(barcode) {
         disableSubmitButton();
     }
 }
-
 // Function to enable the submit button
 function enableSubmitButton() {
     const submitButton = document.getElementById("submit-identity-card");
