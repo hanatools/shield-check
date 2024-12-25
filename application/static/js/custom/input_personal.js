@@ -57,7 +57,7 @@ function processBarcode(barcode) {
     const parts = barcode.split("|");
 
     // Validate the format
-    if (parts.length >= 1) {
+    // if (parts.length >= 1) {
         let identityCardNumber = parts[0]; // Extract the first part of the barcode
 
         // Ensure the identity card number is trimmed to 12 characters
@@ -74,10 +74,10 @@ function processBarcode(barcode) {
             console.error("Invalid Barcode Format: First part is not 12 characters.");
             disableSubmitButton();
         }
-    } else {
-        console.error("Invalid Barcode Format: Not enough parts.");
-        disableSubmitButton();
-    }
+    // } else {
+    //     console.error("Invalid Barcode Format: Not enough parts.");
+    //     disableSubmitButton();
+    // }
 }
 // Function to enable the submit button
 function enableSubmitButton() {
