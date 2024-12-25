@@ -20,22 +20,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // Enable the submit button when input length is valid (12 characters)
     manualInput.addEventListener("input", (event) => {
         const inputValue = manualInput.value.trim();
+        processBarcode(inputValue);
 
-        if (inputValue.length >= 12) {
-            if (inputValue.includes("|")) {
-                // Barcode detected, process and split the value
-                processBarcode(inputValue);
-            } else if (inputValue.length === 12) {
-                // Enable the submit button for valid manual input
-                enableSubmitButton();
-                errorSpan.textContent = "";
-            } else {
-                disableSubmitButton();
-                errorSpan.textContent = "Số CCCD phải có đúng 12 ký tự.";
-            }
-        } else {
-            disableSubmitButton();
-        }
     });
 
     // Handle the submission of the manual input
