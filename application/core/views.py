@@ -24,6 +24,7 @@ from application.models import (
     SponsorCheckIn,
     RelativeCheckIn,
     MilitaryUnit,
+    to_vietnam_time
 )
 from flask_login import login_required, current_user
 import threading
@@ -917,7 +918,7 @@ def register_soldier_checkin_data():
         body_html = generate_html_email(
             user.full_name,
             user.military_unit.name if user.military_unit else "",
-            to_vietnam_time(datetime.utcnow()).strftime("%d/%m/%Y %H:%M:%S"),
+            to_vietnam_time().strftime("%d/%m/%Y %H:%M:%S"),
             approval_url,
             approvers_list,
             app.config.get("MAIL_USERNAME"),
@@ -1309,7 +1310,7 @@ def validate_face_scan():
             return jsonify({"error": "CCCD từ nhận diện không khớp với dữ liệu."}), 400
 
         # Update database: check_out_time or check_in_time
-        current_time =   to_vietnam_time(datetime.utcnow())
+        current_time =   to_vietnam_time()
         if not check_in_record.check_out_time:
             check_in_record.check_out_time = current_time
         else:
@@ -1365,7 +1366,7 @@ def confirm_relative_check_in(identity_card):
             )
 
         # Update database: check_in_time or check_out_time
-        current_time =   to_vietnam_time(datetime.utcnow())
+        current_time =   to_vietnam_time()
         if not relative_check_in.check_in_time:
             relative_check_in.check_in_time = current_time
             message = "Đã quét thời gian vào thành công!"
