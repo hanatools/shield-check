@@ -219,6 +219,7 @@ function populateUserDetails(record) {
     document.getElementById("identity-card-number").value = record.identity_card;
     document.getElementById("unit").value = record.unit_name;
     document.getElementById("manager").value = record.management_level;
+    document.getElementById("reason").value = record.note;
     document.getElementById("check-in-record-id-hidden").value = record.id;
     document.getElementById("created_time").value = formatDateTime(record.created_time);
     document.getElementById("check_out_time").value = formatDateTime(record.check_out_time);
