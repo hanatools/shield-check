@@ -1,17 +1,19 @@
 import imaplib
 import email
 import json
-import os
-import re
 import logging
 from datetime import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
-from flask import Flask
 import atexit
 
 from application import app, send_email, db
 from application.email import generate_html_email
-from application.models import SponsorCheckIn
+from application.models import (
+    SponsorCheckIn,
+    to_vietnam_time
+)
+
+
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -72,7 +74,7 @@ def process_approval(user_id, token, acceptor_level):
 
             if acceptor_level == len(acceptors):
                 check_in_record.status = "accepted"
-                check_in_record.accepted_datetime = datetime.utcnow()
+                check_in_record.accepted_datetime = to_vietnam_time()
                 check_in_record.acceptors = json.dumps(acceptors)
                 db.session.commit()
                 logger.info(f"Check-in request {check_in_record.id} fully approved.")
@@ -101,7 +103,7 @@ def process_approval(user_id, token, acceptor_level):
             body_html = generate_html_email(
                 check_in_record.full_name,
                 check_in_record.military_unit_name or "N/A",
-                datetime.utcnow().strftime("%d/%m/%Y %H:%M:%S"),
+                to_vietnam_time().strftime("%d/%m/%Y %H:%M:%S"),
                 approval_url,
                 approvers_list,
                 MAIL_DEFAULT_SENDER=SYSTEM_EMAIL,

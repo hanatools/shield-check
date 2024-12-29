@@ -66,3 +66,8 @@ python EmailPolling.py
 6. run web server
 python app.py
 ```
+
+### Link setup docuemnt
+```angular2html
+https://drive.google.com/drive/folders/1Qt-vd113VXk6uT_R9Ckik_BczXiANsOY
+```

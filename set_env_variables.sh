@@ -4,7 +4,6 @@
 # Export environment discover service variables
 export SECRET_KEY="z4XE7rLQONub25D3phldRlrlTHe2tLtROsWl7EcRECldrapAs8AtReS28cu9iFra"
 export DEFAULT_USER_EMAIL="mr.william.technician1988@gmail.com"
-export DEFAULT_MANAGER_USERNAME="systemadmin"
 export DEFAULT_USER_PASSWORD="123456"
 export UPLOAD_FOLDER="static/uploads"
 export FACE_DATA="static/face_data"

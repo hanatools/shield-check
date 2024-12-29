@@ -17,7 +17,6 @@ class Config:
     # Default user email
     DEFAULT_USER_EMAIL = os.getenv("DEFAULT_USER_EMAIL", "")
     DEFAULT_USER_PASSWORD = os.getenv("DEFAULT_USER_PASSWORD", "123456")
-    DEFAULT_MANAGER_USERNAME = os.getenv("DEFAULT_MANAGER_USERNAME", "")
     UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", "static/uploads")
     UPLOAD_FOLDER_ABSOLUTE_PATH = os.path.join(
         os.path.dirname(__file__).split("application")[0], UPLOAD_FOLDER
