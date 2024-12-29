@@ -813,6 +813,7 @@ def register_soldier_checkin_data():
         identity_card = data.get("identity_card", "").strip()
         acceptors = data.get("acceptors", [])
         file_scan = data.get("file_scan", "")
+        note = data.get("note", "")
         images = data.get("images", {})
 
         # Validate acceptors JSON
@@ -837,6 +838,8 @@ def register_soldier_checkin_data():
                 404,
             )
 
+        manager = None if user.military_manager_id is None else User.query.get(user.military_manager_id)
+        print(f"Manager: {manager}")
         # Validate required images
         if not all(k in images for k in ["left", "right", "front"]):
             return jsonify({"error": "Thiếu một hoặc nhiều ảnh cần thiết."}), 400
@@ -894,6 +897,9 @@ def register_soldier_checkin_data():
             acceptors=json.dumps(acceptors),
             created_by_id=current_user.id,
             token=token,
+            note=note,
+            military_manager_id=None if manager is None else manager.id,
+            military_manager_full_name=None if manager is None else manager.full_name,
         )
 
         db.session.add(check_in_record)

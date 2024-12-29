@@ -281,6 +281,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Prepare payload
         const payload = {
             identity_card: document.getElementById("identity_card").value.trim(),
+            note: document.getElementById("note").value.trim(),
             acceptors: acceptors, // Send directly as an array
             file_scan: userData.fileScan || null,
             images: capturedImages || {},
