@@ -147,6 +147,7 @@ def get_latest_check_in(identity_card):
                     ),
                     "status": check_in.status,
                     "acceptor_statuses": acceptor_statuses,
+                    "note": check_in.note,
                 }
             )
 
