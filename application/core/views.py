@@ -179,6 +179,7 @@ def get_latest_check_in(identity_card):
                         else None
                     ),
                     "status": relative_check_in.status,
+                    "note": relative_check_in.note,
                 }
             )
 
