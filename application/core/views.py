@@ -13,6 +13,9 @@ from flask import (
     redirect,
     session,
     current_app,
+    send_from_directory,
+    send_file,
+    abort,
 )
 from werkzeug.security import generate_password_hash
 import requests
@@ -1537,7 +1540,6 @@ def confirm_relative():
 
         # Create directory for storing images if it doesn't exist
         image_dir = os.path.join("static", "relative_images")
-        # image_dir = os.path.join(current_app.static_folder, 'relative_images')
         os.makedirs(image_dir, exist_ok=True)
 
         # Generate unique filename with timestamp
@@ -1840,3 +1842,126 @@ def mask_email(email):
     local_part, domain = email.split("@", 1)
     masked_local = local_part[:4] + "*" * (len(local_part) - 4)
     return f"{masked_local}@{domain}"
+
+
+@core.route("/api/relative-details/<int:record_id>")
+@login_required
+def get_relative_details(record_id):
+    try:
+        record = RelativeCheckIn.query.get_or_404(record_id)
+        
+        # Format image paths correctly
+        check_in_image = record.check_in_image
+        if check_in_image and not check_in_image.startswith('/'):
+            check_in_image = '/' + check_in_image
+
+        check_out_image = record.check_out_image
+        if check_out_image and not check_out_image.startswith('/'):
+            check_out_image = '/' + check_out_image
+
+        # Format profile and scan images
+        profile_image = record.profile_image
+        if profile_image and not profile_image.startswith('/'):
+            profile_image = '/' + profile_image
+
+        # Format identity card scan images
+        file_scan_path = record.file_scan_path
+        left_image_path = record.left_image_path
+        right_image_path = record.right_image_path
+        front_image_path = record.front_image_path
+
+        # Format dates
+        created_time = record.created_time.strftime('%Y-%m-%d %H:%M:%S') if record.created_time else None
+        accepted_datetime = record.accepted_datetime.strftime('%Y-%m-%d %H:%M:%S') if record.accepted_datetime else None
+        check_in_time = record.check_in_time.strftime('%Y-%m-%d %H:%M:%S') if record.check_in_time else None
+        check_out_time = record.check_out_time.strftime('%Y-%m-%d %H:%M:%S') if record.check_out_time else None
+        created_at = record.created_at.strftime('%Y-%m-%d %H:%M:%S') if record.created_at else None
+        
+        return jsonify({
+            'success': True,
+            # Basic Information
+            'id': record.id,
+            'full_name': record.full_name,
+            'identity_card': record.identity_card,
+            'relationship': record.relationship,
+            'note': record.note,
+            'unit_name': record.unit_name,
+            'status': record.status,
+            
+            # Images
+            'profile_image': profile_image,
+            'file_scan_path': file_scan_path,
+            'left_image_path': left_image_path,
+            'right_image_path': right_image_path,
+            'front_image_path': front_image_path,
+            'check_in_image': check_in_image,
+            'check_out_image': check_out_image,
+            
+            # Timestamps
+            'created_time': created_time,
+            'accepted_datetime': accepted_datetime,
+            'check_in_time': check_in_time,
+            'check_out_time': check_out_time,
+            'created_at': created_at,
+            
+            # Sponsor Information
+            'sponsor_full_name': record.sponsor_full_name,
+            'sponsor_military_unit_name': record.sponsor_military_unit_name,
+            'sponsor_military_manager_full_name': record.sponsor_military_manager_full_name,
+            'sponsor_identity_card': record.sponsor_identity_card,
+            
+            # Additional Information
+            'token': record.token,
+            'acceptors': record.acceptors,
+            
+            # Relationships (if needed)
+            'sponsor_military_unit': {
+                'id': record.sponsor_military_unit.id if record.sponsor_military_unit else None,
+                'name': record.sponsor_military_unit.name if record.sponsor_military_unit else None
+            } if record.sponsor_military_unit else None,
+            
+            # Status translation
+            'status_display': {
+                'created': 'Chờ duyệt',
+                'accepted': 'Đã duyệt',
+                'reject': 'Từ chối',
+                'cancel': 'Đã hủy',
+                'expired': 'Hết hạn',
+                'completed': 'Hoàn thành',
+                'info': 'Thông báo'
+            }.get(record.status, 'Không xác định')
+        })
+    except Exception as e:
+        print(f"Error fetching details: {str(e)}")  # For debugging
+        return jsonify({
+            'success': False,
+            'message': f'Lỗi xảy ra: {str(e)}'
+        }), 500
+
+
+@core.route('/public/static/relative_images/<path:filename>')
+def serve_relative_image(filename):
+    try:
+        # Get the absolute path to the shield-check directory
+        shield_check_dir = os.path.join(os.path.dirname(os.path.dirname(current_app.root_path)), 'shield-check')
+        
+        # Construct full file path
+        file_path = os.path.join(shield_check_dir, 'static', 'relative_images', filename)
+
+        # Debug information
+        print(f"Full file path: {file_path}")
+        print(f"File exists: {os.path.exists(file_path)}")
+        print(f"File is file: {os.path.isfile(file_path)}")
+        print(f"File permissions: {oct(os.stat(file_path).st_mode)[-3:]}")
+        
+        # Check if file exists
+        if not os.path.exists(file_path):
+            print(f"File not found: {file_path}")
+            abort(404)
+            
+        # Serve the file directly
+        return send_file(file_path, mimetype='image/jpeg')
+        
+    except Exception as e:
+        print(f"Error serving image: {str(e)}")
+        return str(e), 404

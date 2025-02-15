@@ -1,21 +1,27 @@
 /* Content Styling */
+
 .content {
     padding: 20px;
     background-color: #f8f9fa;
     min-height: calc(100vh - 70px);
 }
 
+
 /* Report Section */
+
 .report-section {
     margin-bottom: 40px;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     gap: 20px;
-    flex-wrap: wrap; /* Allows wrapping on smaller screens */
+    flex-wrap: wrap;
+    /* Allows wrapping on smaller screens */
 }
 
+
 /* Report Title */
+
 .report-title {
     font-size: 22px;
     font-weight: bold;
@@ -30,7 +36,9 @@
     width: 100%;
 }
 
+
 /* Table Container */
+
 .table-container {
     flex: 3;
     background: white;
@@ -60,14 +68,17 @@
     font-weight: bold;
 }
 
+
 /* Filter Box */
+
 .filter-box {
     flex: 1;
     background: white;
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     padding: 20px;
-    max-width: 300px; /* Prevent the filter box from being too wide */
+    max-width: 300px;
+    /* Prevent the filter box from being too wide */
 }
 
 .filter-box h4 {
@@ -108,22 +119,50 @@
     background-color: #1d4ed8;
 }
 
+
 /* Responsive Design */
+
 @media screen and (max-width: 768px) {
     .report-section {
-        flex-direction: column; /* Stack content vertically */
+        flex-direction: column;
+        /* Stack content vertically */
     }
-
     .filter-box {
-        max-width: 100%; /* Allow filter box to stretch on smaller screens */
+        max-width: 100%;
+        /* Allow filter box to stretch on smaller screens */
     }
-
     .table-container {
         padding: 10px;
     }
-
     .table-container table th,
     .table-container table td {
-        font-size: 12px; /* Reduce font size for smaller screens */
+        font-size: 12px;
+        /* Reduce font size for smaller screens */
     }
+}
+
+.image-container {
+    border: 1px solid #dee2e6;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #f8f9fa;
+}
+
+.image-container img {
+    max-height: 300px;
+    width: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+.image-container img:not([src]) {
+    display: none;
+}
+
+.image-container:empty::after {
+    content: 'Chưa có ảnh';
+    display: block;
+    text-align: center;
+    padding: 20px;
+    color: #6c757d;
 }

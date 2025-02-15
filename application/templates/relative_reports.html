@@ -19,6 +19,7 @@
                 <thead>
                 <tr>
                     <th>ID</th>
+                    <th>Action</th>
                     <th>Trạng thái</th>
                     <th>Họ và tên</th>
                     <th>Số CCCD người thân</th>
@@ -37,6 +38,14 @@
                 {% for record in report_data %}
                 <tr>
                     <td>{{ record.id }}</td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-outline-primary view-details" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#detailsModal" 
+                                data-record-id="{{ record.id }}">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </td>
                     <td class="text-center">
                         <span class="badge
                                      {% if record.status == 'created' %} bg-warning text-dark
@@ -98,6 +107,57 @@
         </div>
     </div>
 </div>
+
+<!-- Add the Details Modal -->
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title fw-bold text-primary" id="detailsModalLabel">Chi tiết báo cáo chuyến thăm người thân</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="mb-3">Thông tin người thân</h6>
+                        <p><strong>Họ và tên:</strong> <span id="modalFullName"></span></p>
+                        <p><strong>Số CCCD:</strong> <span id="modalIdentityCard"></span></p>
+                        <p><strong>Trạng thái:</strong> <span id="modalStatus"></span></p>
+                        <p><strong>Thời gian tạo:</strong> <span id="modalCreatedTime"></span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="mb-3">Thông tin quân nhân</h6>
+                        <p><strong>Họ và tên:</strong> <span id="modalSoldierName"></span></p>
+                        <p><strong>Số CCCD:</strong> <span id="modalSoldierIdentityCard"></span></p>
+                        <p><strong>Đơn vị:</strong> <span id="modalUnitName"></span></p>
+                        <p><strong>Cấp quản lý:</strong> <span id="modalManagementLevel"></span></p>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <h6 class="mb-3">Ảnh đi vào</h6>
+                        <div class="image-container">
+                            <img id="modalCheckInImage" class="img-fluid rounded" src="" alt="Ảnh check-in">
+                            <p class="mt-2"><strong>Thời gian:</strong> <span id="modalCheckInTime"></span></p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="mb-3">Ảnh đi ra</h6>
+                        <div class="image-container">
+                            <img id="modalCheckOutImage" class="img-fluid rounded" src="" alt="Ảnh check-out">
+                            <p class="mt-2"><strong>Thời gian:</strong> <span id="modalCheckOutTime"></span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 
