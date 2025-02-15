@@ -1,20 +1,25 @@
-
 .content {
     display: flex;
-    justify-content: center; /* Horizontally center */
-    align-items: center; /* Vertically center */
-    min-height: 100vh; /* Full-page height */
+    justify-content: center;
+    /* Horizontally center */
+    align-items: center;
+    /* Vertically center */
+    min-height: 100vh;
+    /* Full-page height */
     padding: 20px;
-    background-color: #f8f9fa; /* Light gray background */
+    background-color: #f8f9fa;
+    /* Light gray background */
 }
 
 .form-section {
     background: white;
     padding: 30px;
     border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    /* Subtle shadow */
     width: 100%;
-    max-width: 700px; /* Wider form */
+    max-width: 700px;
+    /* Wider form */
     font-family: 'Roboto', Arial, sans-serif;
 }
 
@@ -22,16 +27,19 @@
     font-size: 22px;
     font-weight: bold;
     text-transform: uppercase;
-    color: #1e3a8a; /* Dark navy for the title */
+    color: #1e3a8a;
+    /* Dark navy for the title */
     margin-bottom: 20px;
-    border-bottom: 2px solid #d1d5db; /* Subtle border */
+    border-bottom: 2px solid #d1d5db;
+    /* Subtle border */
     padding-bottom: 10px;
     text-align: center;
 }
 
 .form-label {
     font-weight: bold;
-    color: #374151; /* Neutral gray */
+    color: #374151;
+    /* Neutral gray */
 }
 
 .form-control {
@@ -41,29 +49,53 @@
 }
 
 .form-control:focus {
-    border-color: #1e40af; /* Blue border on focus */
+    border-color: #1e40af;
+    /* Blue border on focus */
     box-shadow: 0 0 5px rgba(30, 64, 175, 0.5);
 }
 
+
 /*.btn-primary {*/
+
+
 /*    background-color: #10b981; !* Green button *!*/
+
+
 /*    border: none;*/
+
+
 /*    border-radius: 5px;*/
+
+
 /*    padding: 10px 20px;*/
+
+
 /*    font-size: 16px;*/
+
+
 /*    font-weight: bold;*/
+
+
 /*    text-transform: uppercase;*/
+
+
 /*    width: 100%;*/
+
+
 /*    transition: all 0.3s ease;*/
+
+
 /*}*/
 
 .btn-primary:hover {
-    background-color: #059669; /* Darker green on hover */
+    background-color: #059669;
+    /* Darker green on hover */
 }
 
 .help-text {
     font-size: 14px;
-    color: #6b7280; /* Light gray */
+    color: #6b7280;
+    /* Light gray */
     text-align: center;
     margin-top: 10px;
 }
@@ -79,7 +111,8 @@
 }
 
 #face-scan-button {
-    background-color: #4f46e5; /* Indigo color */
+    background-color: #4f46e5;
+    /* Indigo color */
     color: #ffffff;
     border: none;
     border-radius: 5px;
@@ -91,5 +124,40 @@
 }
 
 #face-scan-button:hover {
-    background-color: #4338ca; /* Darker Indigo */
+    background-color: #4338ca;
+    /* Darker Indigo */
+}
+
+.modal-step {
+    transition: all 0.3s ease;
+}
+
+.step-indicator {
+    font-size: 0.9em;
+    opacity: 0.9;
+}
+
+.camera-container {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+}
+
+#cameraFeed,
+#captureCanvas,
+#capturedImage {
+    max-width: 100%;
+    border-radius: 5px;
+    margin: 0 auto;
+}
+
+.camera-buttons {
+    margin-top: 15px;
+}
+
+.info-card {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 15px;
 }

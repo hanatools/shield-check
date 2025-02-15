@@ -1,4 +1,9 @@
-from application import app
+
+
+from flask_migrate import Migrate
+from application import app, db
+
+migrate = Migrate(app, db)
 
 if __name__ == "__main__":
     if not app.config.get("DEFAULT_USER_EMAIL"):

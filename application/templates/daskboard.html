@@ -164,41 +164,67 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="relativeConfirmModalLabel">Xác nhận thông tin Người thân</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title" id="relativeConfirmModalLabel">
+                    <span class="step-indicator">Bước 1/2:</span> 
+                    <span class="step-title">Xác nhận thông tin Người thân</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <p><strong>Họ và tên:</strong> <span id="relativeConfirmFullName"></span></p>
-                <p><strong>Số CCCD:</strong> <span id="relativeConfirmIdentityCard"></span></p>
-                <p><strong>Mối quan hệ:</strong> <span id="relativeConfirmRelationship"></span></p>
-                <p><strong>Đơn vị:</strong> <span id="relativeConfirmUnitName"></span></p>
-                <p><strong>Thời gian tạo:</strong> <span id="relativeConfirmCreatedTime"></span></p>
-                <p><strong>Ghi chú:</strong> <span id="relativeConfirmNote"></span></p>
+
+            <!-- Step 1: Information Confirmation -->
+            <div class="modal-step" id="step1">
+                <div class="modal-body">
+                    <div class="info-card">
+                        <p><strong>Họ và tên:</strong> <span id="relativeConfirmFullName"></span></p>
+                        <p><strong>Số CCCD:</strong> <span id="relativeConfirmIdentityCard"></span></p>
+                        <p><strong>Mối quan hệ:</strong> <span id="relativeConfirmRelationship"></span></p>
+                        <p><strong>Đơn vị:</strong> <span id="relativeConfirmUnitName"></span></p>
+                        <p><strong>Thời gian tạo:</strong> <span id="relativeConfirmCreatedTime"></span></p>
+                        <p><strong>Ghi chú:</strong> <span id="relativeConfirmNote"></span></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Hủy</button>
+                    <button class="btn btn-primary btn-sm" onclick="nextStep(2)">
+                        Tiếp tục <i class="bi bi-arrow-right"></i>
+                    </button>
+                </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary btn-sm w-auto" data-bs-dismiss="modal">Hủy</button>
-                <button class="btn btn-primary btn-sm w-auto" id="relativeConfirmButton">Xác nhận</button>
+
+            <!-- Step 2: Image Capture -->
+            <div class="modal-step" id="step2" style="display: none;">
+                <div class="modal-body">
+                    <div class="alert alert-info mb-3">
+                        <i class="bi bi-camera"></i> Vui lòng chụp ảnh người thân để xác thực
+                    </div>
+                    <div class="camera-container text-center">
+                        <video id="cameraFeed" class="mb-3" autoplay playsinline></video>
+                        <canvas id="captureCanvas" class="mb-3" style="display: none;"></canvas>
+                        <img id="capturedImage" class="mb-3" style="display: none; max-width: 100%;">
+                        
+                        <div class="camera-buttons">
+                            <button class="btn btn-primary btn-sm" id="captureImage">
+                                <i class="bi bi-camera"></i> Chụp ảnh
+                            </button>
+                            <button class="btn btn-warning btn-sm" id="retakeImage" style="display: none;">
+                                <i class="bi bi-arrow-repeat"></i> Chụp lại
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary btn-sm" onclick="previousStep(1)">
+                        <i class="bi bi-arrow-left"></i> Quay lại
+                    </button>
+                    <button class="btn btn-success btn-sm" id="submitFinal" disabled>
+                        <i class="bi bi-check-lg"></i> Xác nhận
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title text-success" id="successModalLabel">Thành công</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p id="successMessage">Đã quét đi vào thành công</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
-            </div>
-        </div>
-    </div>
-</div>
 {% endblock %}
 
 

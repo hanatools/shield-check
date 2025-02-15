@@ -1505,75 +1505,111 @@ def validate_face_scan():
         return jsonify({"error": f"Lỗi xảy ra: {str(e)}"}), 500
 
 
-@core.route("/api/confirm-relative-check-in/<identity_card>", methods=["POST"])
-def confirm_relative_check_in(identity_card):
+@core.route("/api/confirm-relative", methods=["POST"])
+@login_required
+def confirm_relative():
     try:
+        data = request.get_json()
+        relative_id = data.get('relative_id')
+        image_data = data.get('image')
+
+        if not relative_id or not image_data:
+            return jsonify({
+                'success': False,
+                'message': 'Thiếu thông tin cần thiết'
+            }), 400
+
         # Fetch relative check-in record
         relative_check_in = (
             RelativeCheckIn.query.filter_by(
-                identity_card=identity_card, status="accepted"
+                identity_card=relative_id,
+                status="accepted"
             )
             .order_by(RelativeCheckIn.created_time.desc())
             .first()
         )
 
         if not relative_check_in:
-            return (
-                jsonify({"error": "Không tìm thấy phiếu kiểm tra được phê duyệt."}),
-                404,
-            )
+            return jsonify({
+                'success': False,
+                'message': 'Không tìm thấy phiếu kiểm tra được phê duyệt.'
+            }), 404
 
-        # Update database: check_in_time or check_out_time
-        current_time =   to_vietnam_time()
+        # Create directory for storing images if it doesn't exist
+        image_dir = os.path.join("static", "relative_images")
+        # image_dir = os.path.join(current_app.static_folder, 'relative_images')
+        os.makedirs(image_dir, exist_ok=True)
+
+        # Generate unique filename with timestamp
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f"relative_{relative_id}_{timestamp}.jpg"
+        image_path = os.path.join(image_dir, filename)
+
+        # Save the image
+        try:
+            # Remove the data URL prefix and decode base64
+            image_data = image_data.split(',')[1]
+            image_binary = base64.b64decode(image_data)
+            
+            with open(image_path, 'wb') as f:
+                f.write(image_binary)
+            
+            # Get relative path for database storage
+            relative_path = os.path.join('static', 'relative_images', filename)
+
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'message': f'Lỗi khi lưu ảnh: {str(e)}'
+            }), 500
+
+        # Update database record
+        current_time = to_vietnam_time()
+        
         if not relative_check_in.check_in_time:
+            # Handle check-in
             relative_check_in.check_in_time = current_time
+            relative_check_in.check_in_image = relative_path
             message = "Đã quét thời gian vào thành công!"
         elif not relative_check_in.check_out_time:
+            # Handle check-out
             relative_check_in.check_out_time = current_time
+            relative_check_in.check_out_image = relative_path
             relative_check_in.status = "completed"
-            relative_check_in.identity_card = None
             message = "Đã quét thời gian ra thành công!"
         else:
-            return (
-                jsonify(
-                    {"error": "Người thân này đã hoàn thành check-in và check-out."}
-                ),
-                400,
-            )
+            return jsonify({
+                'success': False,
+                'message': 'Người thân này đã hoàn thành check-in và check-out.'
+            }), 400
 
-        # Commit the changes
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({
+                'success': False,
+                'message': f'Lỗi khi cập nhật dữ liệu: {str(e)}'
+            }), 500
 
-        # Respond with updated check-in record details
-        return (
-            jsonify(
-                {
-                    "message": message,
-                    "relative_check_in": {
-                        "id": relative_check_in.id,
-                        "full_name": relative_check_in.full_name,
-                        "identity_card": relative_check_in.identity_card,
-                        "relationship": relative_check_in.relationship,
-                        "unit_name": relative_check_in.unit_name or "N/A",
-                        "status": relative_check_in.status,
-                        "check_in_time": (
-                            relative_check_in.check_in_time.isoformat()
-                            if relative_check_in.check_in_time
-                            else None
-                        ),
-                        "check_out_time": (
-                            relative_check_in.check_out_time.isoformat()
-                            if relative_check_in.check_out_time
-                            else None
-                        ),
-                    },
-                }
-            ),
-            200,
-        )
+        return jsonify({
+            'success': True,
+            'message': message,
+            'data': {
+                'id': relative_check_in.id,
+                'full_name': relative_check_in.full_name,
+                'identity_card': relative_check_in.identity_card,
+                'check_in_time': relative_check_in.check_in_time.isoformat() if relative_check_in.check_in_time else None,
+                'check_out_time': relative_check_in.check_out_time.isoformat() if relative_check_in.check_out_time else None,
+                'status': relative_check_in.status
+            }
+        })
 
     except Exception as e:
-        return jsonify({"error": f"Lỗi xảy ra: {str(e)}"}), 500
+        return jsonify({
+            'success': False,
+            'message': f'Lỗi xảy ra: {str(e)}'
+        }), 500
 
 
 @core.route("/get_military_units", methods=["GET"])

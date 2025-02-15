@@ -21,7 +21,7 @@
                     <th>ID</th>
                     <th>Trạng thái</th>
                     <th>Họ và tên</th>
-                    <th>Số CCCD</th>
+                    <th>Số CCCD người thân</th>
                     <th>Số CCCD quân nhân</th>
                     <th>Tên quân nhân</th>
                     <th>Cấp quản lý</th>
@@ -66,7 +66,7 @@
                         </span>
                     </td>
                     <td>{{ record.full_name }}</td>
-                    <td>{{ record.identity_card | mask_cccd }}</td>
+                    <td>{{ record.identity_card }}</td>
                     <td>{{ record.soldier_identity_card | mask_cccd }}</td>
                     <td>{{ record.soldier_name }}</td>
                     <td>{{ record.management_level }}</td>

@@ -280,6 +280,10 @@ class RelativeCheckIn(db.Model):
         "User", foreign_keys=[sponsor_military_manager_id]
     )
 
+    # Add new fields for check-in/out images
+    check_in_image = db.Column(db.String(255), nullable=True)
+    check_out_image = db.Column(db.String(255), nullable=True)
+
     def __init__(self, full_name, identity_card, **kwargs):
         self.full_name = full_name
         self.identity_card = identity_card

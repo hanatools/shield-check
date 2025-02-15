@@ -65,24 +65,24 @@ function processBarcode(barcode) {
     const parts = barcode.split("|");
 
     // if (parts.length >= 1) {
-        let identityCard = parts[0]; // Extract the first part of the barcode
+    let identityCard = parts[0]; // Extract the first part of the barcode
 
-        // Ensure the identity card number is trimmed to 12 characters
-        if (identityCard.length > 12) {
-            identityCard = identityCard.substring(0, 12);
-            console.warn("Identity card number exceeded 12 characters. Extra characters were removed.");
-        }
+    // Ensure the identity card number is trimmed to 12 characters
+    if (identityCard.length > 12) {
+        identityCard = identityCard.substring(0, 12);
+        console.warn("Identity card number exceeded 12 characters. Extra characters were removed.");
+    }
 
-        if (identityCard.length === 12) {
-            const manualInput = document.getElementById("manual-identity-card-input");
-            manualInput.value = identityCard;
+    if (identityCard.length === 12) {
+        const manualInput = document.getElementById("manual-identity-card-input");
+        manualInput.value = identityCard;
 
-            enableSubmitButton(); // Enable the submit button automatically
-            document.getElementById("manual-identity-card-error").textContent = "";
-        } else {
-            console.error("Invalid Barcode Format: First part is not 12 characters.");
-            disableSubmitButton();
-        }
+        enableSubmitButton(); // Enable the submit button automatically
+        document.getElementById("manual-identity-card-error").textContent = "";
+    } else {
+        console.error("Invalid Barcode Format: First part is not 12 characters.");
+        disableSubmitButton();
+    }
     // } else {
     //     console.error("Invalid Barcode Format: Not enough parts.");
     //     disableSubmitButton();
@@ -142,57 +142,6 @@ function showRelativeConfirmModal(record) {
     modal.show();
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    const relativeConfirmButton = document.getElementById("relativeConfirmButton");
-
-    // Add click event listener for the confirmation button
-    relativeConfirmButton.addEventListener("click", () => {
-        // Get the identity card number from the modal
-        const identityCard = document.getElementById("relativeConfirmIdentityCard").textContent.trim();
-
-        if (!identityCard) {
-            alert("Không tìm thấy Số CCCD. Vui lòng thử lại.");
-            return;
-        }
-
-        // Send the request to confirm the relative's check-in
-        confirmRelativeCheckIn(identityCard);
-    });
-});
-
-
-
-function confirmRelativeCheckIn(identityCard) {
-    // Get CSRF token
-    const csrfTokenInput = document.querySelector("input[name='csrf_token']");
-    if (!csrfTokenInput) {
-        console.error("CSRF token is missing.");
-        alert("Không tìm thấy token bảo mật. Vui lòng tải lại trang.");
-        return;
-    }
-
-    const csrfToken = csrfTokenInput.value;
-
-    fetch(`/api/confirm-relative-check-in/${identityCard}`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": csrfToken,
-        },
-    })
-        .then((response) => response.json())
-        .then((data) => {
-            if (data.error) {
-                alert(`Lỗi: ${data.error}`);
-            } else {
-                showSuccessModal(data.message || "Check-in thành công!");
-            }
-        })
-        .catch((error) => {
-            console.error("Error confirming relative check-in:", error);
-            alert("Có lỗi xảy ra. Vui lòng thử lại sau.");
-        });
-}
 
 function showSuccessModal(message) {
     const successModal = document.getElementById("successModal");
@@ -461,5 +410,154 @@ document.getElementById("capture-photo").addEventListener("click", async () => {
     } catch (error) {
         console.error("Error during face scan validation:", error);
         alert("Đã xảy ra lỗi. Vui lòng thử lại sau.");
+    }
+});
+
+let currentStep = 1;
+let capturedImageData = null;
+let stream = null;
+
+function nextStep(step) {
+    document.querySelectorAll('.modal-step').forEach(s => s.style.display = 'none');
+    document.getElementById(`step${step}`).style.display = 'block';
+    currentStep = step;
+    updateModalTitle();
+
+    // Auto start camera when entering step 2
+    if (step === 2) {
+        startCamera();
+    }
+}
+
+function previousStep(step) {
+    document.getElementById(`step${currentStep}`).style.display = 'none';
+    document.getElementById(`step${step}`).style.display = 'block';
+    currentStep = step;
+    updateModalTitle();
+}
+
+function updateModalTitle() {
+    const titles = {
+        1: 'Xác nhận thông tin Người thân',
+        2: 'Chụp ảnh xác thực'
+    };
+    document.querySelector('.step-indicator').textContent = `Bước ${currentStep}/2:`;
+    document.querySelector('.step-title').textContent = titles[currentStep];
+}
+
+// Modified camera handling function
+async function startCamera() {
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { 
+                facingMode: 'user',
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            } 
+        });
+        const video = document.getElementById('cameraFeed');
+        video.srcObject = stream;
+        video.style.display = 'block';
+        video.play();
+        
+        document.getElementById('captureImage').style.display = 'inline-block';
+    } catch (err) {
+        alert('Không thể truy cập camera: ' + err.message);
+    }
+}
+
+// Clean up function for modal close
+document.getElementById('relativeConfirmModal').addEventListener('hidden.bs.modal', () => {
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+    }
+    currentStep = 1;
+    capturedImageData = null;
+    document.querySelectorAll('.modal-step').forEach(step => step.style.display = 'none');
+    document.getElementById('step1').style.display = 'block';
+    document.getElementById('cameraFeed').style.display = 'none';
+    document.getElementById('capturedImage').style.display = 'none';
+    document.getElementById('captureImage').style.display = 'inline-block';
+    document.getElementById('retakeImage').style.display = 'none';
+    document.getElementById('submitFinal').disabled = true;
+    updateModalTitle();
+});
+
+// Capture image event handler
+document.getElementById('captureImage').addEventListener('click', () => {
+    const video = document.getElementById('cameraFeed');
+    const canvas = document.getElementById('captureCanvas');
+    const context = canvas.getContext('2d');
+    
+    // Set canvas dimensions to match video
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    
+    // Draw the video frame to canvas
+    context.drawImage(video, 0, 0);
+    
+    // Get the image data
+    capturedImageData = canvas.toDataURL('image/jpeg');
+    
+    // Display captured image
+    document.getElementById('capturedImage').src = capturedImageData;
+    
+    // Update UI elements
+    video.style.display = 'none';
+    document.getElementById('capturedImage').style.display = 'block';
+    document.getElementById('captureImage').style.display = 'none';
+    document.getElementById('retakeImage').style.display = 'inline-block';
+    document.getElementById('submitFinal').disabled = false;
+    
+    // Stop the camera stream
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+    }
+});
+
+// Retake image event handler
+document.getElementById('retakeImage').addEventListener('click', async () => {
+    // Hide captured image and show video
+    document.getElementById('capturedImage').style.display = 'none';
+    document.getElementById('retakeImage').style.display = 'none';
+    document.getElementById('captureImage').style.display = 'inline-block';
+    document.getElementById('submitFinal').disabled = true;
+    
+    // Restart camera
+    await startCamera();
+});
+
+document.getElementById('submitFinal').addEventListener('click', async () => {
+    if (!capturedImageData) {
+        alert('Vui lòng chụp ảnh trước khi xác nhận');
+        return;
+    }
+
+    const data = {
+        relative_id: document.getElementById('relativeConfirmIdentityCard').textContent,
+        image: capturedImageData
+    };
+
+    try {
+        const response = await fetch('/api/confirm-relative', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrf_token]').value
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            if (result.success) {
+                alert('Xác nhận thành công!');
+                location.reload();
+            } else {
+                alert(result.message || 'Có lỗi xảy ra');
+            }
+        }
+    } catch (error) {
+        alert('Có lỗi xảy ra khi gửi dữ liệu');
     }
 });
