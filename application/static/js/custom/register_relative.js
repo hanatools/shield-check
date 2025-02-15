@@ -1,147 +1,285 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const full_name = document.getElementById("full_name");
-    const identity_card = document.getElementById("identity_card");
-    const relationship = document.getElementById("relationship");
-    const sponsor_full_name = document.getElementById("sponsor_full_name");
-    const sponsor_identity_card = document.getElementById("sponsor_identity_card");
-    const sponsor_military_unit_name = document.getElementById("sponsor_military_unit_name");
-    const sponsor_military_unit_id = document.getElementById("sponsor_military_unit_id");
-    const sponsor_military_manager_full_name = document.getElementById("sponsor_military_manager_full_name");
+document.addEventListener("DOMContentLoaded", function() {
+    // Constants
+    const IDENTITY_CARD_LENGTH = 12;
 
-    // const sponsorIdInput = document.getElementById("sponsorId");
-    const sponsorNameInput = document.getElementById("sponsorName");
-    const rankInput = document.getElementById("rank");
-    // const relativeIdInput = document.getElementById("relativeId");
-    const submitButton = document.querySelector("button[type='submit']");
+    // DOM Elements
+    const container = document.getElementById('relativesContainer');
+    const template = document.getElementById('relativeTemplate');
+    const sponsorIdInput = document.getElementById('sponsor_identity_card');
+    const submitBtn = document.getElementById('submitBtn');
+    const form = document.getElementById('relativesForm');
 
+    let relativeCount = 0;
 
-    // Track which fields have been interacted with
-    const touchedFields = new Set();
+    // Disable submit button initially
+    submitBtn.disabled = true;
 
-    // Function to validate a single field
-    function validateField(inputElement) {
-        // Remove existing error message for this field
-        const existingError = inputElement.parentElement.querySelector(".error-message");
-        if (existingError) {
-            existingError.remove();
-        }
+    // Initialize with first relative card
+    addRelativeCard();
 
-        // Skip validation if the field hasn't been interacted with yet
-        if (!touchedFields.has(inputElement)) {
-            return true; // Assume valid until user interacts
-        }
+    // Validate all inputs and update submit button state
+    function validateAllInputs() {
+        const sponsorValid = isValidIdentityCard(sponsorIdInput.value.trim()) &&
+            document.getElementById('sponsor_full_name').value.trim() !== '';
 
-        // Perform validation based on input
-        let isValid = true;
-        if (inputElement === full_name) {
-            if (full_name.value.trim() === "") {
-                displayError(full_name, "Họ tên người thân không được để trống.");
-                isValid = false;
+        let relativesValid = true;
+        const relatives = new Set();
+
+        container.querySelectorAll('.relative-card').forEach(card => {
+            const identityInput = card.querySelector('.relative-identity');
+            const nameInput = card.querySelector('.relative-name');
+            const identity = identityInput.value.trim();
+
+            if (!isValidIdentityCard(identity) ||
+                !nameInput.value.trim() ||
+                relatives.has(identity)) {
+                relativesValid = false;
+                return;
             }
-        } else if (inputElement === identity_card) {
-            if (identity_card.value.trim().length !== 12) {
-                displayError(identity_card, "Số CCCD phải gồm 12 ký tự.");
-                isValid = false;
-            }
-        } else if (inputElement === sponsor_identity_card) {
-            if (sponsor_identity_card.value.trim().length !== 12) {
-                displayError(sponsor_identity_card, "Số CCCD của Quân nhân phải gồm 12 ký tự.");
-                isValid = false;
-            }
-        }  else if (inputElement === relationship) {
-            if (relationship.value.trim() === "") {
-                displayError(relationship, "Mối quan hệ không được để trống.");
-                isValid = false;
-            }
-        }
+            relatives.add(identity);
+        });
 
-
-
-        return isValid;
+        submitBtn.disabled = !(sponsorValid && relativesValid);
     }
 
-    // Function to validate the entire form and update submit button state
-    function validateForm() {
-        const isFullNameValid = validateField(full_name);
-        const isIdentityCardValid = validateField(identity_card);
-        const isSponsorMilitaryUnitIdValid = validateField(sponsor_military_unit_id);
-        const isRelationshipValid = validateField(relationship);
+    // Add Relative Button Click Handler
+    document.getElementById('addRelativeBtn').addEventListener('click', addRelativeCard);
 
-        // Enable submit button if all fields are valid
-        submitButton.disabled = !(isFullNameValid && isIdentityCardValid && isSponsorMilitaryUnitIdValid && isRelationshipValid);
+    // Validate Identity Card Format
+    function isValidIdentityCard(value) {
+        return /^\d{12}$/.test(value.trim());
     }
 
-    // Function to display an error message under an input
-    function displayError(inputElement, message) {
-        const error = document.createElement("div");
-        error.className = "error-message text-danger";
-        error.textContent = message;
-        inputElement.parentElement.appendChild(error);
+    // Display Error Message
+    function showError(input, message) {
+        const feedback = input.nextElementSibling;
+        if (feedback && feedback.classList.contains('invalid-feedback')) {
+            feedback.textContent = message;
+            feedback.style.display = 'block';
+        }
+        input.classList.add('is-invalid');
+        validateAllInputs();
     }
 
-    // Add event listeners for individual input validation
-    full_name.addEventListener("input", () => {
-        touchedFields.add(full_name); // Mark field as touched
-        validateField(full_name);
-        validateForm();
-    });
+    // Clear Error Message
+    function clearError(input) {
+        const feedback = input.nextElementSibling;
+        if (feedback && feedback.classList.contains('invalid-feedback')) {
+            feedback.style.display = 'none';
+        }
+        input.classList.remove('is-invalid');
+        validateAllInputs();
+    }
 
-    relationship.addEventListener("input", () => {
-        touchedFields.add(relationship); // Mark field as touched
-        validateField(relationship);
-        validateForm();
-    });
+    // Handle Identity Card Input Validation
+    function handleIdentityCardInput(input) {
+        const value = input.value.trim();
 
-    identity_card.addEventListener("input", () => {
-        touchedFields.add(identity_card); // Mark field as touched
-        validateField(identity_card);
-        validateForm();
-    });
+        if (value.length > 0 && !isValidIdentityCard(value)) {
+            showError(input, "Số CCCD phải có đúng 12 chữ số");
+            return false;
+        }
 
-    sponsor_identity_card.addEventListener("input", () => {
-        touchedFields.add(sponsor_identity_card); // Mark field as touched
-        validateField(sponsor_identity_card);
-        validateForm();
-    });
+        clearError(input);
+        return true;
+    }
 
-    // Add sponsorId onchange logic to fetch sponsor details
-    sponsor_identity_card.addEventListener("change", function () {
-        const sponsorId = sponsor_identity_card.value.trim();
+    // API Requests
+    async function makeRequest(url, method = 'GET', data = null) {
+        try {
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrf_token]').value
+                }
+            };
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+            const response = await fetch(url, options);
+            // if (!response.ok) throw new Error('Network response was not ok');
+            return await response.json();
+        } catch (error) {
+            console.error('API Request Error:', error);
+            return null;
+        }
+    }
 
-        if (sponsorId.length === 12) {
-            fetch(`/get_sponsor_details/${sponsorId}`)
-                .then((response) => {
-                    if (response.ok) {
-                        return response.json();
-                    } else {
-                        throw new Error("User not found");
-                    }
-                })
-                .then((data) => {
-                    document.getElementById("sponsor_full_name").value = data.full_name || "";
-                    document.getElementById("sponsor_military_unit_name").value = data.military_unit_name || "";
-                    document.getElementById("sponsor_military_unit_id").value = data.military_unit_id || "";
-                    document.getElementById("sponsor_military_manager_full_name").value = data.manager_full_name || "";
-                    document.getElementById("sponsor_military_manager_id").value = data.military_manager_id || "";
-                })
-                .catch((error) => {
-                    document.getElementById("sponsor_full_name").value =  "";
-                    document.getElementById("sponsor_military_unit_name").value =  "";
-                    document.getElementById("sponsor_military_unit_id").value =  "";
-                    document.getElementById("sponsor_military_manager_full_name").value =  "";
-                    document.getElementById("sponsor_military_manager_id").value ="";
-                    alert("User not exist.");
-                });
+    // Fetch Relative Details
+    async function fetchRelativeDetails(identityCard) {
+        return await makeRequest(`/api/check-relative/${identityCard}`);
+    }
+
+    // Fetch Sponsor Details
+    async function fetchSponsorDetails(identityCard) {
+        return await makeRequest(`/get_user_by_identity/${identityCard}`);
+    }
+
+    // Clear Sponsor Fields
+    function clearSponsorFields() {
+        document.getElementById('sponsor_full_name').value = '';
+        document.getElementById('sponsor_military_unit_name').value = '';
+        document.getElementById('sponsor_military_unit_id').value = '';
+        document.getElementById('sponsor_military_manager_full_name').value = '';
+        document.getElementById('sponsor_military_manager_id').value = '';
+        validateAllInputs();
+    }
+
+    // Update Sponsor Fields
+    function updateSponsorFields(data) {
+        document.getElementById('sponsor_full_name').value = data.full_name || '';
+        document.getElementById('sponsor_military_unit_name').value = data.military_unit_name || '';
+        document.getElementById('sponsor_military_unit_id').value = data.military_unit_id || '';
+        document.getElementById('sponsor_military_manager_full_name').value = data.military_manager_name || '';
+        document.getElementById('sponsor_military_manager_id').value = data.military_manager_id || '';
+        validateAllInputs();
+    }
+
+    // Add New Relative Card
+    function addRelativeCard() {
+        const clone = template.content.cloneNode(true);
+
+        // Replace INDEX placeholder with actual index
+        clone.querySelectorAll('[name*="INDEX"]').forEach(input => {
+            input.name = input.name.replace('INDEX', relativeCount);
+        });
+
+        container.appendChild(clone);
+        relativeCount++;
+        validateAllInputs();
+    }
+
+    // Event Delegation for Relative Cards
+    container.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-relative')) {
+            const card = e.target.closest('.relative-card');
+            if (container.children.length > 1) {
+                card.remove();
+                validateAllInputs();
+            } else {
+                alert('Phải có ít nhất một người thân');
+            }
         }
     });
 
-//      submit form
-    document.querySelector("form").addEventListener("submit", (event) => {
-        validateForm(); // Final client-side validation
-        if (submitButton.disabled) {
-            event.preventDefault(); // Prevent submission if the form is invalid
-            alert("Please correct the errors before submitting.");
+    // Handle Input Changes for All Fields
+    container.addEventListener('input', function(e) {
+        if (e.target.classList.contains('relative-identity') ||
+            e.target.classList.contains('relative-name')) {
+            validateAllInputs();
+        }
+        if (e.target.classList.contains('relative-identity')) {
+            handleIdentityCardInput(e.target);
         }
     });
 
+    // Handle Identity Card Validation and Data Fetch
+    container.addEventListener('change', async function(e) {
+        if (e.target.classList.contains('relative-identity')) {
+            const card = e.target.closest('.relative-card');
+            const identityInput = e.target;
+            const nameInput = card.querySelector('.relative-name');
+
+            if (!handleIdentityCardInput(identityInput)) return;
+
+            const value = identityInput.value.trim();
+            if (value.length === IDENTITY_CARD_LENGTH) {
+                // Check for duplicate identity cards
+                const allIdentityInputs = container.querySelectorAll('.relative-identity');
+                const isDuplicate = Array.from(allIdentityInputs).some(input =>
+                    input !== identityInput && input.value.trim() === value
+                );
+
+                if (isDuplicate) {
+                    showError(identityInput, "Số CCCD này đã được thêm vào danh sách");
+                    nameInput.value = '';
+                    return;
+                }
+
+                const data = await fetchRelativeDetails(value);
+                if (data && data.exists) {
+                    nameInput.value = data.full_name;
+                    nameInput.disabled = true;
+                    clearError(identityInput);
+                } else {
+                    nameInput.value = '';
+                    nameInput.disabled = false;
+                }
+                validateAllInputs();
+            }
+        }
+    });
+
+    // Handle Sponsor Identity Card Changes
+    sponsorIdInput.addEventListener('input', function() {
+        handleIdentityCardInput(this);
+        validateAllInputs();
+    });
+
+    sponsorIdInput.addEventListener('change', async function() {
+        if (!handleIdentityCardInput(this)) return;
+
+        const value = this.value.trim();
+        if (value.length === IDENTITY_CARD_LENGTH) {
+            const data = await fetchSponsorDetails(value);
+            if (data && data.identity_card) {
+                updateSponsorFields(data);
+                clearError(this);
+            } else {
+                clearSponsorFields();
+                showError(this, "Không tìm thấy thông tin Quân nhân");
+            }
+            validateAllInputs();
+        }
+    });
+
+    // Form Submit Handler with AJAX
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        if (submitBtn.disabled) return;
+
+        // Prepare form data
+        const formData = {
+            sponsor_identity_card: sponsorIdInput.value.trim(),
+            sponsor_military_unit_id: document.getElementById('sponsor_military_unit_id').value,
+            sponsor_military_manager_id: document.getElementById('sponsor_military_manager_id').value,
+            note: document.getElementById('note').value.trim(),
+            relatives: []
+        };
+
+        // Collect relatives data
+        container.querySelectorAll('.relative-card').forEach(card => {
+            formData.relatives.push({
+                identity_card: card.querySelector('.relative-identity').value.trim(),
+                full_name: card.querySelector('.relative-name').value.trim(),
+                relationship: card.querySelector('[name*="relationship"]').value.trim()
+            });
+        });
+
+        try {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang xử lý...';
+
+            const response = await makeRequest('/register_relative', 'POST', formData);
+            console.log(response);
+            if (response.success) {
+                // Show success message
+                alert('Đăng ký thành công!');
+                window.location.href = response.redirect_url || '/dashboard';
+            } else {
+                console.log(response.message);
+                // Show error message
+                alert(response.message || 'Có lỗi xảy ra. Vui lòng thử lại.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Đăng ký';
+            }
+        } catch (error) {
+            console.error('Submit Error:', error);
+            alert('Có lỗi xảy ra. Vui lòng thử lại.');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Đăng ký';
+        }
+    });
 });

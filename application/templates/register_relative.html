@@ -11,8 +11,8 @@
 {% block content %}
 <div class="content">
     <div class="form-section">
-        <h4>Đăng ký ra vào dành cho người thân</h4>
-        <hr>
+        <h4 class="text-center mb-4">Đăng ký ra vào dành cho người thân</h4>
+        
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
         <div class="alert-section">
@@ -23,65 +23,103 @@
         {% endif %}
         {% endwith %}
 
-        <form method="POST" action="{{ url_for('core.register_relative') }}">
+        <form method="POST" action="{{ url_for('core.register_relative') }}" id="relativesForm">
             {{ form.hidden_tag() }}
-            <div class="mb-3">
-                <label for="full_name" class="form-label">Họ tên người thân:<span
-                        class="text-danger">(*)</span></label>
-                <input type="text" class="form-control" id="full_name" name="full_name"
-                       placeholder="Nhập họ tên người thân">
-            </div>
-            <div class="mb-3">
-                <label for="identity_card" class="form-label">Số CCCD:<span class="text-danger">(*)</span></label>
-                <input type="text" class="form-control" id="identity_card" name="identity_card" placeholder="Nhập số CCCD">
-            </div>
-            <div class="mb-3">
-                <label for="relationship" class="form-label">Mối quan hệ:</label>
-                <input type="text" class="form-control" id="relationship" name="relationship"
-                       placeholder="Nhập mối quan hệ">
-            </div>
-            <div class="mb-3">
-                <label for="sponsor_full_name" class="form-label">Tên Quân nhân bảo lãnh:</label>
-                <input type="text" disabled class="form-control" name="sponsor_full_name" id="sponsor_full_name" placeholder="Tên Quân nhân bảo lãnh">
-            </div>
-            <div class="mb-3">
-                <label for="sponsor_identity_card" class="form-label">Số CCCD của Quân nhân:<span
-                        class="text-danger">(*)</span></label>
-                <input type="text" class="form-control" id="sponsor_identity_card" name="sponsor_identity_card"
-                       placeholder="Số CCCD của Quân nhân" value="">
-            </div>
-
-            <div class="mb-3">
-                <label for="sponsor_military_unit_name" class="form-label">Đơn vị của Quân nhân:</label>
-                <input type="text" class="form-control" id="sponsor_military_unit_name" disabled name="sponsor_military_unit_name"
-                       placeholder="Đơn vị của Quân nhân">
-                <input type="text" hidden="hidden" value="" id="sponsor_military_unit_id" name="sponsor_military_unit_id" >
+            
+            <!-- Sponsor Information Card -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h5 class="mb-0"><i class="fas fa-user-shield"></i> Thông tin Quân nhân bảo lãnh</h5>
+                </div>
+                <div class="mb-3">
+                    <label for="sponsor_identity_card" class="form-label">
+                        Số CCCD của Quân nhân<span class="required-field">(*)</span>
+                    </label>
+                    <input type="text" class="form-control" id="sponsor_identity_card" name="sponsor_identity_card"
+                           placeholder="Nhập số CCCD của Quân nhân" value="">
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="sponsor_full_name" class="form-label">Tên Quân nhân bảo lãnh</label>
+                        <input type="text" disabled class="form-control" name="sponsor_full_name" id="sponsor_full_name">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="sponsor_military_unit_name" class="form-label">Đơn vị của Quân nhân</label>
+                        <input type="text" class="form-control" id="sponsor_military_unit_name" disabled>
+                        <input type="hidden" id="sponsor_military_unit_id" name="sponsor_military_unit_id">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="sponsor_military_manager_full_name" class="form-label">Cấp quản lý Quân nhân</label>
+                    <input type="text" class="form-control" disabled id="sponsor_military_manager_full_name">
+                    <input type="hidden" id="sponsor_military_manager_id" name="sponsor_military_manager_id">
+                </div>
             </div>
 
+            <!-- Relatives Card -->
+            <div class="section-card">
+                <div class="section-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-users"></i> Thông tin người thân</h5>
 
-            <div class="mb-3">
-                <label for="sponsor_military_manager_full_name" class="form-label">Cấp quản lý Quân nhân:</label>
-                <input type="text" class="form-control" disabled id="sponsor_military_manager_full_name" name="sponsor_military_manager_full_name"
-                       placeholder="Cấp quản lý Quân nhân">
-                <input type="text" hidden="hidden" value="" id="sponsor_military_manager_id" name="sponsor_military_manager_id" >
+                    <button type="button" class="btn btn-primary btn-sm" id="addRelativeBtn" style="width: 14rem;">
+                        <i class="bi bi-plus-lg"></i> Thêm người thân
+                    </button>
+                </div>
+                <div id="relativesContainer" class="relatives-container">
+                    <!-- Relative cards will be added here -->
+                </div>
             </div>
 
-            <div class="mb-3">
-                <label for="note"  class="form-label" >Ghi chú</label>
-                <textarea id="note" name="note" class="form-control"></textarea>
-            </div>
+            <!-- Note and Submit Section -->
+            <div class="section-card">
+                <div class="mb-3">
+                    <label for="note" class="form-label">Ghi chú</label>
+                    <textarea id="note" name="note" class="form-control" rows="3" 
+                              placeholder="Nhập ghi chú nếu cần..."></textarea>
+                </div>
 
-
-            <div class="mb-3 text-center">
-                <button type="submit" disabled class="btn btn-primary">Đăng ký</button>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary px-4" id="submitBtn">
+                        <i class="fas fa-save"></i> Đăng ký
+                    </button>
+                </div>
             </div>
         </form>
-
-
     </div>
 </div>
-{% endblock %}
 
+<!-- Relative Card Template -->
+<template id="relativeTemplate">
+    <div class="relative-card">
+        <span class="remove-relative" title="Xóa người thân này">&times;</span>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">
+                    Số CCCD<span class="required-field">(*)</span>
+                </label>
+                <input type="text" class="form-control relative-identity" 
+                       name="relatives[INDEX][identity_card]" 
+                       placeholder="Nhập số CCCD">
+                <div class="invalid-feedback">Số CCCD không hợp lệ hoặc đã tồn tại</div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">
+                    Họ tên người thân<span class="required-field">(*)</span>
+                </label>
+                <input type="text" class="form-control relative-name" 
+                       name="relatives[INDEX][full_name]" 
+                       placeholder="Nhập họ tên người thân">
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Mối quan hệ</label>
+            <input type="text" class="form-control" 
+                   name="relatives[INDEX][relationship]" 
+                   placeholder="Nhập mối quan hệ">
+        </div>
+    </div>
+</template>
+{% endblock %}
 
 {% block stylejs %}
 <script src="{{ url_for('static', filename='js/custom/register_relative.js') }}"></script>

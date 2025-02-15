@@ -10,7 +10,6 @@ from flask import (
     Blueprint,
     Response,
     url_for,
-    flash,
     redirect,
     session,
     current_app,
@@ -24,6 +23,7 @@ from application.models import (
     SponsorCheckIn,
     RelativeCheckIn,
     MilitaryUnit,
+
     to_vietnam_time
 )
 from flask_login import login_required, current_user
@@ -213,103 +213,253 @@ def batch_input():
     )
 
 
+# @core.route("/register_relative", methods=["GET", "POST"])
+# @login_required
+# def register_relative():
+#     form = RegisterRelativeForm()
+#     if request.method == "POST":
+#         print(f"request.form: {request.form}")
+#         # Get form data
+#         full_name = request.form.get("full_name", "").strip()
+#         identity_card = request.form.get("identity_card", "").strip()
+#         relationship = request.form.get("relationship", "").strip()
+#         sponsor_identity_card = request.form.get("sponsor_identity_card", "").strip()
+#         sponsor_military_unit_id = request.form.get(
+#             "sponsor_military_unit_id", ""
+#         ).strip()
+#         note = request.form.get("note", "").strip()
+
+#         # Validate inputs
+#         if not full_name or len(identity_card) != 12:
+#             flash(
+#                 "Đầu vào không hợp lệ: Vui lòng đảm bảo tất cả các trường bắt buộc được điền chính xác.",
+#                 "danger",
+#             )
+#             return redirect(url_for("core.register_relative"))
+
+#         # Check if a relative with this identity card already exists
+#         existing_relative = RelativeCheckIn.query.filter_by(
+#             identity_card=identity_card
+#         ).first()
+#         if existing_relative:
+#             flash(
+#                 f"Người thân với CCCD {identity_card} đã được đăng ký. Vui lòng kiểm tra lại.",
+#                 "danger",
+#             )
+#             return redirect(url_for("core.register_relative"))
+
+#         # Check if sponsor exists (should always be true since it's the logged-in user)
+#         sponsor = User.query.filter_by(identity_card=sponsor_identity_card).first()
+#         if not sponsor:
+#             flash(
+#                 "Nhà tài trợ không tồn tại. Vui lòng liên hệ bộ phận hỗ trợ.", "danger"
+#             )
+#             return redirect(url_for("core.register_relative"))
+
+#         # Initialize sponsor-related fields
+#         sponsor_military_manager_id = None
+#         sponsor_military_manager_full_name = None
+#         sponsor_military_unit_name = None
+
+#         # If sponsor_military_unit_id is provided, find the military manager and set the details
+#         if sponsor_military_unit_id:
+#             military_unit = MilitaryUnit.query.filter_by(
+#                 id=sponsor_military_unit_id
+#             ).first()
+#             if military_unit:
+#                 military_manager = User.query.filter_by(
+#                     military_unit_id=military_unit.id
+#                 ).first()
+#                 if military_manager is None:
+#                     flash(
+#                         f"Người bảo lãnh với CCCD {identity_card} không được đăng ký. Vui lòng kiểm tra lại.",
+#                         "danger",
+#                     )
+#                     return redirect(url_for("core.register_relative"))
+
+#                 sponsor_military_manager_id = military_manager.id
+#                 sponsor_military_manager_full_name = military_manager.full_name
+#                 sponsor_military_unit_name = military_unit.name
+
+#         # Add relative to RelativeCheckIn
+#         new_relative = RelativeCheckIn(
+#             full_name=full_name,
+#             identity_card=identity_card,
+#             relationship=relationship,
+#             sponsor_identity_card=sponsor_identity_card,
+#             sponsor_full_name=sponsor.full_name,
+#             sponsor_military_unit_id=sponsor_military_unit_id or None,
+#             sponsor_military_unit_name=sponsor_military_unit_name,
+#             sponsor_military_manager_id=sponsor_military_manager_id,
+#             sponsor_military_manager_full_name=sponsor_military_manager_full_name,
+#             note=note,
+#             created_by=current_user.id,
+#             status="accepted",
+#         )
+#         db.session.add(new_relative)
+
+#         # Commit the transaction
+#         db.session.commit()
+
+#         flash("Người thân đã đăng ký và tạo thủ tục check-in thành công.", "success")
+#         return redirect(url_for("core.daskboard"))
+
+#     # Render the registration form
+#     return render_template(
+#         "register_relative.html", username=current_user.username, form=form
+#     )
+
+
 @core.route("/register_relative", methods=["GET", "POST"])
 @login_required
 def register_relative():
-    form = RegisterRelativeForm()
-    if request.method == "POST":
-        print(f"request.form: {request.form}")
-        # Get form data
-        full_name = request.form.get("full_name", "").strip()
-        identity_card = request.form.get("identity_card", "").strip()
-        relationship = request.form.get("relationship", "").strip()
-        sponsor_identity_card = request.form.get("sponsor_identity_card", "").strip()
-        sponsor_military_unit_id = request.form.get(
-            "sponsor_military_unit_id", ""
-        ).strip()
-        note = request.form.get("note", "").strip()
+    if request.method == "GET":
+        form = RegisterRelativeForm()
+        return render_template(
+            "register_relative.html", 
+            username=current_user.username, 
+            form=form
+        )
+    
+    # Handle POST request
+    try:
+        data = request.get_json()
+        
+        # Validate sponsor information
+        sponsor_identity_card = data.get('sponsor_identity_card', '').strip()
+        sponsor_military_unit_id = data.get('sponsor_military_unit_id', '').strip()
+        note = data.get('note', '').strip()
+        relatives = data.get('relatives', [])
 
-        # Validate inputs
-        if not full_name or len(identity_card) != 12:
-            flash(
-                "Đầu vào không hợp lệ: Vui lòng đảm bảo tất cả các trường bắt buộc được điền chính xác.",
-                "danger",
-            )
-            return redirect(url_for("core.register_relative"))
+        # Basic validation
+        if not sponsor_identity_card or not re.match(r'^\d{12}$', sponsor_identity_card):
+            return jsonify({
+                'success': False,
+                'message': 'Số CCCD của Quân nhân không hợp lệ'
+            }), 400
 
-        # Check if a relative with this identity card already exists
-        existing_relative = RelativeCheckIn.query.filter_by(
-            identity_card=identity_card
-        ).first()
-        if existing_relative:
-            flash(
-                f"Người thân với CCCD {identity_card} đã được đăng ký. Vui lòng kiểm tra lại.",
-                "danger",
-            )
-            return redirect(url_for("core.register_relative"))
+        if not relatives or not isinstance(relatives, list):
+            return jsonify({
+                'success': False,
+                'message': 'Danh sách người thân không hợp lệ'
+            }), 400
 
-        # Check if sponsor exists (should always be true since it's the logged-in user)
+        # Check sponsor exists
         sponsor = User.query.filter_by(identity_card=sponsor_identity_card).first()
         if not sponsor:
-            flash(
-                "Nhà tài trợ không tồn tại. Vui lòng liên hệ bộ phận hỗ trợ.", "danger"
-            )
-            return redirect(url_for("core.register_relative"))
+            return jsonify({
+                'success': False,
+                'message': 'Không tìm thấy thông tin Quân nhân'
+            }), 404
 
         # Initialize sponsor-related fields
         sponsor_military_manager_id = None
         sponsor_military_manager_full_name = None
         sponsor_military_unit_name = None
 
-        # If sponsor_military_unit_id is provided, find the military manager and set the details
+        # Get military unit information if provided
         if sponsor_military_unit_id:
-            military_unit = MilitaryUnit.query.filter_by(
-                id=sponsor_military_unit_id
-            ).first()
+            military_unit = MilitaryUnit.query.filter_by(id=sponsor_military_unit_id).first()
             if military_unit:
-                military_manager = User.query.filter_by(
-                    military_unit_id=military_unit.id
-                ).first()
-                if military_manager is None:
-                    flash(
-                        f"Người bảo lãnh với CCCD {identity_card} không được đăng ký. Vui lòng kiểm tra lại.",
-                        "danger",
-                    )
-                    return redirect(url_for("core.register_relative"))
+                military_manager = User.query.filter_by(military_unit_id=military_unit.id).first()
+                if military_manager:
+                    sponsor_military_manager_id = military_manager.id
+                    sponsor_military_manager_full_name = military_manager.full_name
+                    sponsor_military_unit_name = military_unit.name
 
-                sponsor_military_manager_id = military_manager.id
-                sponsor_military_manager_full_name = military_manager.full_name
-                sponsor_military_unit_name = military_unit.name
+        # Validate relatives
+        identity_cards = set()
+        for relative in relatives:
+            identity_card = relative.get('identity_card', '').strip()
+            full_name = relative.get('full_name', '').strip()
+            
+            # Validate identity card format
+            if not re.match(r'^\d{12}$', identity_card):
+                return jsonify({
+                    'success': False,
+                    'message': f'Số CCCD {identity_card} không hợp lệ'
+                }), 400
 
-        # Add relative to RelativeCheckIn
-        new_relative = RelativeCheckIn(
-            full_name=full_name,
-            identity_card=identity_card,
-            relationship=relationship,
-            sponsor_identity_card=sponsor_identity_card,
-            sponsor_full_name=sponsor.full_name,
-            sponsor_military_unit_id=sponsor_military_unit_id or None,
-            sponsor_military_unit_name=sponsor_military_unit_name,
-            sponsor_military_manager_id=sponsor_military_manager_id,
-            sponsor_military_manager_full_name=sponsor_military_manager_full_name,
-            note=note,
-            created_by=current_user.id,
-            status="accepted",
-        )
-        db.session.add(new_relative)
+            # Check for duplicates in current submission
+            if identity_card in identity_cards:
+                return jsonify({
+                    'success': False,
+                    'message': f'Số CCCD {identity_card} bị trùng lặp trong danh sách'
+                }), 400
+            
+            identity_cards.add(identity_card)
 
-        # Commit the transaction
-        db.session.commit()
+            # Check if relative already exists in database
+            # if RelativeCheckIn.query.filter_by(identity_card=identity_card).first():
+            #     return jsonify({
+            #         'success': False,
+            #         'message': f'Người thân với CCCD {identity_card} đã được đăng ký'
+            #     }), 400
 
-        flash("Người thân đã đăng ký và tạo thủ tục check-in thành công.", "success")
-        return redirect(url_for("core.daskboard"))
+            # Validate full name
+            if not full_name:
+                return jsonify({
+                    'success': False,
+                    'message': f'Tên người thân không được để trống'
+                }), 400
 
-    # Render the registration form
-    return render_template(
-        "register_relative.html", username=current_user.username, form=form
-    )
+        # All validations passed, create new records
+        try:
+            for relative in relatives:
+                new_relative = RelativeCheckIn(
+                    full_name=relative['full_name'].strip(),
+                    identity_card=relative['identity_card'].strip(),
+                    relationship=relative.get('relationship', '').strip(),
+                    sponsor_identity_card=sponsor_identity_card,
+                    sponsor_full_name=sponsor.full_name,
+                    sponsor_military_unit_id=sponsor_military_unit_id or None,
+                    sponsor_military_unit_name=sponsor_military_unit_name,
+                    sponsor_military_manager_id=sponsor_military_manager_id,
+                    sponsor_military_manager_full_name=sponsor_military_manager_full_name,
+                    note=note,
+                    created_by=current_user.id,
+                    status="accepted"
+                )
+                db.session.add(new_relative)
+            
+            db.session.commit()
 
+            return jsonify({
+                'success': True,
+                'message': 'Đăng ký người thân thành công',
+                'redirect_url': url_for('core.daskboard')
+            })
 
+        except Exception as e:
+            print(f"Error: {e}")
+            db.session.rollback()
+            return jsonify({
+                'success': False,
+                'message': 'Có lỗi xảy ra khi lưu thông tin. Vui lòng thử lại'
+            }), 500
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': 'Có lỗi xảy ra. Vui lòng thử lại'
+        }), 500
+
+@core.route("/api/check-relative/<identity_card>", methods=["GET"])
+@login_required
+def check_relative(identity_card):
+    try:
+        relative = RelativeCheckIn.query.filter_by(identity_card=identity_card).first()
+        if not relative:
+            return jsonify({'exists': False}), 404
+
+        return jsonify({
+            'exists': True,
+            'full_name': relative.full_name
+        })
+
+    except Exception as e:
+        return jsonify({'exists': False}), 500
+    
 def add_relative(full_name, identity_card, sponsor_id, relationship, creator_id):
     # Check if sponsor exists
     sponsor = User.query.filter_by(identity_card=sponsor_id).first()

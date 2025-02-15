@@ -3,6 +3,8 @@ ShieldCheckApp
 
 #### set up
 ````agsl
+python --version
+3.11.7
 python -m venv app_venv
 .\app_venv\Scripts\activate (Windows)
 source ./app_venv/bin/activate
